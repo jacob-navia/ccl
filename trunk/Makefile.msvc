@@ -4,7 +4,7 @@ CFLAGS=-I. -Zi -W4 -D_CRT_SECURE_NO_WARNINGS
 CC=cl.exe
 LINKER=link.exe
 OBJS=\
-	arraylist.obj \
+	vector.obj \
 	bitstrings.obj \
 	bloom.obj \
 	containererror.obj \
@@ -34,7 +34,7 @@ $(EXE):	$(OBJS) Makefile tlist.obj cclmsvc.lib
 cclmsvc.lib: $(OBJS) 
 	lib /out:cclmsvc.lib $(OBJS)
 
-# Build arraylist.c
+# Build vector.c
 ARRAYLIST_C=\
 	$(SRCDIR)\containers.h\
 	C:\lcc\include\string.h\
@@ -46,8 +46,8 @@ ARRAYLIST_C=\
 	C:\lcc\include\stdint.h\
 	C:\lcc\include\limits.h\
 
-arraylist.obj: $(ARRAYLIST_C) $(SRCDIR)\arraylist.c
-	$(CC) -c $(CFLAGS) $(SRCDIR)\arraylist.c
+vector.obj: $(ARRAYLIST_C) $(SRCDIR)\vector.c
+	$(CC) -c $(CFLAGS) $(SRCDIR)\vector.c
 
 # Build bitstrings.c
 BITSTRINGS_C=\

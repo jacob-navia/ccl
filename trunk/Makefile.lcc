@@ -5,7 +5,7 @@ CC=lcc.exe
 LINKER=lcclnk.exe
 HEADERS=containers.h
 OBJS=\
-	arraylist.obj \
+	vector.obj \
 	bitstrings.obj \
 	bloom.obj \
 	containererror.obj \
@@ -37,9 +37,9 @@ $(EXE):	$(OBJS) Makefile test.obj ccl.lib
 ccl.lib: $(OBJS) 
 	lcclib /out:ccl.lib $(OBJS)
 
-# Build arraylist.c
-arraylist.obj: $(HEADERS) $(SRCDIR)\arraylist.c
-	$(CC) -c $(CFLAGS) $(SRCDIR)\arraylist.c
+# Build vector.c
+vector.obj: $(HEADERS) $(SRCDIR)\vector.c
+	$(CC) -c $(CFLAGS) $(SRCDIR)\vector.c
 
 # Build bitstrings.c
 
