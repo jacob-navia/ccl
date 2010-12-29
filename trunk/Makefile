@@ -9,7 +9,7 @@ SRC=	vector.c bloom.c containererror.c dlist.c qsortex.c test.c heap.c \
 	stdint.h pool.c pooldebug.c redblacktree.c scapegoat.c smallpool.c ccl_internal.h \
 	bitstrings.c dictionary.c list.c strcollection.c searchtree.c \
 	containers.h redblacktree.c fgetline.c generic.c queue.c
-DOCS=	ccl.pdf 
+DOCS=
 MAKEFILES=Makefile Makefile.lcc Makefile.msvc
 
 OBJS=vector.o containererror.o dlist.o qsortex.o test.o bitstrings.o generic.o \
@@ -23,5 +23,5 @@ libccl.a:	$(OBJS)
 clean:
 	rm -f $(OBJS) libccl.a dotest
 zip:	$(SRC)
-	zip -9 container-lib-src.zip $(SRC) $(DOCS) $(MAKEFILES) CHANGELOG
+	zip -9 container-lib-src.zip $(SRC) $(DOCS) $(MAKEFILES) 
 
