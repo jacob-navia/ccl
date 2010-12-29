@@ -1,0 +1,259 @@
+# Wedit Makefile for project ansicStl
+SRCDIR=.
+CFLAGS=-I. -O -A  -p6 -ansic  -g2
+CC=lcc.exe
+LINKER=lcclnk.exe
+HEADERS=containers.h
+OBJS=\
+	arraylist.obj \
+	bitstrings.obj \
+	bloom.obj \
+	containererror.obj \
+	deque.obj \
+	dictionary.obj \
+	dlist.obj \
+	fgetline.obj \
+	generic.obj \
+	hashtable.obj \
+	heap.obj \
+	intarray.obj \
+	list.obj \
+	malloc_debug.obj \
+	pool.obj \
+	pooldebug.obj \
+	qsortex.obj \
+	queue.obj \
+	redblacktree.obj \
+	scapegoat.obj \
+	searchtree.obj \
+	strcollection.obj 
+
+EXE=dotest.exe
+LIBS=ccl.lib
+
+$(EXE):	$(OBJS) Makefile test.obj ccl.lib
+	$(LINKER) -subsystem console -o $(EXE) test.obj $(LIBS)
+
+ccl.lib: $(OBJS) 
+	lcclib /out:ccl.lib $(OBJS)
+
+# Build arraylist.c
+arraylist.obj: $(HEADERS) $(SRCDIR)\arraylist.c
+	$(CC) -c $(CFLAGS) $(SRCDIR)\arraylist.c
+
+# Build bitstrings.c
+
+bitstrings.obj: $(HEADERS) $(SRCDIR)\bitstrings.c
+	$(CC) -c $(CFLAGS) $(SRCDIR)\bitstrings.c
+
+bloom.obj: $(HEADERS) $(SRCDIR)\bloom.c
+	$(CC) -c $(CFLAGS) $(SRCDIR)\bloom.c
+
+containererror.obj: $(HEADERS) $(SRCDIR)\containererror.c
+	$(CC) -c $(CFLAGS) $(SRCDIR)\containererror.c
+
+# Build deque.c
+deque.obj: $(HEADERS) $(SRCDIR)\deque.c
+	$(CC) -c $(CFLAGS) $(SRCDIR)\deque.c
+
+dictionary.obj: $(HEADERS) $(SRCDIR)\dictionary.c
+	$(CC) -c $(CFLAGS) $(SRCDIR)\dictionary.c
+
+dlist.obj: $(HEADERS) $(SRCDIR)\dlist.c
+	$(CC) -c $(CFLAGS) $(SRCDIR)\dlist.c
+
+fgetline.obj: $(HEADERS) $(SRCDIR)\fgetline.c
+	$(CC) -c $(CFLAGS) $(SRCDIR)\fgetline.c
+
+generic.obj:	$(HEADERS) generic.c
+	$(CC) -c $(CFLAGS) $(SRCDIR)\generic.c
+
+hashtable.obj: $(HEADERS) $(SRCDIR)\hashtable.c
+	$(CC) -c $(CFLAGS) $(SRCDIR)\hashtable.c
+
+heap.obj: $(HEADERS) $(SRCDIR)\heap.c
+	$(CC) -c $(CFLAGS) $(SRCDIR)\heap.c
+
+# Build list.c
+LIST_C=\
+	$(SRCDIR)\containers.h\
+	C:\lcc\include\string.h\
+	C:\lcc\include\stddef.h\
+	C:\lcc\include\stdlib.h\
+	C:\lcc\include\stddef.h\
+	C:\lcc\include\stdio.h\
+	C:\lcc\include\safelib.h\
+	C:\lcc\include\stdint.h\
+	C:\lcc\include\limits.h\
+
+list.obj: $(LIST_C) $(SRCDIR)\list.c
+	$(CC) -c $(CFLAGS) $(SRCDIR)\list.c
+
+# Build malloc_debug.c
+MALLOC_DEBUG_C=\
+	$(SRCDIR)\containers.h\
+	C:\lcc\include\string.h\
+	C:\lcc\include\stddef.h\
+	C:\lcc\include\stdlib.h\
+	C:\lcc\include\stddef.h\
+	C:\lcc\include\stdio.h\
+	C:\lcc\include\safelib.h\
+	C:\lcc\include\stdint.h\
+	C:\lcc\include\limits.h\
+
+malloc_debug.obj: $(MALLOC_DEBUG_C) $(SRCDIR)\malloc_debug.c
+	$(CC) -c $(CFLAGS) $(SRCDIR)\malloc_debug.c
+
+# Build pool.c
+POOL_C=\
+	C:\lcc\include\inttypes.h\
+	C:\lcc\include\stdint.h\
+	$(SRCDIR)\containers.h\
+	C:\lcc\include\string.h\
+	C:\lcc\include\stddef.h\
+	C:\lcc\include\stdlib.h\
+	C:\lcc\include\stddef.h\
+	C:\lcc\include\stdio.h\
+	C:\lcc\include\safelib.h\
+	C:\lcc\include\stdint.h\
+	C:\lcc\include\limits.h\
+
+pool.obj: $(POOL_C) $(SRCDIR)\pool.c
+	$(CC) -c $(CFLAGS) $(SRCDIR)\pool.c
+
+# Build pooldebug.c
+POOLDEBUG_C=\
+	$(SRCDIR)\containers.h\
+	C:\lcc\include\string.h\
+	C:\lcc\include\stddef.h\
+	C:\lcc\include\stdlib.h\
+	C:\lcc\include\stddef.h\
+	C:\lcc\include\stdio.h\
+	C:\lcc\include\safelib.h\
+	C:\lcc\include\stdint.h\
+	C:\lcc\include\limits.h\
+	C:\lcc\include\inttypes.h\
+	C:\lcc\include\stdint.h\
+	C:\lcc\include\stdio.h\
+
+pooldebug.obj: $(POOLDEBUG_C) $(SRCDIR)\pooldebug.c
+	$(CC) -c $(CFLAGS) $(SRCDIR)\pooldebug.c
+
+# Build qsortex.c
+QSORTEX_C=\
+	C:\lcc\include\errno.h\
+	C:\lcc\include\string.h\
+	C:\lcc\include\stdlib.h\
+	C:\lcc\include\stddef.h\
+	$(SRCDIR)\containers.h\
+	C:\lcc\include\string.h\
+	C:\lcc\include\stddef.h\
+	C:\lcc\include\stdlib.h\
+	C:\lcc\include\stdio.h\
+	C:\lcc\include\safelib.h\
+	C:\lcc\include\stdint.h\
+	C:\lcc\include\limits.h\
+
+qsortex.obj: $(QSORTEX_C) $(SRCDIR)\qsortex.c
+	$(CC) -c $(CFLAGS) $(SRCDIR)\qsortex.c
+
+# Build redblacktree.c
+REDBLACKTREE_C=\
+	C:\lcc\include\stdio.h\
+	C:\lcc\include\safelib.h\
+	C:\lcc\include\stdlib.h\
+	C:\lcc\include\stddef.h\
+	$(SRCDIR)\containers.h\
+	C:\lcc\include\string.h\
+	C:\lcc\include\stddef.h\
+	C:\lcc\include\stdlib.h\
+	C:\lcc\include\stdio.h\
+	C:\lcc\include\stdint.h\
+	C:\lcc\include\limits.h\
+	$(SRCDIR)\containers.h\
+
+redblacktree.obj: $(REDBLACKTREE_C) $(SRCDIR)\redblacktree.c
+	$(CC) -c $(CFLAGS) $(SRCDIR)\redblacktree.c
+
+# Build scapegoat.c
+SCAPEGOAT_C=\
+	C:\lcc\include\stdio.h\
+	C:\lcc\include\safelib.h\
+	C:\lcc\include\stdlib.h\
+	C:\lcc\include\stddef.h\
+	$(SRCDIR)\containers.h\
+	C:\lcc\include\string.h\
+	C:\lcc\include\stddef.h\
+	C:\lcc\include\stdlib.h\
+	C:\lcc\include\stdio.h\
+	C:\lcc\include\stdint.h\
+	C:\lcc\include\limits.h\
+	$(SRCDIR)\containers.h\
+
+scapegoat.obj: $(SCAPEGOAT_C) $(SRCDIR)\scapegoat.c
+	$(CC) -c $(CFLAGS) $(SRCDIR)\scapegoat.c
+
+# Build searchtree.c
+SEARCHTREE_C=\
+	C:\lcc\include\stdlib.h\
+	C:\lcc\include\stddef.h\
+	C:\lcc\include\string.h\
+	C:\lcc\include\stdlib.h\
+	$(SRCDIR)\containers.h\
+	C:\lcc\include\string.h\
+	C:\lcc\include\stddef.h\
+	C:\lcc\include\stdlib.h\
+	C:\lcc\include\stdio.h\
+	C:\lcc\include\safelib.h\
+	C:\lcc\include\stdint.h\
+	C:\lcc\include\limits.h\
+
+searchtree.obj: $(SEARCHTREE_C) $(SRCDIR)\searchtree.c
+	$(CC) -c $(CFLAGS) $(SRCDIR)\searchtree.c
+
+# Build strcollection.c
+STRCOLLECTION_C=\
+	$(SRCDIR)\containers.h\
+	C:\lcc\include\string.h\
+	C:\lcc\include\stddef.h\
+	C:\lcc\include\stdlib.h\
+	C:\lcc\include\stddef.h\
+	C:\lcc\include\stdio.h\
+	C:\lcc\include\safelib.h\
+	C:\lcc\include\stdint.h\
+	C:\lcc\include\limits.h\
+
+strcollection.obj: $(STRCOLLECTION_C) $(SRCDIR)\strcollection.c
+	$(CC) -c $(CFLAGS) $(SRCDIR)\strcollection.c
+
+queue.obj:	$(SRCDIR)\containers.h queue.c
+	$(CC) $(CFLAGS) queue.c
+
+egenric.obj:	generic.c $(HEADERS)
+	$(CC) -c $(CFLAGS) $(SRCDIR)\generic.c
+
+# Build test.c
+TEST_C=\
+	$(SRCDIR)\containers.h\
+	C:\lcc\include\string.h\
+	C:\lcc\include\stddef.h\
+	C:\lcc\include\stdlib.h\
+	C:\lcc\include\stddef.h\
+	C:\lcc\include\stdio.h\
+	C:\lcc\include\safelib.h\
+	C:\lcc\include\stdint.h\
+	C:\lcc\include\limits.h\
+	C:\lcc\include\stdio.h\
+	C:\lcc\include\stdio.h\
+
+intarray.obj:	containers.h intarray.c
+	$(CC) $(CFLAGS) $(SRCDIR)\intarray.c
+
+test.obj: $(TEST_C) $(SRCDIR)\test.c
+	$(CC) -c $(CFLAGS) $(SRCDIR)\test.c
+
+link:
+	$(LINKER)  -subsystem console -o $(SRCDIR)\lcc\ansicstl.exe $(OBJS) $(LIBS)
+
+clean:
+	del $(OBJS) dotest.exe ccl.lib
