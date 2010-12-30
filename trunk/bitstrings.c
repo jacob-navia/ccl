@@ -356,6 +356,7 @@ static BitString * Or(BitString *bsl,BitString *bsr)
 	for (i=0; i<blen;i++) {
 		result->contents[i] = bsl->contents[i] | bsr->contents[i];
 	}
+	result->count = len;
 	return result;
 }
 
@@ -395,6 +396,7 @@ static BitString * And(BitString *bsl,BitString *bsr)
 		unsigned int tmp = bsl->contents[i] & bsr->contents[i];
 		result->contents[i] = tmp & maskI[len&(CHAR_BIT-1)];
 	}
+	result->count = resultlen;
 	return result;
 }
 static BitString * AndAssign(BitString *bsl,BitString *bsr)
@@ -444,6 +446,7 @@ static BitString * Xor(BitString *bsl,BitString *bsr)
 		result->contents[i] = src->contents[i];
 		i++;
 	}
+	result->count = resultlen;
 	return result;
 }
 static BitString * XorAssign(BitString *bsl,BitString *bsr)
@@ -472,6 +475,7 @@ static BitString * Not(BitString *bsl)
 	for (i=0; i<len;i++) {
 		result->contents[i] = ~bsl->contents[i];
 	}
+	result->count = len;
 	return result;
 }
 static BitString * NotAssign(BitString *bsl)
