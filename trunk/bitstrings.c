@@ -596,7 +596,7 @@ static BitString *Reverse(BitString *b)
 	if (b == NULL)		return NULL;
 	result = Create(b->count);
 	i = 0;
-	j = b->count - 1;
+	j = (b->count - 1) >> 3;
 	while (i < result->count) {
 		if ((b->contents[j >> 3] >> (j&7))&1) {
 			result->contents[i >> 3] |= 1 << (i&7);
@@ -609,10 +609,9 @@ static BitString *Reverse(BitString *b)
 
 static size_t Sizeof(BitString *b)
 {
-	size_t result;
-	if (b == NULL)		return sizeof(BitString);
-	result = sizeof(BitString);
-	result += b->capacity;
+	size_t result = sizeof(BitString);
+	if (b )		
+		result += b->capacity;
 	return result;
 }
 
@@ -959,9 +958,15 @@ static int Set(BitString *b,size_t start,size_t stop,bool newval)
 	if (b == NULL)
 		return NullPtrError("Set");
 	contents = b->contents;
-	startbyte = BYTES_FROM_BITS(start);
-	stopbyte = BYTES_FROM_BITS(stop);
-	if (!newval) {
+	if (start >= b->count) {
+		iError.RaiseError("iBitstring.Set",CONTAINER_ERROR_INDEX);
+		return CONTAINER_ERROR_INDEX;
+	}
+	if (stop > b->count)
+		stop = b->count;
+	startbyte = start >> 3;
+	stopbyte = stop >> 3;
+	if (newval == 0) {
 		if (startbyte == stopbyte) {
 			contents[startbyte] &= ((0xff >> (CHAR_BIT - (start&(CHAR_BIT-1)))) |
 				    (0xff << ((stop&0x7) + 1)));
@@ -1009,7 +1014,7 @@ static uintmax_t PopulationCount(BitString *b)
 {
 	uintmax_t *pumax,x,result=0;
 	size_t iterations;
-	int count;
+	size_t count;
 	unsigned char *p;
 
 	if (b == NULL || b->count == 0)
