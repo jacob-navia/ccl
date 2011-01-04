@@ -494,6 +494,7 @@ static BitString *ObjectToBitString(unsigned char *p,size_t siz)
 {
 	BitString *result = Create(CHAR_BIT*siz);
 	memcpy(result->contents,p,siz);
+	result->count = CHAR_BIT*siz;
 	return result;
 }
 
