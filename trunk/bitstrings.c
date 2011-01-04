@@ -604,6 +604,7 @@ static BitString *Reverse(BitString *b)
 		i++;
 		j--;
 	}
+	result->count = b->count;
 	return result;
 }
 
