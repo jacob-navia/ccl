@@ -1035,14 +1035,12 @@ static uintmax_t PopulationCount(BitString *b)
 	count = (b->count%(sizeof(x)*CHAR_BIT));
 	if (count) {
 		x=0;
-		/* count is NOT unsigned! This supposes that an
-		   integer can hold CHAR_BIT-1 bits.
-		*/
-		while (count > 0) {
+		while (count > CHAR_BIT) {
 			x = (x << CHAR_BIT) | *p++;
 			count -= CHAR_BIT;
 		}
-		result += bitcount(x);
+		x = x << CHAR_BIT;
+		result += bitcount(x|*p);
 	}
 	return result;
 }
