@@ -535,6 +535,7 @@ static BitString * StringToBitString(unsigned char * str)
 		}
 		else break;
 	}
+	result->count = i;
 	return result;
 }
 
