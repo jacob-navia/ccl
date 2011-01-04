@@ -45,6 +45,7 @@ static unsigned char InvertedBitIndexMask[] ={
 
 #define BYTES_FROM_BITS(bitcount) (1+(bitcount)/CHAR_BIT)
 #define BITPOS(idx) (idx & (CHAR_BIT-1))
+static int ShiftLeftByOne(unsigned char *p, size_t z,unsigned carry);
 
 static int NullPtrError(const char *fnName)
 {
@@ -157,8 +158,10 @@ static int SetElement(BitString *bs,size_t position,bool b)
 	if (bs->Flags&CONTAINER_READONLY)
 		return ReadOnlyError("SetElement");
 
-	if (position >= bs->count)
-		return b;
+	if (position >= bs->count) {
+		iError.RaiseError("SetElement",CONTAINER_ERROR_INDEX);
+		return CONTAINER_ERROR_INDEX;
+	}
 	if (b) {
 		bs->contents[position >> 3] |= 1 << (position&7);
 	}
@@ -683,16 +686,19 @@ static int ReplaceAt(BitString *b,size_t idx,bool newval)
 
 static int Pop(BitString *b){
 	size_t bytepos,bitpos;
+	int result;
 
 	if (b->count == 0) {
 		return CONTAINER_ERROR_INDEX;
 	}
-	bytepos = BYTES_FROM_BITS(b->count);
+	bytepos = (b->count >> 3);
 	bitpos = b->count&(CHAR_BIT-1);
-	b->count--;
 	if (b->contents[bytepos]&(1 << bitpos))		
-		return 1;
-	return 0;
+		result = 1;
+	else result = 0;
+	ShiftLeftByOne(b->contents, b->count,0);
+	b->count--;
+	return result;
 }
 
 static int Apply(BitString *b,int (*Applyfn)(bool,void *),void *arg)
@@ -823,8 +829,8 @@ static int IndexOf(BitString *b,bool bit,void *ExtraArgs,size_t *result)
 /*------------------------------------------------------------------------
 Procedure:     ShiftRightByOne ID:1
 Purpose:       Shift the given bit pattern 1 bit to the right. This
-was proposed by Peter Nilsson in the comp.lang.c
-group. It uses a barrel shifter.
+               was proposed by Peter Nilsson in the comp.lang.c
+			   group. It uses a barrel shifter.
 Input:         A pattern, and its count in bits
 Output:        The shifted pattern. This is done destructively.
 Errors:        None
