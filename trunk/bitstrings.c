@@ -282,6 +282,7 @@ static BitString *GetRange(BitString *bs,size_t start,size_t end)
 	result->contents[0] = (bs->contents[0] >> shiftamount);
 	memcpy(result->contents,bs->contents+startbyte,endbyte-startbyte);
 	if (shiftamount)		RightShift(result,shiftamount);
+	result->count = len;
 	return result;
 }
 
