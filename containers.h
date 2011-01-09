@@ -1021,6 +1021,7 @@ extern BitStringInterface iBitString;
  * ----------------------------------------------------------------------------------  */
 typedef struct tagBloomFilter BloomFilter;
 typedef struct tagBloomFilterInterface {
+	size_t (*CalculateSpace)(size_t nbOfElements,double Probability);
     BloomFilter *(*Create)(size_t MaxElements,double probability);
     size_t (*Add)(BloomFilter *b,const void *key,size_t keylen);
     int (*Find)(BloomFilter *b,const void *key,size_t keylen);

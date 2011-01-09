@@ -657,9 +657,10 @@ static int Add(BitString *b,int newval)
 		if (!expandBitstring(b))	
 			return CONTAINER_ERROR_NOMEMORY;
 	}
-	bytepos = (b->count)/CHAR_BIT;
+	bytepos = (b->count)>>3;
 	bitpos = b->count&(CHAR_BIT-1);
-	if (newval)		b->contents[bytepos] |= 1 << bitpos;
+	if (newval)		
+		b->contents[bytepos] |= 1 << bitpos;
 	else
 		b->contents[bytepos] &= ~(1 << bitpos);
 	b->count++;

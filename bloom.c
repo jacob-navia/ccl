@@ -26,9 +26,9 @@ struct tagBloomFilter {
 	size_t MaxNbOfElements;
 	size_t HashFunctions;
 	size_t nbOfBits;
+	ContainerMemoryManager *Allocator;
 	unsigned char *bits;
 	unsigned Seeds[1];
-	ContainerMemoryManager *Allocator;
 };
 
 /*-----------------------------------------------------------------------------
@@ -99,10 +99,10 @@ static BloomFilter *Create(size_t nbOfElements,double Probability)
 	nbOfBits = -round(nbOfElements*log(Probability)/TWICE_LOG_2);
 	k = round(0.7*nbOfBits/nbOfElements);
 	result = CurrentMemoryManager->malloc(sizeof(BloomFilter) + k*sizeof(int));
-	memset(result,0,sizeof(result));
 	if (result == NULL) {
 		goto errMem;
 	}
+	memset(result,0,sizeof(result));
 	result->bits = CurrentMemoryManager->malloc(1+nbOfBits/8);
 	if (result->bits == NULL) {
 		CurrentMemoryManager->free(result);
@@ -119,6 +119,22 @@ errMem:
 
 	}
 	result->Allocator = CurrentMemoryManager;
+	return result;
+}
+
+static size_t CalculateSpace(size_t nbOfElements,double Probability)
+{
+	size_t nbOfBits;
+	size_t k,result;
+	
+	if (Probability >= 1.0 || Probability <= 0.0) {
+		iError.RaiseError("BloomFilter.CalculateSpace",CONTAINER_ERROR_BADARG);
+		return 0;
+	}
+	nbOfBits = -round(nbOfElements*log(Probability)/TWICE_LOG_2);
+	k = round(0.7*nbOfBits/nbOfElements);
+	result = (sizeof(BloomFilter) + k*sizeof(int));
+	result += (1+nbOfBits/8);
 	return result;
 }
 
@@ -144,6 +160,10 @@ static int Find(BloomFilter *b, const void *key, size_t keylen)
 	size_t hash;
 	size_t i;
 
+	if (b == NULL || key== NULL || keylen == 0) {
+		iError.RaiseError("iBloomFilter.Find",CONTAINER_ERROR_BADARG);
+		return CONTAINER_ERROR_BADARG;
+	}
 	for (i=0; i<b->HashFunctions;i++) {
 		hash = Hash(key,keylen,b->Seeds[i]);
 		hash %= b->nbOfBits;
@@ -155,6 +175,10 @@ static int Find(BloomFilter *b, const void *key, size_t keylen)
 
 static int Clear(BloomFilter *b)
 {
+	if (b == NULL) {
+		iError.RaiseError("iBloomFilter.Find",CONTAINER_ERROR_BADARG);
+		return CONTAINER_ERROR_BADARG;
+	}
 	memset(b->bits,0,1+b->nbOfBits/8);
 	return 1;
 }
@@ -170,7 +194,9 @@ static int Finalize(BloomFilter *b)
 
 }
 
+
 BloomFilterInterface iBloomFilter = {
+CalculateSpace,
 Create,
 Add,
 Find,
