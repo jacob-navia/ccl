@@ -224,7 +224,31 @@ typedef struct tagAssociativeContainerInterface {
     int (*Replace)(AssociativeContainer *SC, void *Key, void *element);
 } AssociativeContainerInterface;
 extern AssociativeContainerInterface iAssociativeContainer;
-
+/************************************************************************** */
+/*                                                                          */
+/*                            Stream Buffers                                */
+/*                                                                          */
+/************************************************************************** */
+typedef struct _StreamBuffer StreamBuffer;
+typedef struct tagStreamBufferInterface {
+	StreamBuffer *(*Create)(size_t startsize);
+	StreamBuffer *(*CreateWithAllocator)(size_t startsize, ContainerMemoryManager *allocator);
+	size_t (*Read)(StreamBuffer *b, void *data, size_t siz);
+	size_t (*Write)(StreamBuffer *b,void *data, size_t siz);
+	int (*SetPosition)(StreamBuffer *b,size_t pos);
+	size_t (*GetPosition)(StreamBuffer *b);
+	char *(*GetData)(StreamBuffer *b);
+	size_t (*Size)(StreamBuffer *b);
+	int (*Clear)(StreamBuffer *b);
+	int (*Finalize)(StreamBuffer *b);
+} StreamBufferInterface;
+extern StreamBufferInterface iStreamBuffer;
+/************************************************************************** */
+/*                                                                          */
+/*                            circular buffers                              */
+/*                                                                          */
+/************************************************************************** */
+typedef struct _CircularBuffer CircularBuffer;
 /************************************************************************** */
 /*                                                                          */
 /*                            String Collections                            */
