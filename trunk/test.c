@@ -445,6 +445,29 @@ static int testBloomFilter(void)
 	iBloomFilter.Finalize(b);
 	return errors;
 }
+
+static int testStreamBuffers(void)
+{
+	StreamBuffer *sb = iStreamBuffer.Create(10);
+	int i;
+	char buf[20],*p;
+	
+	for (i=0; i<10; i++) {
+		sprintf(buf,"item %d",i+1);
+		iStreamBuffer.Write(sb,buf,1+strlen(buf));
+	}
+	buf[0]=0;
+	iStreamBuffer.Write(sb,&buf,1);
+	printf("Buffer size is: %d\n",iStreamBuffer.Size(sb));
+	iStreamBuffer.SetPosition(sb,0);
+	p = iStreamBuffer.GetData(sb);
+	while (*p) {
+		printf("%s\n",p);
+		p += 1 + strlen(p);
+	}
+	iStreamBuffer.Finalize(sb);
+	return 1;
+}
 int main(void)
 {
 #if 1
@@ -458,6 +481,7 @@ int main(void)
 	TestDictionary();
 	TestBitstring();
 	testScapegoatTree();
+	testStreamBuffers();
 	/*RedBlackTree * rb = newRedBlackTree(20,5);*/
 	/*rb->VTable->Finalize(rb);*/
 	return errors;

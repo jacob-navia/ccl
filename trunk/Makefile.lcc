@@ -26,7 +26,8 @@ OBJS=\
 	redblacktree.obj \
 	scapegoat.obj \
 	searchtree.obj \
-	strcollection.obj 
+	strcollection.obj \
+	buffer.obj 
 
 EXE=dotest.exe
 LIBS=ccl.lib
@@ -251,6 +252,8 @@ intarray.obj:	containers.h intarray.c
 
 test.obj: $(TEST_C) $(SRCDIR)\test.c
 	$(CC) -c $(CFLAGS) $(SRCDIR)\test.c
+buffer.obj:	buffer.c $(SRCDIR)\containers.h
+	$(CC) $(CFLAGS) $(SRCDIR)\buffer.c
 
 link:
 	$(LINKER)  -subsystem console -o $(SRCDIR)\lcc\ansicstl.exe $(OBJS) $(LIBS)
