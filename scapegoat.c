@@ -680,7 +680,7 @@ static size_t Sizeof(BB_Tree *tree)
 static int Clear(BB_Tree *tree)
 {
 
-	iHeap.Destroy(tree->Heap);
+	iHeap.Finalize(tree->Heap);
 	tree->Heap = iHeap.Create(tree->ElementSize+sizeof(struct Node),CurrentMemoryManager);
     tree->count = 0;
 	tree->root=0;
