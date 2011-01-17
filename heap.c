@@ -309,7 +309,7 @@ HeapInterface iHeap = {
 	newHeap,
 	newHeapObject,
 	AddToFreeList,
-	DestroyFreeList,
+	Clear,
 	DestroyHeap,
 	InitHeap,
 	GetHeapSize,
