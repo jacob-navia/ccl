@@ -137,7 +137,7 @@ static int Clear_nd(List *l)
 {
 #ifdef NO_GC
     if (l->Heap)
-        iHeap.Destroy(l->Heap);
+        iHeap.Finalize(l->Heap);
     else {
         list_element *rvp = l->First,*tmp;
 
