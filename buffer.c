@@ -173,13 +173,14 @@ struct _CircularBuffer {
 
 static size_t Size(CircularBuffer *cb)
 {
+	if (cb == NULL)
+		return sizeof(CircularBuffer);
 	return cb->head - cb->tail;
 }
 
 static int Add( CircularBuffer * b, void *data_element)
 {
     unsigned char *ring_data = NULL;
-    size_t i;
 
     if (b == NULL || data_element == NULL) {
         iError.RaiseError("iCircularBuffer.Add",CONTAINER_ERROR_BADARG);
