@@ -133,7 +133,7 @@ static void DestroyHeap(ContainerHeap *l)
 #endif
 }
 
-static void DestroyFreeList(ContainerHeap *heap)
+static void Clear(ContainerHeap *heap)
 {
 	heap->FreeList = NULL;
 }
@@ -150,13 +150,16 @@ static size_t GetHeapSize(ContainerHeap *heap)
 	return result;
 }
 
-static int InitHeap(size_t ElementSize,ContainerHeap *heap,ContainerMemoryManager *m)
+static ContainerHeap *InitHeap(void *pHeap,size_t ElementSize,ContainerMemoryManager *m)
 {
+	ContainerHeap *heap = pHeap;
 	memset(heap,0,sizeof(*heap));
 	heap->VTable = &iHeap;
 	heap->ElementSize = ElementSize;
+	if (m == NULL)
+		m = CurrentMemoryManager;
 	heap->Allocator = m;
-	return 1;
+	return heap;
 }
 
 static ContainerHeap *newHeap(size_t ElementSize,ContainerMemoryManager *m)
@@ -164,7 +167,7 @@ static ContainerHeap *newHeap(size_t ElementSize,ContainerMemoryManager *m)
 	ContainerHeap *result = m->malloc(sizeof(ContainerHeap));
 	if (result == NULL)
 		return NULL;
-	InitHeap(ElementSize,result,m);
+	InitHeap(result,ElementSize,m);
 	return result;
 }
 
@@ -308,6 +311,7 @@ HeapInterface iHeap = {
 	AddToFreeList,
 	DestroyFreeList,
 	DestroyHeap,
+	InitHeap,
 	GetHeapSize,
 	newIterator,
 	deleteIterator
