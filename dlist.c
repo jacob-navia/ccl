@@ -204,7 +204,7 @@ static int Clear(Dlist *l)
 	}
 #ifdef NO_GC
 	if (l->Heap)
-		iHeap.Destroy(l->Heap);
+		iHeap.Finalize(l->Heap);
 	else {
 		dlist_element *rvp = l->First,*tmp;
 
