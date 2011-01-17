@@ -128,8 +128,9 @@ typedef struct _HeapAllocatorInterface {
     ContainerHeap *(*Create)(size_t ElementSize,ContainerMemoryManager *m);
     void *(*newObject)(ContainerHeap *heap);
     void (*AddToFreeList)(ContainerHeap *heap,void *element);
-    void (*DestroyFreeList)(ContainerHeap *heap);
-    void (*Destroy)(ContainerHeap *heap);
+    void (*Clear)(ContainerHeap *heap);
+    void (*Finalize)(ContainerHeap *heap);
+	ContainerHeap *(*InitHeap)(void *heap,size_t nbElements,ContainerMemoryManager *allocator);
     size_t (*Sizeof)(ContainerHeap *heap);
     Iterator *(*newIterator)(ContainerHeap *);
     int (*deleteIterator)(Iterator *it);
@@ -159,7 +160,7 @@ typedef struct _tagPoolAllocatorDebugInterface {
     void  *(*Alloc)(Pool *pool,size_t size,const char *file_line);
     void  *(*Calloc)(Pool *pool,size_t n,size_t size,const char *file_line);
     void   (*Clear)(Pool *,const char *file_line);
-    void   (*Destroy)(Pool *,const char *file_line);
+    void   (*Finalize)(Pool *,const char *file_line);
     int    (*FindPoolFromData)(Pool *pool, void *data);
     void   (*SetMaxFree)(Pool *pool, size_t size);
     size_t (*Sizeof)(Pool *);
@@ -1026,10 +1027,10 @@ typedef struct tagBitString {
     BitString *(*GetRange)(BitString *b,size_t start,size_t end);
     BitString *(*StringToBitString)(unsigned char *);
     BitString *(*ObjectToBitString)(unsigned char *p,size_t size);
-    BitString *(*LeftShift)(BitString *bs,size_t shift);
-    BitString *(*RightShift)(BitString *bs,size_t shift);
+    int        (*LeftShift)(BitString *bs,size_t shift);
+    int        (*RightShift)(BitString *bs,size_t shift);
     size_t     (*Print)(BitString *b,size_t bufsiz,unsigned char *out);
-    int (*Append)(BitString *left,BitString *right);
+    int        (*Append)(BitString *left,BitString *right);
     int       (*Set)(BitString *,size_t start,size_t stop,bool newval);
     /* creates a bit string */
     BitString *(*Create)(size_t bitlen);
