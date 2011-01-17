@@ -179,21 +179,21 @@ static int GetElement(BitString *bs,size_t position)
 	return (bs->contents[position>>3] &BitIndexMask[position&(CHAR_BIT-1)]) ? 1 : 0;
 }
 
-static BitString * RightShift(BitString *bs,size_t shift){
+static int RightShift(BitString *bs,size_t shift)
+{
 	size_t left = 0,tmp,tmp1;
 	size_t len,bytesize;
 	unsigned char *pdata;
 
 	if (bs == NULL) {
-		NullPtrError("RightShift");
-		return NULL;
+		return NullPtrError("RightShift");
 	}
 	len = bs->count;
 	pdata = bs->contents;
 	bytesize = BYTES_FROM_BITS(len);
 	if (shift > len) {
 		memset(bs->contents,0,bytesize);
-		return bs;
+		return 1;
 	}
 	if (shift >= CHAR_BIT) {
 		left = shift >> 3;
@@ -218,25 +218,24 @@ static BitString * RightShift(BitString *bs,size_t shift){
 			*pdata = (unsigned char)tmp;
 		}
 	}
-	return bs;
+	return 1;
 }
 
-static BitString * LeftShift(BitString *bs,size_t shift){
+static int LeftShift(BitString *bs,size_t shift){
 	unsigned int tmp=0,tmp1,Mask;
 	size_t left=0;
 	unsigned char *pdata;
 	size_t len,bytesize;
 
 	if (bs == NULL) {
-		NullPtrError("LeftShift");
-		return NULL;
+		return NullPtrError("LeftShift");
 	}
 	len = bs->count;
 	pdata = bs->contents;
 	bytesize = BYTES_FROM_BITS(len);
 	if (shift > len) {
 		memset(bs->contents,0,bytesize);
-		return bs;
+		return 1;
 	}
 	if (shift >= CHAR_BIT) {
 		left = shift/CHAR_BIT;
@@ -257,7 +256,7 @@ static BitString * LeftShift(BitString *bs,size_t shift){
 			*pdata = (unsigned char)((*pdata << shift) | tmp);
 		}
 	}
-	return bs;
+	return 1;
 }
 
 static BitString *GetRange(BitString *bs,size_t start,size_t end)
