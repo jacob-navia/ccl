@@ -533,7 +533,7 @@ static BitString * StringToBitString(unsigned char * str)
 			break;
 		if (*str == '1' || *str == '0') {
 			if (*str == '1')
-				result->contents[BYTES_FROM_BITS(i)] |= BitIndexMask[i&(CHAR_BIT-1)];
+				result->contents[i>>3] |= (1 << (i&7));
 			str--;
 			i++;
 		}
@@ -543,12 +543,13 @@ static BitString * StringToBitString(unsigned char * str)
 	return result;
 }
 
+
 static size_t Print(BitString *b,size_t bufsiz,unsigned char *out)
 {
 	size_t result=0,j=b->count;
 	unsigned char *top = out+bufsiz-1;
 	size_t i;
-
+	
 	for (i=b->count-1; j>0; i--) {
 		if (out >= top)
 			break;
@@ -559,7 +560,7 @@ static size_t Print(BitString *b,size_t bufsiz,unsigned char *out)
 		if (b->contents[BYTES_FROM_BITS(i)] & BitIndexMask[i&7])
 			*out = '1';
 		else
-		    *out = '0';
+			*out = '0';
 		out++;
 		if (out >= top)
 			break;
@@ -914,37 +915,52 @@ static int RemoveAt(BitString *bitStr,size_t idx)
 {
 	size_t bitpos,oldval,newval;
 	size_t bytepos,bytesize;
-	unsigned char Mask[] = { 0,0x80,0xc0,0xe0,0xf0,0xf8,0xfc,0xfe	};
+	unsigned tmp;
 
 	if (bitStr == NULL)
 		return NullPtrError("RemoveAt");
 
 	if (bitStr->count == 0) /* If bit string empty there is nothing to remove */
 		return 0;
-	if (bitStr->count < idx) /* if the index is beyond the data return failure */
+	if (bitStr->count <= idx) /* if the index is beyond the data return failure */
 		return 0;
-	bytepos = idx/CHAR_BIT;
-	bitpos = idx%CHAR_BIT;
+	bytepos = idx/8;
+	bitpos = idx & 7;
 	oldval = bitStr->contents[bytepos];
-	newval = oldval >> 1;
-	if (bitpos > 0) {
-		newval &= Mask[1+bitpos];
-		newval |= oldval&(~Mask[1+bitpos]);
-	}
-	bytesize = BYTES_FROM_BITS(bitStr->count);
-	if (bytesize > 1)
-		newval |= (bitStr->contents[bytepos+1]&1) << (CHAR_BIT-1);
+	/* The expression 0xff >> (8-bitpos) should
+	   yield a mask of 1s in the placces up to
+	   to given bit index. For example if we
+	   want to erase bit 2, we have 0xff >> 6
+	   what yields 3 --> the lower 11 bits
+	*/
+	newval = oldval &(0xff >>(8-bitpos));
+	/* The expression 0xff << bitpos should
+	   yield a mask of 1s in the higher positions
+	   and zeroes in the lower positions i.e. the
+	   indices smaller than the bit we want to erase.
+	   We OR the masked higher bits shifted by 1 to the right
+	   since we have erased one bit
+	 */
+	newval |= (oldval>> 1)&(0xff << bitpos);
+	if (bitStr->count > 8)
+		newval |= (bitStr->contents[bytepos+1]&0x1)?0x80:0;
 	bitStr->contents[bytepos] = (unsigned char)newval;
 	bytepos++;
-	while (bytepos < (bytesize-1)) {
-		unsigned tmp = bitStr->contents[bytepos+1] &1;
-		bitStr->contents[bytepos] =  (unsigned char)((bitStr->contents[bytepos] >> 1)|tmp);
+	bytesize = bitStr->count >> 3;
+	/* Now shift right all the bytes by one, and or
+	   the bit being right shifted into the lower byte */
+	while (bytepos < bytesize) {
+		tmp = bitStr->contents[bytepos+1] &1;
+		if (tmp)
+			tmp = 0x80;
+		bitStr->contents[bytepos] =  (unsigned char)(bitStr->contents[bytepos] >> 1)|tmp;
 		bytepos++;
 	}
+	/* Now right shift the last byte, shifting
+	   in a zero */
 	bitStr->contents[bytepos] >>= 1;
 	bitStr->count--;
 	return 1;
-
 }
 
 static int Erase(BitString *bitStr,bool val)
