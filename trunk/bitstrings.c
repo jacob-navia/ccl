@@ -551,23 +551,34 @@ static size_t Print(BitString *b,size_t bufsiz,unsigned char *out)
 	size_t i;
 	
 	for (i=b->count-1; j>0; i--) {
-		if (out >= top)
+		if (out && out >= top)
 			break;
-		if (i!= b->count-1 && 0 == (j&3))
-			*out++ = ' ';
-		if (i!= b->count-1 && 0 == (j&7))
-			*out++ = ' ';
-		if (b->contents[BYTES_FROM_BITS(i)] & BitIndexMask[i&7])
-			*out = '1';
-		else
-			*out = '0';
-		out++;
-		if (out >= top)
+		if (i!= b->count-1 && 0 == (j&3)) {
+			if (out) *out++ = ' ';
+			result++;
+		}
+		if (out && out >= top)
 			break;
-		result += 2;
+		if (i!= b->count-1 && 0 == (j&7)) {
+			if (out) *out++ = ' ';
+			result++;
+		}
+		if (out && out >= top)
+			break;
+		if (out) {
+			if (b->contents[BYTES_FROM_BITS(i)] & BitIndexMask[i&7])
+				*out = '1';
+			else
+				*out = '0';
+			out++;
+		}
+		result++;
+		if (out && out >= top)
+			break;
 		j--;
 	}
-	*out = 0;
+	if (out) *out = 0;
+	result++;
 	return result;
 }
 
