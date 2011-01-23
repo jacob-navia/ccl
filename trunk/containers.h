@@ -61,13 +61,13 @@ typedef int bool;
 #define CONTAINER_ERROR_BADPOINTER      -19
 #define CONTAINER_ERROR_BUFFEROVERFLOW  -20
 
-typedef void (*ErrorFn)(const char *,int);
+typedef void (*ErrorFunction)(const char *,int,...);
 
 typedef struct tagError {
-    ErrorFn RaiseError;
-    void (*EmptyErrorFunction)(const char *fname,int errcode);
+    ErrorFunction RaiseError;
+    void (*EmptyErrorFunction)(const char *fname,int errcode,...);
     char *(*StrError)(int errcode);
-    ErrorFn (*SetErrorFunction)(ErrorFn);
+    ErrorFunction (*SetErrorFunction)(ErrorFunction);
 	int (*LibraryError)(const char *interfaceName,const char *functionName,int errorCode);
 } ErrorInterface;
 
@@ -117,7 +117,6 @@ typedef struct tagErrorInfo {
     const char *OperationName;
 } ErrorInfo;
 
-typedef void (*ErrorFunction)(const char *,int);
 /************************************************************************** */
 /*                                                                          */
 /*                      Heap allocator objects                              */
@@ -914,40 +913,41 @@ extern RedBlackTreeInterface iRedBlackTree;
  *                            Balanced Binary trees                                    *
  *                                                                                     *
  * ----------------------------------------------------------------------------------  */
-typedef struct tagBB_Tree BB_Tree;
+typedef struct tagTreeMap TreeMap;
 
-typedef struct tagBB_TreeInterface {
-    size_t (*Size)(BB_Tree *ST);   /* Returns the number of elements stored */
-    unsigned (*GetFlags)(BB_Tree *ST); /* Get the flags */
-    unsigned (*SetFlags)(BB_Tree *ST, unsigned flags); /* Sets the flags */
-    int (*Clear)(BB_Tree *ST); /* Clears all elements */
-	int (*Contains)(BB_Tree *ST,void *element);
-    int (*Erase)(BB_Tree *tree, void *element);  /* erases the given data if found */
-    int (*Finalize)(BB_Tree *ST);  /* Frees the memory used by the tree */
-    int (*Apply)(BB_Tree *ST,int (*Applyfn)(const void *data,void *arg),void *arg);
-	int (*Equal)(BB_Tree *t1, BB_Tree *t2);
-	BB_Tree *(*Copy)(BB_Tree *src);
-	ErrorFunction (*SetErrorFunction)(BB_Tree *ST, ErrorFunction fn);
-    size_t (*Sizeof)(BB_Tree *ST);
-    Iterator *(*newIterator)(BB_Tree *);
+typedef struct tagTreeMapInterface {
+    size_t (*Size)(TreeMap *ST);   /* Returns the number of elements stored */
+    unsigned (*GetFlags)(TreeMap *ST); /* Get the flags */
+    unsigned (*SetFlags)(TreeMap *ST, unsigned flags); /* Sets the flags */
+    int (*Clear)(TreeMap *ST); /* Clears all elements */
+	int (*Contains)(TreeMap *ST,void *element,void *ExtraArgs);
+    int (*Erase)(TreeMap *tree, void *element,void *ExtraArgs);  /* erases the given data if found */
+    int (*Finalize)(TreeMap *ST);  /* Frees the memory used by the tree */
+    int (*Apply)(TreeMap *ST,int (*Applyfn)(const void *data,void *arg),void *arg);
+	int (*Equal)(TreeMap *t1, TreeMap *t2);
+	TreeMap *(*Copy)(TreeMap *src);
+	ErrorFunction (*SetErrorFunction)(TreeMap *ST, ErrorFunction fn);
+    size_t (*Sizeof)(TreeMap *ST);
+    Iterator *(*newIterator)(TreeMap *);
     int (*deleteIterator)(Iterator *);
-	int (*Save)(BB_Tree *src,FILE *stream, SaveFunction saveFn,void *arg);
-    int (*Add)(BB_Tree *ST, void *Data); /* Adds one element. Given data is copied */
+	int (*Save)(TreeMap *src,FILE *stream, SaveFunction saveFn,void *arg);
+    int (*Add)(TreeMap *ST, void *Data,void *ExtraArgs); /* Adds one element. Given data is copied */
+	int (*AddRange)(TreeMap *ST,size_t n, void *Data,void *ExtraArgs);
     /* Like Add but allows for an extra argument to be passed to the
      comparison function */
-    int (*Insert)(BB_Tree *RB, const void *Data, void *ExtraArgs);
+    int (*Insert)(TreeMap *RB, const void *Data, void *ExtraArgs);
     /* Calls the given function for all nodes. "Arg" is a used supplied argument */
     /* that can be NULL that is passed to the function to call */
 
-    void *(*Find)(BB_Tree *tree,void *element,void *ExtraArgs);
-    CompareFunction (*SetCompareFunction)(BB_Tree *ST,CompareFunction fn);
-    BB_Tree *(*CreateWithAllocator)(size_t ElementSize,ContainerMemoryManager *m);
-    BB_Tree *(*Create)(size_t ElementSize);
-	size_t (*GetElementSize)(BB_Tree *d);
-	BB_Tree *(*Load)(FILE *stream, ReadFunction loadFn,void *arg);
-} BB_TreeInterface;
+    void *(*Find)(TreeMap *tree,void *element,void *ExtraArgs);
+    CompareFunction (*SetCompareFunction)(TreeMap *ST,CompareFunction fn);
+    TreeMap *(*CreateWithAllocator)(size_t ElementSize,ContainerMemoryManager *m);
+    TreeMap *(*Create)(size_t ElementSize);
+	size_t (*GetElementSize)(TreeMap *d);
+	TreeMap *(*Load)(FILE *stream, ReadFunction loadFn,void *arg);
+} TreeMapInterface;
 
-extern BB_TreeInterface iBB_Tree;
+extern TreeMapInterface iTreeMap;
 /* -------------------------------------------------------------------------------------
  *                                                                                     *
  *                            Bit strings                                              *
