@@ -5,27 +5,27 @@
 struct Node {
     struct Node *up;        /* Parent (NULL for root). */
     struct Node *down[2];   /* Left child, right child. */
-	char data[1];
+    char data[1];
 };
 
-static const guid BB_TreeGuid = {0xb8fda2f4, 0x2d4b, 0x4033,
+static const guid TreeMapGuid = {0xb8fda2f4, 0x2d4b, 0x4033,
 {0xa6,0x49,0x31,0x63,0x48,0x9f,0x27,0x18}
 };
 
 /* A balanced binary tree. */
-struct tagBB_Tree {
-	BB_TreeInterface *VTable;
+struct tagTreeMap {
+    TreeMapInterface *VTable;
     size_t count;                /* Current node count. */
     struct Node *root;       /* Tree's root, NULL if empty. */
     CompareFunction compare;   /* To compare nodes. */
-	ErrorFunction RaiseError;
+    ErrorFunction RaiseError;
     CompareInfo *aux;            /* Auxiliary data. */
-	size_t ElementSize;
+    size_t ElementSize;
     size_t max_size;            /* Max size since last complete rebalance. */
-	unsigned Flags;
-	unsigned timestamp;
-	ContainerHeap *Heap;
-	ContainerMemoryManager *Allocator;
+    unsigned Flags;
+    unsigned timestamp;
+    ContainerHeap *Heap;
+    ContainerMemoryManager *Allocator;
 };
 
 
@@ -40,21 +40,21 @@ struct tagBB_Tree {
 #endif
 #endif
 
-static void rebalance_subtree (BB_Tree *, struct Node *, size_t);
-static struct Node **down_link (BB_Tree *, struct Node *);
+static void rebalance_subtree (TreeMap *, struct Node *, size_t);
+static struct Node **down_link (TreeMap *, struct Node *);
 static struct Node *sibling (struct Node *p);
 static size_t count_nodes_in_subtree (const struct Node *);
 
 static size_t floor_log2 (size_t);
 static size_t calculate_h_alpha (size_t);
-static BB_Tree *CreateWithAllocator(size_t ElementSize,ContainerMemoryManager *m);
+static TreeMap *CreateWithAllocator(size_t ElementSize,ContainerMemoryManager *m);
 
 
 /* Inserts the given NODE into BT.
    Returns a null pointer if successful.
    Returns the existing node already in BT equal to NODE, on
    failure. */
-static struct Node *insert(BB_Tree *bt, struct Node *node)
+static struct Node *insert(TreeMap *bt, struct Node *node,void *ExtraArgs)
 {
   size_t depth = 0;
 
@@ -70,7 +70,7 @@ static struct Node *insert(BB_Tree *bt, struct Node *node)
       for (;;) {
           int cmp, dir;
 
-		  cmp = bt->compare(node->data, p->data, bt->aux);
+    	  cmp = bt->compare(node->data, p->data, ExtraArgs);
           if (cmp == 0)
             return p;
           depth++;
@@ -111,31 +111,28 @@ static struct Node *insert(BB_Tree *bt, struct Node *node)
             break;
           }
     }
-	bt->timestamp++;
+    bt->timestamp++;
   return NULL;
 }
 
 /* Deletes P from BT. */
-static void Delete(BB_Tree *bt, struct Node *p)
+static void Delete(TreeMap *bt, struct Node *p)
 {
   struct Node **q = down_link (bt, p);
   struct Node *r = p->down[1];
-  if (r == NULL)
-    {
+  if (r == NULL) {
       *q = p->down[0];
       if (*q)
         (*q)->up = p->up;
     }
-  else if (r->down[0] == NULL)
-    {
+  else if (r->down[0] == NULL) {
       r->down[0] = p->down[0];
       *q = r;
       r->up = p->up;
       if (r->down[0] != NULL)
         r->down[0]->up = r;
     }
-  else
-    {
+  else {
       struct Node *s = r->down[0];
       while (s->down[0] != NULL)
         s = s->down[0];
@@ -163,13 +160,13 @@ static void Delete(BB_Tree *bt, struct Node *p)
       bt->max_size = bt->count;
     }
 
-	iHeap.AddToFreeList(bt->Heap,p);
-	bt->timestamp++;
+    iHeap.AddToFreeList(bt->Heap,p);
+    bt->timestamp++;
 }
 
 /* Returns the node with minimum value in BT, or a null pointer
    if BT is empty. */
-static struct Node *bt_first (const BB_Tree *bt)
+static struct Node *bt_first (const TreeMap *bt)
 {
   struct Node *p = bt->root;
   if (p != NULL)
@@ -180,7 +177,7 @@ static struct Node *bt_first (const BB_Tree *bt)
 
 /* Returns the node with maximum value in BT, or a null pointer
    if BT is empty. */
-static struct Node *bt_last (const BB_Tree *bt)
+static struct Node *bt_last (const TreeMap *bt)
 {
   struct Node *p = bt->root;
   if (p != NULL)
@@ -190,14 +187,14 @@ static struct Node *bt_last (const BB_Tree *bt)
 }
 /* Searches BT for a node equal to TARGET.
    Returns the node if found, or a null pointer otherwise. */
-static struct Node *find (const BB_Tree *bt, void *data)
+static struct Node *find (const TreeMap *bt, void *data)
 {
   const struct Node *p;
   int cmp;
 
   for (p = bt->root; p != NULL; p = p->down[cmp > 0])
     {
-		cmp = bt->compare (data, p->data, bt->aux);
+    	cmp = bt->compare (data, p->data, bt->aux);
       if (cmp == 0)
         return (struct Node *) p;
     }
@@ -209,7 +206,7 @@ static struct Node *find (const BB_Tree *bt, void *data)
    If P is null, returns the minimum node in BT.
    Returns a null pointer if P is the maximum node in BT or if P
    is null and BT is empty. */
-static struct Node *bt_next (const BB_Tree *bt, const struct Node *p)
+static struct Node *bt_next (const TreeMap *bt, const struct Node *p)
 {
   if (p == NULL)
     return bt_first (bt);
@@ -233,7 +230,7 @@ static struct Node *bt_next (const BB_Tree *bt, const struct Node *p)
    If P is null, returns the maximum node in BT.
    Returns a null pointer if P is the minimum node in BT or if P
    is null and BT is empty. */
-static struct Node *bt_prev (const BB_Tree *bt, const struct Node *p)
+static struct Node *bt_prev (const TreeMap *bt, const struct Node *p)
 {
   if (p == NULL)
     return bt_last (bt);
@@ -265,7 +262,7 @@ static void vine_to_tree (struct Node **, size_t count);
 
 /* Rebalances the subtree in BT rooted at SUBTREE, which contains
    exactly COUNT nodes. */
-static void rebalance_subtree (BB_Tree *bt, struct Node *subtree, size_t count)
+static void rebalance_subtree (TreeMap *bt, struct Node *subtree, size_t count)
 {
   struct Node *up = subtree->up;
   struct Node **q = down_link (bt, subtree);
@@ -336,57 +333,57 @@ static void vine_to_tree (struct Node **q, size_t count)
     }
 }
 
-static int Equal(BB_Tree *t1,BB_Tree *t2)
+static int Equal(TreeMap *t1,TreeMap *t2)
 {
-	struct Node *pt1,*pt2;
-	if (t1 == t2)
-		return 1;
-	if (t1 == NULL || t2 == NULL)
-		return  0;
-	if (t1->count != t2->count)
-		return 0;
-	if (t1->Allocator != t2->Allocator)
-		return 0;
-	if (t1->compare != t2->compare)
-		return 0;
-	if (t1->ElementSize != t2->ElementSize)
-		return 0;
-	if (t1->Flags != t2->Flags)
-		return 0;
-	pt1 = bt_first(t1);
-	pt2 = bt_first(t2);
-	while (pt1 && pt2) {
-		if (t1->compare(pt1->data,pt2->data,t1->aux))
-			break;
-		pt1 = bt_next(t1,pt1);
-		pt2 = bt_next(t2,pt2);
-	}
-	return 1;
+    struct Node *pt1,*pt2;
+    if (t1 == t2)
+    	return 1;
+    if (t1 == NULL || t2 == NULL)
+    	return  0;
+    if (t1->count != t2->count)
+    	return 0;
+    if (t1->Allocator != t2->Allocator)
+    	return 0;
+    if (t1->compare != t2->compare)
+    	return 0;
+    if (t1->ElementSize != t2->ElementSize)
+    	return 0;
+    if (t1->Flags != t2->Flags)
+    	return 0;
+    pt1 = bt_first(t1);
+    pt2 = bt_first(t2);
+    while (pt1 && pt2) {
+    	if (t1->compare(pt1->data,pt2->data,t1->aux))
+    		break;
+    	pt1 = bt_next(t1,pt1);
+    	pt2 = bt_next(t2,pt2);
+    }
+    return 1;
 }
 
-static BB_Tree *Copy(BB_Tree *src)
+static TreeMap *Copy(TreeMap *src)
 {
-	BB_Tree *result;
-	struct Node *pSrc;
+    TreeMap *result;
+    struct Node *pSrc;
 
-	if (src == NULL) {
-		iError.RaiseError("Copy",CONTAINER_ERROR_BADARG);
-		return NULL;
-	}
-	pSrc = bt_first(src);
-	result = CreateWithAllocator(src->ElementSize,src->Allocator);
-	while (pSrc) {
-		iBB_Tree.Add(result,pSrc->data);
-		pSrc = bt_next(src,pSrc);
-	}
-	return result;
+    if (src == NULL) {
+    	iError.RaiseError("Copy",CONTAINER_ERROR_BADARG);
+    	return NULL;
+    }
+    pSrc = bt_first(src);
+    result = CreateWithAllocator(src->ElementSize,src->Allocator);
+    while (pSrc) {
+    	iTreeMap.Add(result,pSrc->data,NULL);
+    	pSrc = bt_next(src,pSrc);
+    }
+    return result;
 }
 
 /* Other binary tree helper functions. */
 
 /* Returns the address of the pointer that points down to P
    within BT. */
-static struct Node **down_link (BB_Tree *bt, struct Node *p)
+static struct Node **down_link (TreeMap *bt, struct Node *p)
 {
   struct Node *q = p->up;
   return q != NULL ? &q->down[q->down[0] != p] : &bt->root;
@@ -405,41 +402,41 @@ static struct Node *sibling (struct Node *p)
  nodes in SUBTREE. */
 static size_t count_nodes_in_subtree (const struct Node *subtree)
 {
-	size_t count;
-	const struct Node *p;
+    size_t count;
+    const struct Node *p;
 
-	if (subtree == NULL)
-		return 0;
-	count = 0;
-	p = subtree;
+    if (subtree == NULL)
+    	return 0;
+    count = 0;
+    p = subtree;
     while (p->down[0] != NULL)
         p = p->down[0];
     for (;;) {
-		count++;
-		if (p->down[1] != NULL) {
-			p = p->down[1];
-			while (p->down[0] != NULL)
-				p = p->down[0];
-		}
-		else {
-			for (;;) {
-				const struct Node *q;
-				if (p == subtree)
-					goto done;
-				q = p;
-				p = p->up;
-				if (p->down[0] == q)
-					break;
-			}
-		}
-	}
+    	count++;
+    	if (p->down[1] != NULL) {
+    		p = p->down[1];
+    		while (p->down[0] != NULL)
+    			p = p->down[0];
+    	}
+    	else {
+    		for (;;) {
+    			const struct Node *q;
+    			if (p == subtree)
+    				goto done;
+    			q = p;
+    			p = p->up;
+    			if (p->down[0] == q)
+    				break;
+    		}
+    	}
+    }
  done:
   return count;
 }
 
-static size_t Size(BB_Tree *tree)
+static size_t Size(TreeMap *tree)
 {
-	return count_nodes_in_subtree(tree->root);
+    return count_nodes_in_subtree(tree->root);
 }
 /* Arithmetic. */
 
@@ -500,94 +497,125 @@ static size_t calculate_h_alpha (size_t n)
   return (2 * log2) + (n >= pow_sqrt2 (log2));
 }
 
-static unsigned GetFlags(BB_Tree *t)
+static unsigned GetFlags(TreeMap *t)
 {
-	return t->Flags;
+    return t->Flags;
 }
 
-static unsigned SetFlags(BB_Tree *t,unsigned newFlags)
+static unsigned SetFlags(TreeMap *t,unsigned newFlags)
 {
-	unsigned oldFlags = t->Flags;
-	t->Flags = newFlags;
-	return oldFlags;
+    unsigned oldFlags = t->Flags;
+    t->Flags = newFlags;
+    return oldFlags;
 }
 
-static int Add(BB_Tree *tree, void *Data)
+static int Add(TreeMap *tree, void *Data,void *ExtraArgs)
 {
-	struct Node *p;
-	CompareInfo cInfo;
+    struct Node *p;
+    CompareInfo cInfo;
 
-	cInfo.ExtraArgs = NULL;
-	cInfo.Container = tree;
-	p = iHeap.newObject(tree->Heap);
-	if (p) {
-		memcpy(p->data ,Data,tree->ElementSize);
+    cInfo.ExtraArgs = ExtraArgs;
+    cInfo.Container = tree;
+    p = iHeap.newObject(tree->Heap);
+    if (p) {
+    	memcpy(p->data ,Data,tree->ElementSize);
+    }
+    else {
+    	iError.RaiseError("TreeMap.Add",CONTAINER_ERROR_NOMEMORY);
+    	return CONTAINER_ERROR_NOMEMORY;
+    }
+    tree->aux = &cInfo;
+    insert(tree, p, ExtraArgs);
+    tree->aux = NULL;
+    return 1;
+}
+
+static int AddRange(TreeMap *tree,size_t n, void *Data,void *ExtraArgs)
+{
+    struct Node *p;
+    CompareInfo cInfo;
+	
+    cInfo.ExtraArgs = ExtraArgs;
+    cInfo.Container = tree;
+	while (n > 0) {
+		p = iHeap.newObject(tree->Heap);
+		if (p) {
+			memcpy(p->data ,Data,tree->ElementSize);
+		}
+		else {
+			iError.RaiseError("TreeMap.Add",CONTAINER_ERROR_NOMEMORY);
+			return CONTAINER_ERROR_NOMEMORY;
+		}
+		tree->aux = &cInfo;
+		insert(tree, p, ExtraArgs);
+		tree->aux = NULL;
+		n--;
 	}
-	else {
-		iError.RaiseError("BB_Tree.Add",CONTAINER_ERROR_NOMEMORY);
-		return CONTAINER_ERROR_NOMEMORY;
-	}
-	tree->aux = &cInfo;
-	insert(tree, p);
-	tree->aux = NULL;
-	return 1;
+    return 1;
 }
-static int Insert(BB_Tree *tree, const void *Data, void *ExtraArgs)
-{
-	struct Node *p;
-	CompareInfo cInfo;
 
-	cInfo.ExtraArgs = ExtraArgs;
-	cInfo.Container = tree;
-	tree->aux = &cInfo;
-	p = iHeap.newObject(tree->Heap);
-	tree->aux = NULL;
-	if (p == NULL)
-		return 0;
-	memcpy(p->data,Data,tree->ElementSize);
-	p = insert(tree, p);
-	if (p) {
-		memcpy(p->data ,Data,tree->ElementSize);
-		return 1;
-	}
-	return 0;
+
+static int Insert(TreeMap *tree, const void *Data, void *ExtraArgs)
+{
+    struct Node *p;
+    CompareInfo cInfo;
+
+    cInfo.ExtraArgs = ExtraArgs;
+    cInfo.Container = tree;
+    tree->aux = &cInfo;
+    p = iHeap.newObject(tree->Heap);
+    tree->aux = NULL;
+    if (p == NULL)
+    	return 0;
+    memcpy(p->data,Data,tree->ElementSize);
+    p = insert(tree, p, ExtraArgs);
+    if (p) {
+    	memcpy(p->data ,Data,tree->ElementSize);
+    	return 1;
+    }
+    return 0;
 
 }
 
-static void *Find(BB_Tree *tree,void *data,void *ExtraArgs)
+static void *Find(TreeMap *tree,void *data,void *ExtraArgs)
 {
-	struct Node *p;
-	CompareInfo cInfo;
+    struct Node *p;
+    CompareInfo cInfo;
 
-	cInfo.ExtraArgs = ExtraArgs;
-	cInfo.Container = tree;
-	tree->aux = &cInfo;
-	p = find(tree, data);
-	tree->aux = NULL;
-	if (p) {
-		return p->data;
-	}
-	return NULL;
+    cInfo.ExtraArgs = ExtraArgs;
+    cInfo.Container = tree;
+    tree->aux = &cInfo;
+    p = find(tree, data);
+    tree->aux = NULL;
+    if (p) {
+    	return p->data;
+    }
+    return NULL;
 }
 
-static int Erase(BB_Tree *tree, void * element)
+static int Erase(TreeMap *tree, void * element,void *ExtraArgs)
 {
-	struct Node *n;
-	n = find(tree,element);
-	if (n == NULL)
-		return 0;
-	Delete(tree,n);
-	return 1;
+    struct Node *n;
+    CompareInfo cInfo;
+	
+    cInfo.ExtraArgs = ExtraArgs;
+    cInfo.Container = tree;
+    tree->aux = &cInfo;	
+    n = find(tree,element);
+    if (n == NULL)
+    	return 0;
+    Delete(tree,n);
+    return 1;
 }
 #define BST_MAX_HEIGHT 40
-struct BB_TreeIterator {
-	Iterator it;
-	BB_Tree *bst_table;
-	struct Node *bst_node;
-	size_t timestamp;
-	size_t bst_height;
-	struct Node *bst_stack[BST_MAX_HEIGHT];
-	unsigned long Flags;
+struct TreeMapIterator {
+    Iterator it;
+    TreeMap *bst_table;
+    struct Node *bst_node;
+    size_t timestamp;
+    size_t bst_height;
+    struct Node *bst_stack[BST_MAX_HEIGHT];
+    unsigned long Flags;
 };
 
 /* Returns the next data item in inorder
@@ -595,162 +623,162 @@ struct BB_TreeIterator {
  or if there are no more data items returns |NULL|. */
 static void *GetNext(Iterator *itrav)
 {
-	struct BB_TreeIterator *trav = (struct BB_TreeIterator *)itrav;
+    struct TreeMapIterator *trav = (struct TreeMapIterator *)itrav;
 
-	if (trav->timestamp != trav->bst_table->timestamp)
-		return NULL;
-	trav->bst_node = bt_next(trav->bst_table, trav->bst_node);
-	if (trav->bst_node == NULL)
-		return NULL;
-	return trav->bst_node->data;
+    if (trav->timestamp != trav->bst_table->timestamp)
+    	return NULL;
+    trav->bst_node = bt_next(trav->bst_table, trav->bst_node);
+    if (trav->bst_node == NULL)
+    	return NULL;
+    return trav->bst_node->data;
 }
 
 static void *GetPrevious(Iterator *itrav)
 {
-	struct BB_TreeIterator *trav = (struct BB_TreeIterator *)itrav;
+    struct TreeMapIterator *trav = (struct TreeMapIterator *)itrav;
 
-	if (trav == NULL) {
-		iError.RaiseError("GetPrevious",CONTAINER_ERROR_BADARG);
-		return NULL;
-	}
-	if (trav->timestamp != trav->bst_table->timestamp)
-		return NULL;
-	trav->bst_node = bt_prev(trav->bst_table, trav->bst_node);
-	if (trav->bst_node == NULL)
-		return NULL;
-	return trav->bst_node->data;
+    if (trav == NULL) {
+    	iError.RaiseError("GetPrevious",CONTAINER_ERROR_BADARG);
+    	return NULL;
+    }
+    if (trav->timestamp != trav->bst_table->timestamp)
+    	return NULL;
+    trav->bst_node = bt_prev(trav->bst_table, trav->bst_node);
+    if (trav->bst_node == NULL)
+    	return NULL;
+    return trav->bst_node->data;
 }
 
 static void *GetFirst(Iterator *itrav)
 {
-	struct BB_TreeIterator *trav = (struct BB_TreeIterator *)itrav;
+    struct TreeMapIterator *trav = (struct TreeMapIterator *)itrav;
 
-	if (trav->timestamp != trav->bst_table->timestamp)
-		return NULL;
-	trav->bst_node	= bt_first(trav->bst_table);
-	if (trav->bst_node)
-		return trav->bst_node->data;
-	return NULL;
+    if (trav->timestamp != trav->bst_table->timestamp)
+    	return NULL;
+    trav->bst_node	= bt_first(trav->bst_table);
+    if (trav->bst_node)
+    	return trav->bst_node->data;
+    return NULL;
 }
 
-static Iterator *newIterator(BB_Tree *tree)
+static Iterator *newIterator(TreeMap *tree)
 {
-	struct BB_TreeIterator *result = MALLOC(tree,sizeof(struct BB_TreeIterator));
-	if (result == NULL)
-		return NULL;
-	memset(result,0,sizeof(struct BB_TreeIterator));
-	result->it.GetNext = GetNext;
-	result->it.GetPrevious = GetPrevious;
-	result->it.GetFirst = GetFirst;
-	result->bst_table = tree;
-	result->timestamp = tree->timestamp;
-	return &result->it;
+    struct TreeMapIterator *result = MALLOC(tree,sizeof(struct TreeMapIterator));
+    if (result == NULL)
+    	return NULL;
+    memset(result,0,sizeof(struct TreeMapIterator));
+    result->it.GetNext = GetNext;
+    result->it.GetPrevious = GetPrevious;
+    result->it.GetFirst = GetFirst;
+    result->bst_table = tree;
+    result->timestamp = tree->timestamp;
+    return &result->it;
 }
 
 static int deleteIterator(Iterator *it)
 {
-	struct BB_TreeIterator *itbb = (struct BB_TreeIterator *)it;
-	itbb->bst_table->Allocator->free(it);
-	return 1;
+    struct TreeMapIterator *itbb = (struct TreeMapIterator *)it;
+    itbb->bst_table->Allocator->free(it);
+    return 1;
 }
-static CompareFunction SetCompareFunction(BB_Tree *l,CompareFunction fn)
+static CompareFunction SetCompareFunction(TreeMap *l,CompareFunction fn)
 {
-	CompareFunction oldfn = l->compare;
+    CompareFunction oldfn = l->compare;
 
-	if (fn != NULL) /* Treat NULL as an enquiry to get the compare function */
-		l->compare = fn;
-	return oldfn;
-}
-
-static ErrorFunction SetErrorFunction(BB_Tree *tree,ErrorFunction fn)
-{
-	ErrorFunction old;
-	old = tree->RaiseError;
-	tree->RaiseError = (fn) ? fn : iError.EmptyErrorFunction;
-	return old;
+    if (fn != NULL) /* Treat NULL as an enquiry to get the compare function */
+    	l->compare = fn;
+    return oldfn;
 }
 
-static size_t Sizeof(BB_Tree *tree)
+static ErrorFunction SetErrorFunction(TreeMap *tree,ErrorFunction fn)
 {
-	size_t result = sizeof(BB_Tree);
-	result += tree->count * (tree->ElementSize + sizeof(struct Node));
-	return result;
+    ErrorFunction old;
+    old = tree->RaiseError;
+    tree->RaiseError = (fn) ? fn : iError.EmptyErrorFunction;
+    return old;
 }
 
-static int Clear(BB_Tree *tree)
+static size_t Sizeof(TreeMap *tree)
+{
+    size_t result = sizeof(TreeMap);
+    result += tree->count * (tree->ElementSize + sizeof(struct Node));
+    return result;
+}
+
+static int Clear(TreeMap *tree)
 {
 
-	iHeap.Finalize(tree->Heap);
-	tree->Heap = iHeap.Create(tree->ElementSize+sizeof(struct Node),CurrentMemoryManager);
+    iHeap.Finalize(tree->Heap);
+    tree->Heap = iHeap.Create(tree->ElementSize+sizeof(struct Node),CurrentMemoryManager);
     tree->count = 0;
-	tree->root=0;
+    tree->root=0;
     tree->max_size=0;            /* Max size since last complete rebalance. */
-	tree->Flags=0;
-	tree->timestamp=0;
-	return 1;
+    tree->Flags=0;
+    tree->timestamp=0;
+    return 1;
 }
 
-static int Finalize(BB_Tree *tree)
+static int Finalize(TreeMap *tree)
 {
-	tree->VTable->Clear(tree);
-	tree->Allocator->free(tree);
-	return 1;
+    tree->VTable->Clear(tree);
+    tree->Allocator->free(tree);
+    return 1;
 }
 
-static int Apply(BB_Tree *tree,int (*Applyfn)(const void *data,void *arg),void *arg)
+static int Apply(TreeMap *tree,int (*Applyfn)(const void *data,void *arg),void *arg)
 {
-	Iterator *it = newIterator(tree);
-	void *obj;
+    Iterator *it = newIterator(tree);
+    void *obj;
 
-	for (obj = it->GetFirst(it);
-		 obj != NULL;
-		 obj = it->GetNext(it)) {
-		Applyfn(obj,arg);
-	}
-	return 1;
+    for (obj = it->GetFirst(it);
+    	 obj != NULL;
+    	 obj = it->GetNext(it)) {
+    	Applyfn(obj,arg);
+    }
+    return 1;
 }
 
 static int DefaultTreeCompareFunction(const void *left,const void *right,CompareInfo *ExtraArgs)
 {
-	size_t siz=((BB_Tree *)ExtraArgs->Container)->ElementSize;
-	return memcmp(left,right,siz);
+    size_t siz=((TreeMap *)ExtraArgs->Container)->ElementSize;
+    return memcmp(left,right,siz);
 }
 
-static size_t GetElementSize(BB_Tree *d)
+static size_t GetElementSize(TreeMap *d)
 {
-	if (d == NULL) return (size_t)CONTAINER_ERROR_BADARG;
-	return d->ElementSize;
+    if (d == NULL) return (size_t)CONTAINER_ERROR_BADARG;
+    return d->ElementSize;
 }
 
-static int Contains(BB_Tree *d, void *element)
+static int Contains(TreeMap *d, void *element,void *ExtraArgs)
 {
-	if (Find(d,element,NULL))
-		return 1;
-	return 0;
+    if (Find(d,element,ExtraArgs))
+    	return 1;
+    return 0;
 }
 
-static BB_Tree *CreateWithAllocator(size_t ElementSize,ContainerMemoryManager *m)
+static TreeMap *CreateWithAllocator(size_t ElementSize,ContainerMemoryManager *m)
 {
-	BB_Tree *result;
+    TreeMap *result;
 
-	if (m == NULL)
-		m = CurrentMemoryManager;
-	result = m->malloc(sizeof(*result));
-	if (result == NULL)
-		return NULL;
-	memset(result,0,sizeof(*result));
-	result->VTable = &iBB_Tree;
-	result->RaiseError = iError.RaiseError;
-	result->compare = DefaultTreeCompareFunction;
-	result->Heap = iHeap.Create(ElementSize+sizeof(struct Node),m);
-	result->Allocator = m;
-	result->ElementSize = roundup(ElementSize);
-	return result;
+    if (m == NULL)
+    	m = CurrentMemoryManager;
+    result = m->malloc(sizeof(*result));
+    if (result == NULL)
+    	return NULL;
+    memset(result,0,sizeof(*result));
+    result->VTable = &iTreeMap;
+    result->RaiseError = iError.RaiseError;
+    result->compare = DefaultTreeCompareFunction;
+    result->Heap = iHeap.Create(ElementSize+sizeof(struct Node),m);
+    result->Allocator = m;
+    result->ElementSize = roundup(ElementSize);
+    return result;
 }
 
-static BB_Tree *Create(size_t ElementSize)
+static TreeMap *Create(size_t ElementSize)
 {
-	return CreateWithAllocator(ElementSize,CurrentMemoryManager);
+    return CreateWithAllocator(ElementSize,CurrentMemoryManager);
 }
 
 static size_t DefaultSaveFunction(const void *element,void *arg, FILE *Outfile)
@@ -761,36 +789,36 @@ static size_t DefaultSaveFunction(const void *element,void *arg, FILE *Outfile)
     return fwrite(str,1,len,Outfile);
 }
 
-static int Save(BB_Tree *src,FILE *stream, SaveFunction saveFn,void *arg)
+static int Save(TreeMap *src,FILE *stream, SaveFunction saveFn,void *arg)
 {
-	struct Node *rvp;
-	if (src == NULL) {
-		iError.RaiseError("Save",CONTAINER_ERROR_BADARG);
-		return CONTAINER_ERROR_BADARG;
-	}
-	if (stream == NULL) {
-		src->RaiseError("Save",CONTAINER_ERROR_BADARG);
-		return CONTAINER_ERROR_BADARG;
-	}
-	if (saveFn == NULL) {
-		saveFn = DefaultSaveFunction;
-	}
-    if (fwrite(&BB_TreeGuid,sizeof(guid),1,stream) <= 0)
+    struct Node *rvp;
+    if (src == NULL) {
+    	iError.RaiseError("Save",CONTAINER_ERROR_BADARG);
+    	return CONTAINER_ERROR_BADARG;
+    }
+    if (stream == NULL) {
+    	src->RaiseError("Save",CONTAINER_ERROR_BADARG);
+    	return CONTAINER_ERROR_BADARG;
+    }
+    if (saveFn == NULL) {
+    	saveFn = DefaultSaveFunction;
+    }
+    if (fwrite(&TreeMapGuid,sizeof(guid),1,stream) <= 0)
         return EOF;
-	if (arg == NULL) {
-		arg = &src->ElementSize;
-	}
-    if (fwrite(src,1,sizeof(BB_Tree),stream) <= 0)
+    if (arg == NULL) {
+    	arg = &src->ElementSize;
+    }
+    if (fwrite(src,1,sizeof(TreeMap),stream) <= 0)
         return EOF;
     rvp = bt_first(src);
     while (rvp) {
-		char *p = rvp->data;
+    	char *p = rvp->data;
 
         if (saveFn(p,arg,stream) <= 0)
             return EOF;
         rvp = bt_next(src,rvp);
     }
-	return 1;
+    return 1;
 }
 
 static size_t DefaultLoadFunction(void *element,void *arg, FILE *Infile)
@@ -800,10 +828,10 @@ static size_t DefaultLoadFunction(void *element,void *arg, FILE *Infile)
     return fread(element,1,len,Infile);
 }
 
-static BB_Tree *Load(FILE *stream, ReadFunction loadFn,void *arg)
+static TreeMap *Load(FILE *stream, ReadFunction loadFn,void *arg)
 {
     size_t i,elemSize;
-    BB_Tree *result,L;
+    TreeMap *result,L;
     char *buf;
     int r;
     guid Guid;
@@ -820,11 +848,11 @@ static BB_Tree *Load(FILE *stream, ReadFunction loadFn,void *arg)
         iError.RaiseError("Load",CONTAINER_ERROR_FILE_READ);
         return NULL;
     }
-    if (memcmp(&Guid,&BB_TreeGuid,sizeof(guid))) {
+    if (memcmp(&Guid,&TreeMapGuid,sizeof(guid))) {
         iError.RaiseError("Load",CONTAINER_ERROR_WRONGFILE);
         return NULL;
     }
-    if (fread(&L,1,sizeof(BB_Tree),stream) <= 0) {
+    if (fread(&L,1,sizeof(TreeMap),stream) <= 0) {
         iError.RaiseError("Load",CONTAINER_ERROR_FILE_READ);
         return NULL;
     }
@@ -840,51 +868,52 @@ static BB_Tree *Load(FILE *stream, ReadFunction loadFn,void *arg)
         return NULL;
     }
     result->Flags = L.Flags;
-	r = 1;
+    r = 1;
     for (i=0; i < L.count; i++) {
         if (loadFn(buf,arg,stream) <= 0) {
-			r = CONTAINER_ERROR_FILE_READ;
+    		r = CONTAINER_ERROR_FILE_READ;
             break;
         }
-        if ((r=Add(result,buf)) < 0) {
+        if ((r=Add(result,buf,NULL)) < 0) {
             break;
         }
     }
     free(buf);
-	if (r < 0) {
+    if (r < 0) {
             iError.RaiseError("Load",r);
             Finalize(result);
             result = NULL;
-	}
+    }
     return result;
 }
 
 
 
-BB_TreeInterface iBB_Tree = {
-	Size,
+TreeMapInterface iTreeMap = {
+    Size,
     GetFlags,
     SetFlags,
     Clear,
-	Contains,
+    Contains,
     Erase,
     Finalize,
     Apply,
-	Equal,
-	Copy,
-	SetErrorFunction,
-	Sizeof,
-	newIterator,
-	deleteIterator,
-	Save,
-	Add,
-	Insert,
-	Find,
-	SetCompareFunction,
-	CreateWithAllocator,
-	Create,
-	GetElementSize,
-	Load,
+    Equal,
+    Copy,
+    SetErrorFunction,
+    Sizeof,
+    newIterator,
+    deleteIterator,
+    Save,
+    Add,
+	AddRange,
+    Insert,
+    Find,
+    SetCompareFunction,
+    CreateWithAllocator,
+    Create,
+    GetElementSize,
+    Load,
 };
 
 
