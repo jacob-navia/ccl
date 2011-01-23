@@ -524,8 +524,9 @@ static BitString * StringToBitString(unsigned char * str)
 	if (i == 0)
 		return NULL;
 	result = Create(i);
-	str--;
+	result->count = i;
 	i=0;
+	str--;
 	while (str >= save) {
 		while (*str == ' ' || *str == '\t' || *str == ',')
 			str--;
@@ -539,7 +540,6 @@ static BitString * StringToBitString(unsigned char * str)
 		}
 		else break;
 	}
-	result->count = i;
 	return result;
 }
 
@@ -566,7 +566,7 @@ static size_t Print(BitString *b,size_t bufsiz,unsigned char *out)
 		if (out && out >= top)
 			break;
 		if (out) {
-			if (b->contents[BYTES_FROM_BITS(i)] & BitIndexMask[i&7])
+			if (b->contents[i>>3] & BitIndexMask[i&7])
 				*out = '1';
 			else
 				*out = '0';
@@ -612,16 +612,16 @@ static BitString *Reverse(BitString *b)
 
 	if (b == NULL)		return NULL;
 	result = Create(b->count);
+	result->count = b->count;
 	i = 0;
-	j = (b->count - 1) >> 3;
+	j = b->count-1;
 	while (i < result->count) {
-		if ((b->contents[j >> 3] >> (j&7))&1) {
-			result->contents[i >> 3] |= 1 << (i&7);
+		if (b->contents[j >> 3] & (1 << (j&7))) {
+			result->contents[i >> 3] |= (1 << (i&7));
 		}
 		i++;
 		j--;
 	}
-	result->count = b->count;
 	return result;
 }
 
@@ -934,7 +934,7 @@ static int RemoveAt(BitString *bitStr,size_t idx)
 	if (bitStr->count == 0) /* If bit string empty there is nothing to remove */
 		return 0;
 	if (bitStr->count <= idx) /* if the index is beyond the data return failure */
-		return 0;
+		idx = bitStr->count-1;
 	bytepos = idx/8;
 	bitpos = idx & 7;
 	oldval = bitStr->contents[bytepos];
@@ -1294,6 +1294,7 @@ BitStringInterface iBitString = {
 	BitBlockCount,
 	LessEqual,
 	Reverse,
+	RemoveAt,
 	GetRange,
 	StringToBitString,
 	ObjectToBitString,
