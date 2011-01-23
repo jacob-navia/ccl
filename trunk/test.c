@@ -386,34 +386,34 @@ static void testBinarySearchTree(void)
 
 static void testScapegoatTree(void)
 {
-	BB_Tree *tree = iBB_Tree.Create(sizeof(double));
-	BB_Tree *tree1 = iBB_Tree.Create(sizeof(double));
+	TreeMap *tree = iTreeMap.Create(sizeof(double));
+	TreeMap *tree1 = iTreeMap.Create(sizeof(double));
 	double d = 1.0;
 	size_t i;
 
-	iBB_Tree.SetCompareFunction(tree,compareDoubles);
+	iTreeMap.SetCompareFunction(tree,compareDoubles);
 	for (i=0; i<MAX_IT;i++) {
 		d = i+1;
-		iBB_Tree.Add(tree,&d);
+		iTreeMap.Add(tree,&d,NULL);
 	}
-	if (iBB_Tree.Size(tree) != i)
+	if (iTreeMap.Size(tree) != i)
 		Abort();
-	iBB_Tree.Apply(tree,printDoubleTree,stdout);
-	printf("Size: %lu\n",iBB_Tree.Sizeof(tree));
-	iBB_Tree.SetCompareFunction(tree1,compareDoubles);
+	iTreeMap.Apply(tree,printDoubleTree,stdout);
+	printf("Size: %lu\n",iTreeMap.Sizeof(tree));
+	iTreeMap.SetCompareFunction(tree1,compareDoubles);
 	for (i=0; i<MAX_IT;i++) {
 		d = i+1;
-		iBB_Tree.Add(tree1,&d);
+		iTreeMap.Add(tree1,&d,NULL);
 	}
 #if 0
-	if (!iBB_Tree.Equal(tree1,tree))
+	if (!iTreeMap.Equal(tree1,tree))
 		printf("Error in comparison of binary search trees\n");
 #endif
 	d = 2.0;
-	iBB_Tree.Erase(tree,&d);
-	iBB_Tree.Apply(tree,printDoubleTree,stdout);
-	iBB_Tree.Finalize(tree);
-	iBB_Tree.Finalize(tree1);
+	iTreeMap.Erase(tree,&d,NULL);
+	iTreeMap.Apply(tree,printDoubleTree,stdout);
+	iTreeMap.Finalize(tree);
+	iTreeMap.Finalize(tree1);
 }
 
 static int testBloomFilter(void)
