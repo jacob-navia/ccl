@@ -37,11 +37,11 @@ static void ContainerRaiseError(const char *fnname,int errcode,...)
 {
 	fprintf(stderr,"Container library: Error '%s' in function %s\n",StrError(errcode),fnname);
 }
-static void EmptyErrorFunction(const char *fnname,int errcode) { }
+static void EmptyErrorFunction(const char *fnname,int errcode,...) { }
 
-static ErrorFn SetError(ErrorFn n)
+static ErrorFunction SetError(ErrorFunction n)
 {
-	ErrorFn old = iError.RaiseError;
+	ErrorFunction old = iError.RaiseError;
 	if (n != NULL) {
 		iError.RaiseError = n;
 	}
