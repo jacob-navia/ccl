@@ -663,12 +663,12 @@ static int Add(BitString *b,int newval)
 	size_t bytepos,bitpos;
 
 	/* Test if the new size + 1 will fit */
-	bytepos = (b->count+1)/CHAR_BIT;
+	bytepos = (1+b->count) >> 3;
 	if (bytepos >= b->capacity) {
 		if (!expandBitstring(b))	
 			return CONTAINER_ERROR_NOMEMORY;
 	}
-	bytepos = (b->count)>>3;
+	bytepos = b->count>>3;
 	bitpos = b->count&(CHAR_BIT-1);
 	if (newval)		
 		b->contents[bytepos] |= 1 << bitpos;

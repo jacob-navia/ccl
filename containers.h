@@ -1024,6 +1024,7 @@ typedef struct tagBitString {
     uintmax_t  (*BitBlockCount)(BitString *b);
     int       (*LessEqual)(BitString *bsl,BitString *bsr);
     BitString *(*Reverse)(BitString *b);
+	int        (*RemoveAt)(BitString *bitStr,size_t idx);
     BitString *(*GetRange)(BitString *b,size_t start,size_t end);
     BitString *(*StringToBitString)(unsigned char *);
     BitString *(*ObjectToBitString)(unsigned char *p,size_t size);
