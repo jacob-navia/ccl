@@ -344,39 +344,36 @@ static int Equal(BitString *bsl,BitString *bsr)
 
 static BitString * Or(BitString *bsl,BitString *bsr)
 {
-	size_t len,blen,i,resultlen;
+	size_t blen,i,resultlen;
 	BitString *result;
 
 	if (bsl == NULL || bsr == NULL) {
 		NullPtrError("Or");
 		return NULL;
 	}
-	len = bsl->count < bsr->count ? bsl->count : bsr->count;
-	len = BYTES_FROM_BITS(len);
-	resultlen = bsl->count < bsr->count ? bsr->count : bsl->count;
+	resultlen = (bsl->count < bsr->count) ? bsr->count : bsl->count;
 	result = Create(resultlen);
-	blen = BYTES_FROM_BITS(len);
+	blen = BYTES_FROM_BITS(resultlen);
 	for (i=0; i<blen;i++) {
 		result->contents[i] = bsl->contents[i] | bsr->contents[i];
 	}
-	result->count = len;
+	result->count = resultlen;
 	return result;
 }
 
-static BitString * OrAssign(BitString *bsl,BitString *bsr)
+static int OrAssign(BitString *bsl,BitString *bsr)
 {
-	size_t len,i;
+	size_t len,i,blen;
 
 	if (bsl == NULL || bsr == NULL) {
-		NullPtrError("OrAssign");
-		return NULL;
+		return NullPtrError("OrAssign");
 	}
-	len = bsl->count < bsr->count ? bsl->count : bsr->count;
-	len = BYTES_FROM_BITS(len);
-	for (i=0; i<len;i++) {
+	len = (bsl->count < bsr->count) ? bsl->count : bsr->count;
+	blen = BYTES_FROM_BITS(len);
+	for (i=0; i<blen;i++) {
 		bsl->contents[i] |=  bsr->contents[i];
 	}
-	return bsl;
+	return 1;
 }
 
 static BitString * And(BitString *bsl,BitString *bsr)
@@ -402,13 +399,12 @@ static BitString * And(BitString *bsl,BitString *bsr)
 	result->count = resultlen;
 	return result;
 }
-static BitString * AndAssign(BitString *bsl,BitString *bsr)
+static int AndAssign(BitString *bsl,BitString *bsr)
 {
 	size_t len,i;
 
 	if (bsl == NULL || bsr == NULL) {
-		NullPtrError("AndAssign");
-		return NULL;
+		return NullPtrError("AndAssign");
 	}
 	len = (bsl->count < bsr->count) ? bsl->count : bsr->count;
 	len = BYTES_FROM_BITS(len);
@@ -424,7 +420,7 @@ static BitString * AndAssign(BitString *bsl,BitString *bsr)
 		bsl->contents[i] = 0;
 		i++;
 	}
-	return bsl;
+	return 1;
 }
 
 static BitString * Xor(BitString *bsl,BitString *bsr)
@@ -452,20 +448,19 @@ static BitString * Xor(BitString *bsl,BitString *bsr)
 	result->count = resultlen;
 	return result;
 }
-static BitString * XorAssign(BitString *bsl,BitString *bsr)
+static int XorAssign(BitString *bsl,BitString *bsr)
 {
 	size_t len,i;
 
 	if (bsl == NULL || bsr == NULL) {
-		NullPtrError("XorAssign");
-		return NULL;
+		return NullPtrError("XorAssign");
 	}
 
 	len = bsl->count < bsr->count ? bsl->count : bsr->count;
 	for (i=0; i<len;i++) {
 		bsl->contents[i] ^= bsr->contents[i];
 	}
-	return bsl;
+	return 1;
 }
 
 static BitString * Not(BitString *bsl)
@@ -481,15 +476,18 @@ static BitString * Not(BitString *bsl)
 	result->count = len;
 	return result;
 }
-static BitString * NotAssign(BitString *bsl)
+static int NotAssign(BitString *bsl)
 {
 	size_t len,i;
 
+	if (bsl == NULL) {
+		return NullPtrError("XorAssign");
+	}
 	len = bsl->count;
 	for (i=0; i<len;i++) {
 		bsl->contents[i] = ~bsl->contents[i];
 	}
-	return bsl;
+	return 1;
 }
 
 
@@ -1232,6 +1230,27 @@ static size_t GetElementSize(BitString *B)
 {
 	return 1;
 }
+static unsigned char *GetBits(BitString *b)
+{
+	if (b == NULL) {
+		NullPtrError("GetBits");
+		return NULL;
+	}
+	return b->contents;
+}
+
+static int CopyBits(BitString *b,unsigned char *buf)
+{
+	if (b == NULL) {
+		return NullPtrError("CopyBits");
+	}
+	if (buf == NULL) {
+		iError.RaiseError("CopyBits",CONTAINER_ERROR_BADARG);
+		return CONTAINER_ERROR_BADARG;
+	}
+	memcpy(buf,b->contents,1+b->count/CHAR_BIT);
+	return 1;
+}
 static BitString *Init(BitString *set, size_t bitlen)
 {
 	size_t bytesiz;
@@ -1305,6 +1324,8 @@ BitStringInterface iBitString = {
 	Set,
 	Create,
 	Init,
+	GetBits,
+	CopyBits,
 };
 
 

@@ -1004,25 +1004,25 @@ typedef struct tagBitString {
 	/* Bit string specific functions */
     
 	/* Inserts a bit at the position zero. */
-    size_t (*Insert)(BitString *BitStr,bool bit);
+    size_t     (*Insert)(BitString *BitStr,bool bit);
     /* sets the given element to a new value */
-    int (*SetElement)(BitString *bs,size_t position,bool b);
+    int        (*SetElement)(BitString *bs,size_t position,bool b);
     /* Returns the current capacity of the collection */
-    size_t      (*GetCapacity)(BitString *BitStr);
+    size_t     (*GetCapacity)(BitString *BitStr);
     /* Sets the capacity if there are no items in the collection */
-    int     (*SetCapacity)(BitString *BitStr,size_t newCapacity);
+    int        (*SetCapacity)(BitString *BitStr,size_t newCapacity);
     /* Bit string specific functions */
     BitString *(*Or)(BitString *left,BitString *right);
-    BitString *(*OrAssign)(BitString *bsl,BitString *bsr);
+    int        (*OrAssign)(BitString *bsl,BitString *bsr);
     BitString *(*And)(BitString *bsl,BitString *bsr);
-    BitString *(*AndAssign)(BitString *bsl,BitString *bsr);
+    int        (*AndAssign)(BitString *bsl,BitString *bsr);
     BitString *(*Xor)(BitString *bsl,BitString *bsr);
-    BitString *(*XorAssign)(BitString *bsl,BitString *bsr);
+    int        (*XorAssign)(BitString *bsl,BitString *bsr);
     BitString *(*Not)(BitString *bsl);
-    BitString *(*NotAssign)(BitString *bsl);
+    int        (*NotAssign)(BitString *bsl);
     uintmax_t  (*PopulationCount)(BitString *b);
     uintmax_t  (*BitBlockCount)(BitString *b);
-    int       (*LessEqual)(BitString *bsl,BitString *bsr);
+    int        (*LessEqual)(BitString *bsl,BitString *bsr);
     BitString *(*Reverse)(BitString *b);
 	int        (*RemoveAt)(BitString *bitStr,size_t idx);
     BitString *(*GetRange)(BitString *b,size_t start,size_t end);
@@ -1032,10 +1032,12 @@ typedef struct tagBitString {
     int        (*RightShift)(BitString *bs,size_t shift);
     size_t     (*Print)(BitString *b,size_t bufsiz,unsigned char *out);
     int        (*Append)(BitString *left,BitString *right);
-    int       (*Set)(BitString *,size_t start,size_t stop,bool newval);
+    int        (*Set)(BitString *,size_t start,size_t stop,bool newval);
     /* creates a bit string */
     BitString *(*Create)(size_t bitlen);
 	BitString *(*Init)(BitString *BitStr,size_t bitlen);
+	unsigned char *(*GetBits)(BitString *BitStr);
+	int (*CopyBits)(BitString *bitstr,unsigned char *buf);
 } BitStringInterface;
 
 extern BitStringInterface iBitString;
