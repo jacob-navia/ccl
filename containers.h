@@ -1037,7 +1037,8 @@ typedef struct tagBitString {
     BitString *(*Create)(size_t bitlen);
 	BitString *(*Init)(BitString *BitStr,size_t bitlen);
 	unsigned char *(*GetBits)(BitString *BitStr);
-	int (*CopyBits)(BitString *bitstr,unsigned char *buf);
+	int        (*CopyBits)(BitString *bitstr,unsigned char *buf);
+	int        (*Memset)(BitString *b,size_t siz,int newval);
 } BitStringInterface;
 
 extern BitStringInterface iBitString;
