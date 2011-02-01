@@ -499,6 +499,46 @@ static BitString *ObjectToBitString(unsigned char *p,size_t siz)
 	return result;
 }
 
+static int AddRange(BitString *b, size_t bitSize, unsigned char *data)
+{
+	size_t i,currentByte,idx;
+	unsigned toShift,byte;
+	if (bitsize == 0) return 0;
+	if (b == NULL || data == NULL) {
+		return NullPtrError("AddRange");
+	}
+	if (SetCapacity(b,b->count+bitSize) < 0)
+		return CONTAINER_ERROR_NOMEMORY;
+	/* Add first byte */
+	toshift = i = b->count & 7;
+	currentByte = 0;
+	if (i) {
+		byte = data[currentByte++];
+		while (i > 0 && bitSize > 0) {
+			Add(b,byte&1);
+			byte >>= 1;
+			i--;
+			bitSize--;
+		}
+	}
+	if (bitsize == 0) return 1;
+	idx = 1+ (b->count>>3);
+	while (bitSize >= CHAR_BIT) {
+		byte = data[currentByte++] << toShift;
+		byte |= (data[currentByte] << CHAR_BIT-toShift);
+		b->contents[idx++] = byte;
+		bitSize -= CHAR_BIT;
+	}
+	if (bitSize == 0) return 1;
+	i = bitSize;
+	byte = data[currentByte++];
+	while (bitSize > 0) {
+		Add(b,byte&0x80);
+		byte <<= 1;
+		bitSize--;
+	}
+	return 1;
+}
 
 static BitString * StringToBitString(unsigned char * str)
 {
@@ -676,6 +716,26 @@ static int Add(BitString *b,int newval)
 	return 1;
 }
 
+static int Memset(BitString *b,size_t siz,int newval)
+{
+	size_t bytepos;
+
+	bytepos = (siz) >> 3;
+	while (bytepos >= b->capacity) {
+		if (!expandBitstring(b))	
+			return CONTAINER_ERROR_NOMEMORY;
+	}
+	if (newval) {
+		memset(b->contents,0xff,bytepos);
+	}
+	else {
+		memset(b->contents,0,bytepos);
+	}
+	if (siz >= b->count)
+		b->count = siz;
+	return 1;
+}
+
 
 static int ReplaceAt(BitString *b,size_t idx,bool newval)
 {
@@ -695,18 +755,18 @@ static int ReplaceAt(BitString *b,size_t idx,bool newval)
 }
 
 static int Pop(BitString *b){
-	size_t bytepos,bitpos;
+	size_t bytepos,bitpos,idx;
 	int result;
 
 	if (b->count == 0) {
 		return CONTAINER_ERROR_INDEX;
 	}
-	bytepos = (b->count >> 3);
-	bitpos = b->count&(CHAR_BIT-1);
+	idx = b->count-1;
+	bytepos = (idx >> 3);
+	bitpos = idx &(CHAR_BIT-1);
 	if (b->contents[bytepos]&(1 << bitpos))		
 		result = 1;
 	else result = 0;
-	ShiftLeftByOne(b->contents, b->count,0);
 	b->count--;
 	return result;
 }
@@ -1326,6 +1386,7 @@ BitStringInterface iBitString = {
 	Init,
 	GetBits,
 	CopyBits,
+	Memset,
 };
 
 
