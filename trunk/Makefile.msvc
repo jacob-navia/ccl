@@ -356,10 +356,10 @@ strcollection.obj: $(STRCOLLECTION_C) $(SRCDIR)\strcollection.c
 	$(CC) -c $(CFLAGS) $(SRCDIR)\strcollection.c
 
 queue.obj:	containers.h queue.c
-	$(CC) $(CFLAGS) queue.c
+	$(CC) -c $(CFLAGS) queue.c
 
 buffer.obj:	buffer.c containers.h
-	$(CC) $(CFLAGS) buffer.c
+	$(CC) -c $(CFLAGS) buffer.c
 
 # Build test.c
 TEST_C=\
