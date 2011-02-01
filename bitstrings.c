@@ -499,18 +499,19 @@ static BitString *ObjectToBitString(unsigned char *p,size_t siz)
 	return result;
 }
 
+#if 0
 static int AddRange(BitString *b, size_t bitSize, unsigned char *data)
 {
 	size_t i,currentByte,idx;
 	unsigned toShift,byte;
-	if (bitsize == 0) return 0;
+	if (bitSize == 0) return 0;
 	if (b == NULL || data == NULL) {
 		return NullPtrError("AddRange");
 	}
 	if (SetCapacity(b,b->count+bitSize) < 0)
 		return CONTAINER_ERROR_NOMEMORY;
 	/* Add first byte */
-	toshift = i = b->count & 7;
+	i = b->count & 7;
 	currentByte = 0;
 	if (i) {
 		byte = data[currentByte++];
@@ -539,6 +540,7 @@ static int AddRange(BitString *b, size_t bitSize, unsigned char *data)
 	}
 	return 1;
 }
+#endif
 
 static BitString * StringToBitString(unsigned char * str)
 {
