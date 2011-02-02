@@ -164,7 +164,7 @@ Finalize,
                                Circular buffers
    ------------------------------------------------------------------------- */
 struct _CircularBuffer {
-	size_t count;
+	size_t maxCount;
 	size_t ElementSize;
 	size_t head;
 	size_t tail;
@@ -181,18 +181,91 @@ static size_t Size(CircularBuffer *cb)
 static int Add( CircularBuffer * b, void *data_element)
 {
     unsigned char *ring_data = NULL;
+	int result = 0;
 
     if (b == NULL || data_element == NULL) {
         iError.RaiseError("iCircularBuffer.Add",CONTAINER_ERROR_BADARG);
         return CONTAINER_ERROR_BADARG;
     }
-    if (b->count == (b->head - b->tail)) {
+    if (b->maxCount == (b->head - b->tail)) {
         b->head = 0;
+		result++;
     }
-    ring_data = b->data + ((b->head % b->count) * b->ElementSize);
+    ring_data = b->data + ((b->head % b->maxCount) * b->ElementSize);
     memcpy(ring_data,data_element,b->ElementSize);
     b->head++;
-    return 1;
+	result++;
+    return result;
 }
 
+static int PopFront(CircularBuffer *b,void *result)
+{
+	void *data;
+	
+    if (b == NULL) {
+        iError.RaiseError("iCircularBuffer.PopFront",CONTAINER_ERROR_BADARG);
+        return CONTAINER_ERROR_BADARG;
+    }
+	if (b->head == b->tail)
+		return 0;
+    data = &(b->data[(b->tail % b->maxCount) * b->ElementSize]);
+	b->tail++;
+	if (result)
+		memcpy(result,data,b->ElementSize);
+	return 1;
+}
 
+static int PeekFront(CircularBuffer *b,void *result)
+{
+	void *data;
+	
+    if (b == NULL || result == NULL) {
+        iError.RaiseError("iCircularBuffer.PeekFront",CONTAINER_ERROR_BADARG);
+        return CONTAINER_ERROR_BADARG;
+    }
+	if (b->head == b->tail)
+		return 0;
+    data = &(b->data[(b->tail % b->maxCount) * b->ElementSize]);
+	memcpy(result,data,b->ElementSize);
+	return 1;
+}
+
+static CircularBuffer *CreateCBWithAllocator(size_t sizElement,size_t sizeBuffer,ContainerMemoryManager *allocator)
+{
+	CircularBuffer *result;
+	
+	if (sizElement == 0 || sizeBuffer == 0 || allocator == NULL) {
+		iError.RaiseError("iCircularBuffer.Create",CONTAINER_ERROR_BADARG);
+		return NULL;
+	}
+	result = allocator->malloc(sizeof(CircularBuffer));
+	if (result == NULL) {
+		iError.RaiseError("iCircularBuffer.Create",CONTAINER_ERROR_NOMEMORY);
+		return NULL;
+	}
+	memset(result,0,sizeof(CircularBuffer));
+	result->maxCount = sizeBuffer;
+	result->ElementSize = sizElement;
+	sizElement = sizElement*sizeBuffer; /* Here we should test for overflow */
+	result->data = allocator->malloc(sizElement);
+	if (result->data == NULL) {
+		allocator->free(result);
+		iError.RaiseError("iCircularBuffer.Create",CONTAINER_ERROR_NOMEMORY);
+		return NULL;
+	}
+	return result;
+}
+
+static CircularBuffer *CreateCB(size_t sizElement,size_t sizeBuffer)
+{
+	return CreateCBWithAllocator(sizElement, sizeBuffer, CurrentMemoryManager);
+}
+
+CircularBufferInterface iCircularBuffer = {
+	Size,
+	Add,
+	PopFront,
+	PeekFront,
+	CreateCBWithAllocator,
+	CreateCB,
+};

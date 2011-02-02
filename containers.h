@@ -249,6 +249,14 @@ extern StreamBufferInterface iStreamBuffer;
 /*                                                                          */
 /************************************************************************** */
 typedef struct _CircularBuffer CircularBuffer;
+typedef struct tagCircularBufferInterface {
+	size_t (*Size)(CircularBuffer *cb);
+	int (*Add)( CircularBuffer * b, void *data_element);
+	int (*PopFront)(CircularBuffer *b,void *result);
+	int (*PeekFront)(CircularBuffer *b,void *result);
+	CircularBuffer *(*CreateWithAllocator)(size_t sizElement,size_t sizeBuffer,ContainerMemoryManager *allocator);
+	CircularBuffer *(*Create)(size_t sizElement,size_t sizeBuffer);
+} CircularBufferInterface;
 /************************************************************************** */
 /*                                                                          */
 /*                            String Collections                            */
