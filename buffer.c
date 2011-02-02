@@ -168,6 +168,7 @@ struct _CircularBuffer {
 	size_t ElementSize;
 	size_t head;
 	size_t tail;
+	ContainerMemoryManager *Allocator;
 	unsigned char *data;
 };
 
@@ -181,7 +182,7 @@ static size_t Size(CircularBuffer *cb)
 static int Add( CircularBuffer * b, void *data_element)
 {
     unsigned char *ring_data = NULL;
-	int result = 0;
+	int result = 1;
 
     if (b == NULL || data_element == NULL) {
         iError.RaiseError("iCircularBuffer.Add",CONTAINER_ERROR_BADARG);
@@ -189,12 +190,11 @@ static int Add( CircularBuffer * b, void *data_element)
     }
     if (b->maxCount == (b->head - b->tail)) {
         b->head = 0;
-		result++;
+		result = 0;
     }
     ring_data = b->data + ((b->head % b->maxCount) * b->ElementSize);
     memcpy(ring_data,data_element,b->ElementSize);
     b->head++;
-	result++;
     return result;
 }
 
@@ -246,6 +246,7 @@ static CircularBuffer *CreateCBWithAllocator(size_t sizElement,size_t sizeBuffer
 	memset(result,0,sizeof(CircularBuffer));
 	result->maxCount = sizeBuffer;
 	result->ElementSize = sizElement;
+	result->Allocator = allocator;
 	sizElement = sizElement*sizeBuffer; /* Here we should test for overflow */
 	result->data = allocator->malloc(sizElement);
 	if (result->data == NULL) {
@@ -261,6 +262,36 @@ static CircularBuffer *CreateCB(size_t sizElement,size_t sizeBuffer)
 	return CreateCBWithAllocator(sizElement, sizeBuffer, CurrentMemoryManager);
 }
 
+static int CBClear(CircularBuffer *cb)
+{
+	if (cb == NULL) {
+		iError.RaiseError("iCircularBuffer.Clear",CONTAINER_ERROR_BADARG);
+		return CONTAINER_ERROR_BADARG;
+	}
+	cb->head = cb->tail = 0;
+	return 1;
+}
+
+static int CBFinalize(CircularBuffer *cb)
+{
+	if (cb == NULL) {
+		iError.RaiseError("iCircularBuffer.Finalize",CONTAINER_ERROR_BADARG);
+		return CONTAINER_ERROR_BADARG;
+	}
+	cb->Allocator->free(cb->data);
+	cb->Allocator->free(cb);
+	return 1;
+}
+
+static size_t Sizeof(CircularBuffer *cb)
+{
+	size_t result = sizeof(CircularBuffer);
+	if (cb == NULL)
+		return result;
+	result += (cb->head - cb->tail)*cb->ElementSize;
+	return result;
+}
+
 CircularBufferInterface iCircularBuffer = {
 	Size,
 	Add,
@@ -268,4 +299,7 @@ CircularBufferInterface iCircularBuffer = {
 	PeekFront,
 	CreateCBWithAllocator,
 	CreateCB,
+	CBClear,
+	CBFinalize,
+	Sizeof,
 };
