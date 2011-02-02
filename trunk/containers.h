@@ -256,6 +256,9 @@ typedef struct tagCircularBufferInterface {
 	int (*PeekFront)(CircularBuffer *b,void *result);
 	CircularBuffer *(*CreateWithAllocator)(size_t sizElement,size_t sizeBuffer,ContainerMemoryManager *allocator);
 	CircularBuffer *(*Create)(size_t sizElement,size_t sizeBuffer);
+	int (*Clear)(CircularBuffer *cb);
+	int (*Finalize)(CircularBuffer *cb);
+	size_t (*Sizeof)(CircularBuffer *cb);
 } CircularBufferInterface;
 /************************************************************************** */
 /*                                                                          */
