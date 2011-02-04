@@ -95,6 +95,7 @@ struct _Dictionary {
 	unsigned timestamp;
 	size_t ElementSize;
 	ContainerMemoryManager *Allocator;
+	DestructorFunction DestructorFn;
 	unsigned (*hash)(const unsigned char *Key);
 	struct DataList {
 		struct DataList *Next;
@@ -427,6 +428,8 @@ static int Replace(Dictionary *Dict,const unsigned char *Key,void *Value)
 		return CONTAINER_ERROR_NOTFOUND;
 	}
 	Dict->timestamp++;
+	if (Dict->DestructorFn)
+		Dict->DestructorFn(p->Value);
 	/* Overwrite the data for an existing element */
 	memcpy((void *)p->Value,Value,Dict->ElementSize);
 	return 1;
@@ -589,6 +592,8 @@ static int Erase(Dictionary *Dict,const unsigned char *Key)
 		if (strcmp((char *)Key, (char *)(*pp)->Key) == 0) {
 			struct DataList *p = *pp;
 			*pp = p->Next;
+			if (Dict->DestructorFn)
+				Dict->DestructorFn(p->Value);
 			Dict->Allocator->free(p->Key);
 			Dict->Allocator->free(p);
 			Dict->count--;
@@ -619,6 +624,8 @@ static int Clear(Dictionary *Dict)
 		for (i = 0; i < Dict->size; i++)
 			for (p = Dict->buckets[i]; p; p = q) {
 				q = p->Next;
+				if (Dict->DestructorFn)
+					Dict->DestructorFn(p->Value);
 				Dict->Allocator->free(p->Key);
 				Dict->Allocator->free(p);
 			}
@@ -969,6 +976,16 @@ static Dictionary *Create(size_t elementsize,size_t hint)
 {
 	return CreateWithAllocator(elementsize,hint,CurrentMemoryManager);
 }
+static DestructorFunction SetDestructor(Dictionary *cb,DestructorFunction fn)
+{
+	DestructorFunction oldfn;
+	if (cb == NULL)
+		return NULL;
+	oldfn = cb->DestructorFn;
+	if (fn)
+		cb->DestructorFn = fn;
+	return oldfn;
+}
 							   
 DictionaryInterface iDictionary = {
 	Size,
@@ -1002,4 +1019,5 @@ DictionaryInterface iDictionary = {
 	InitWithAllocator,
 	GetKeys,
 	GetAllocator,
+	SetDestructor,
 };

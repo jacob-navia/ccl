@@ -1437,6 +1437,7 @@ static int Reverse(StringCollection *SC)
 	return 1;
 }
 
+
 StringCollectionInterface iStringCollection = {
     GetCount, GetFlags, SetFlags,  Clear,
 	Contains,

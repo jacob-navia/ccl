@@ -69,6 +69,7 @@ struct tagBinarySearchTree {
 	ErrorFunction        RaiseError;
 	BinarySearchTreeNode *root;
 	ContainerMemoryManager *Allocator;
+	DestructorFunction DestructorFn;
 } ;
 
 static const guid BinarySearchTreeGuid = {0x9a011719, 0x22ac, 0x461d,
@@ -169,6 +170,8 @@ static void RemoveLeft(BinarySearchTree *tree, BinarySearchTreeNode *node)
 	if (*position != NULL) {
 		RemoveLeft(tree, *position);
 		RemoveRight(tree, *position);
+		if (tree->DestructorFn)
+			tree->DestructorFn(*position);
 		tree->Allocator->free(*position);
 		*position = NULL;
 		tree->count--;
@@ -186,7 +189,9 @@ static void RemoveRight(BinarySearchTree *tree, BinarySearchTreeNode *node)
 	if (*position != NULL) {
 		RemoveLeft(tree, *position);
 		RemoveRight(tree, *position);
-		free(*position);
+		if (tree->DestructorFn)
+			tree->DestructorFn(*position);
+		tree->Allocator->free(*position);
 		*position = NULL;
 		tree->count--;
 	}
@@ -304,6 +309,9 @@ static void destroy_left(BinarySearchTree *tree, BinarySearchTreeNode *node)
 		if (*position != NULL) {
 			destroy_left(tree, *position);
 			destroy_right(tree, *position);
+			if (tree->DestructorFn)
+				tree->DestructorFn(*position);
+			
 			tree->Allocator->free(*position);
 			*position = NULL;
 			tree->count--; /* Adjust the size of the tree. */
@@ -322,6 +330,9 @@ static void destroy_right(BinarySearchTree *tree, BinarySearchTreeNode *node)
 		if (*position != NULL) {
 			destroy_left(tree, *position);
 			destroy_right(tree, *position);
+			if (tree->DestructorFn)
+				tree->DestructorFn(*position);
+			
 			tree->Allocator->free(*position);
 			*position = NULL;
 			tree->count--;
@@ -479,6 +490,9 @@ static int Remove(BinarySearchTree *tree, const void *data, void *ExtraArgs)
 			*y = w;
 		}
 	}
+	if (tree->DestructorFn)
+		tree->DestructorFn(z);
+	
 	tree->Allocator->free(z);
 	tree->count--;
 	if (k < 0) {
@@ -798,6 +812,16 @@ static int Contains(BinarySearchTree *tree , void *data)
 		return 1;
 	return CONTAINER_ERROR_NOTFOUND;
 }
+static DestructorFunction SetDestructor(BinarySearchTree *cb,DestructorFunction fn)
+{
+	DestructorFunction oldfn;
+	if (cb == NULL)
+		return NULL;
+	oldfn = cb->DestructorFn;
+	if (fn)
+		cb->DestructorFn = fn;
+	return oldfn;
+}
 
 BinarySearchTreeInterface iBinarySearchTree = {
 	GetCount,
@@ -819,5 +843,6 @@ BinarySearchTreeInterface iBinarySearchTree = {
 	newIterator,
 	deleteIterator,
 	Create,
+	SetDestructor,
 };
 

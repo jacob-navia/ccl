@@ -17,6 +17,7 @@ struct _Vector {
     /* Error function */
     ErrorFunction RaiseError;
 	ContainerMemoryManager *Allocator;
+	DestructorFunction DestructorFn;
 } ;
 
 static const guid VectorGuid = {0xba53f11e, 0x5879, 0x49e5,
@@ -264,12 +265,17 @@ static int Clear(Vector *AL)
 	if (AL->Flags & CONTAINER_READONLY) {
 		return ErrorReadOnly(AL,"Clear");
 	}
-	AL->Allocator->free(AL->contents);
-	AL->contents = NULL;
+	if (AL->DestructorFn) {
+		size_t i;
+		unsigned char *p = AL->contents;
+		for(i=0; i<AL->count;i++) {
+			AL->DestructorFn(p);
+			p += AL->ElementSize;
+		}
+	}
 	AL->count = 0;
 	AL->timestamp = 0;
 	AL->Flags = 0;
-	AL->capacity = 0;
 	return 1;
 }
 
@@ -575,6 +581,9 @@ static int EraseAt(Vector *AL,size_t idx)
 		return ErrorReadOnly(AL,"Erase");
 	}
 	p = AL->contents;
+	if (AL->DestructorFn) {
+		AL->DestructorFn(p+AL->ElementSize*idx);
+	}
 	if (idx < (AL->count-1)) {
 		memmove(p+AL->ElementSize*idx,p+AL->ElementSize*(idx+1),(AL->count-idx)*AL->ElementSize);
 	}
@@ -797,6 +806,8 @@ static int ReplaceAt(Vector *AL,size_t idx,void *newval)
 	}
 	p = AL->contents;
 	p += idx*AL->ElementSize;
+	if (AL->DestructorFn)
+		AL->DestructorFn(p);
 	memcpy(p,newval,AL->ElementSize);
 	AL->timestamp++;
 	return 1;
@@ -1174,6 +1185,63 @@ static int Save(Vector *AL,FILE *stream, SaveFunction saveFn,void *arg)
 	return 1;
 }
 
+#if 0
+static int SaveToBuffer(Vector *AL,char *stream, size_t *bufferlen,SaveFunction saveFn,void *arg)
+{
+	size_t i,len;
+	int elemLen;
+	
+	if (AL == NULL) {
+		return NullPtrError("iVector.SaveToBuffer");
+	}
+	if (bufferlen == NULL) {
+		AL->RaiseError("iVector.SaveToBuffer",CONTAINER_ERROR_BADARG);
+		return CONTAINER_ERROR_BADARG;
+	}
+	if (stream)
+		len = *bufferlen;
+	else {
+		len = sizeof(guid) + sizeof(Vector);
+	}
+	if (saveFn == NULL) {
+		saveFn = DefaultSaveFunction;
+		arg = &AL->ElementSize;
+	}
+	*bufferlen = 0;
+	if (stream) {
+		if (len >= sizeof(guid)) {
+			memcpy(stream,&VectorGuid,sizeof(guid));
+			len -= sizeof(guid);
+			stream += sizeof(guid);
+		}
+		else return EOF;
+		if (len >= sizeof(Vector)) {
+			memcpy(stream,AL,sizeof(Vector));
+			len -= sizeof(Vector);
+			stream += sizeof(Vector);
+		}
+		else return EOF;
+	}
+	for (i=0; i< AL->count; i++) {
+		char *p = AL->contents;
+		
+		p += i*AL->ElementSize;
+		elemLen = saveFn(p,arg,stream,len);
+		if (elemLen<= 0)
+			return EOF;
+		if (stream) {
+			if (len > elemLen)
+				len -= elemLen;
+			else return EOF;
+		}
+		else len += elemLen;
+	}
+	if (stream == NULL)
+		*bufferlen = len;
+	return 1;
+}
+#endif
+
 static Vector *Load(FILE *stream, ReadFunction loadFn,void *arg)
 {
 	size_t i;
@@ -1288,6 +1356,17 @@ static size_t GetElementSize(const Vector *AL)
 	}
 	return AL->ElementSize;
 }
+static DestructorFunction SetDestructor(Vector *cb,DestructorFunction fn)
+{
+	DestructorFunction oldfn;
+	if (cb == NULL)
+		return NULL;
+	oldfn = cb->DestructorFn;
+	if (fn)
+		cb->DestructorFn = fn;
+	return oldfn;
+}
+
 
 VectorInterface iVector = {
 	GetCount,
@@ -1335,4 +1414,5 @@ VectorInterface iVector = {
 	Append,
 	Mismatch,
 	GetAllocator,
+	SetDestructor,
 };
