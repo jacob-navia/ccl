@@ -32,6 +32,7 @@ struct _List {
     ErrorFunction RaiseError;   /* Error function */
     ContainerHeap *Heap;
     ContainerMemoryManager *Allocator;
+	DestructorFunction DestructorFn;
 };
 static int IndexOf(List *AL,void *SearchedElement,void *ExtraArgs,size_t *result);
 static int RemoveAt(List *AL,size_t idx);
@@ -144,6 +145,8 @@ static int Clear_nd(List *l)
         while (rvp) {
             tmp = rvp;
             rvp = rvp->Next;
+			if (l->DestructorFn)
+				l->DestructorFn(tmp);			
             l->Allocator->free(tmp);
         }
     }
@@ -507,6 +510,9 @@ static int ReplaceAt(List *l,size_t position,void *data)
             position--;
         }
     }
+	if (l->DestructorFn)
+		l->DestructorFn(&rvp->Data);
+	
     /* Replace the data there */
     memcpy(&rvp->Data , data,l->ElementSize);
     l->timestamp++;
@@ -826,6 +832,9 @@ static int EraseRange(List *l,size_t start,size_t end)
     }
     while (toremove > 1) {
         tmp = rvp->Next;
+		if (l->DestructorFn)
+			l->DestructorFn(&rvp->Data);
+		
         if (l->Heap)
             iHeap.AddToFreeList(l->Heap,rvp);
         else {
@@ -880,6 +889,9 @@ static int RemoveAt(List *l,size_t position)
         removed = rvp;
         last->Next = rvp->Next;
     }
+	if (l->DestructorFn)
+		l->DestructorFn(&removed->Data);
+	
     if (l->Heap) {
         iHeap.AddToFreeList(l->Heap,removed);
     }
@@ -1544,7 +1556,16 @@ static ContainerMemoryManager *GetAllocator(List *l)
 	return l->Allocator;
 }
 
-
+static DestructorFunction SetDestructor(List *cb,DestructorFunction fn)
+{
+	DestructorFunction oldfn;
+	if (cb == NULL)
+		return NULL;
+	oldfn = cb->DestructorFn;
+	if (fn)
+		cb->DestructorFn = fn;
+	return oldfn;
+}
 ListInterface iList = {
     Size,
     GetFlags,
@@ -1592,4 +1613,5 @@ ListInterface iList = {
     SetAllocator,
 	initIterator,
 	GetAllocator,
+	SetDestructor,
 };

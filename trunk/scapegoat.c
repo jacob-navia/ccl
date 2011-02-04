@@ -26,6 +26,7 @@ struct tagTreeMap {
     unsigned timestamp;
     ContainerHeap *Heap;
     ContainerMemoryManager *Allocator;
+	DestructorFunction DestructorFn;
 };
 
 
@@ -159,7 +160,8 @@ static void Delete(TreeMap *bt, struct Node *p)
       rebalance_subtree (bt, bt->root, bt->count);
       bt->max_size = bt->count;
     }
-
+	if (bt->DestructorFn)
+		bt->DestructorFn(p);
     iHeap.AddToFreeList(bt->Heap,p);
     bt->timestamp++;
 }
@@ -707,7 +709,16 @@ static size_t Sizeof(TreeMap *tree)
 
 static int Clear(TreeMap *tree)
 {
-
+	if (tree->DestructorFn) {
+		Iterator *it = newIterator(tree);
+		void *obj;
+	
+		for (obj = it->GetFirst(it);
+			 obj != NULL;
+			 obj = it->GetNext(it)) {
+			tree->DestructorFn(obj);
+		}
+	}
     iHeap.Finalize(tree->Heap);
     tree->Heap = iHeap.Create(tree->ElementSize+sizeof(struct Node),CurrentMemoryManager);
     tree->count = 0;
@@ -887,7 +898,16 @@ static TreeMap *Load(FILE *stream, ReadFunction loadFn,void *arg)
     return result;
 }
 
-
+static DestructorFunction SetDestructor(TreeMap *cb,DestructorFunction fn)
+{
+	DestructorFunction oldfn;
+	if (cb == NULL)
+		return NULL;
+	oldfn = cb->DestructorFn;
+	if (fn)
+		cb->DestructorFn = fn;
+	return oldfn;
+}
 
 TreeMapInterface iTreeMap = {
     Size,
@@ -914,6 +934,7 @@ TreeMapInterface iTreeMap = {
     Create,
     GetElementSize,
     Load,
+	SetDestructor,
 };
 
 

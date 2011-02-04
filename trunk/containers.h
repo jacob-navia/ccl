@@ -62,6 +62,7 @@ typedef int bool;
 #define CONTAINER_ERROR_BUFFEROVERFLOW  -20
 
 typedef void (*ErrorFunction)(const char *,int,...);
+typedef int (*DestructorFunction)(void *);
 
 typedef struct tagError {
     ErrorFunction RaiseError;
@@ -259,7 +260,9 @@ typedef struct tagCircularBufferInterface {
 	int (*Clear)(CircularBuffer *cb);
 	int (*Finalize)(CircularBuffer *cb);
 	size_t (*Sizeof)(CircularBuffer *cb);
+	DestructorFunction (*SetDestructor)(CircularBuffer *cb,DestructorFunction fn);
 } CircularBufferInterface;
+extern CircularBufferInterface iCircularBuffer;
 /************************************************************************** */
 /*                                                                          */
 /*                            String Collections                            */
@@ -367,6 +370,7 @@ typedef struct tagStringCollection {
 	int (*Mismatch)(StringCollection *a1,StringCollection *a2,size_t *mismatch);
 	StringCollection *(*InitWithAllocator)(StringCollection *result,size_t startsize,ContainerMemoryManager *allocator);
 	StringCollection *(*Init)(StringCollection *result,size_t startsize);
+	DestructorFunction (*SetDestructor)(StringCollection *v,DestructorFunction fn);
 } StringCollectionInterface;
 
 extern StringCollectionInterface iStringCollection;
@@ -439,6 +443,7 @@ typedef struct tagList {
 		      ContainerMemoryManager  *allocator);
 	int (*initIterator)(List *list,void *storage);
 	ContainerMemoryManager *(*GetAllocator)(List *list);
+	DestructorFunction (*SetDestructor)(List *v,DestructorFunction fn);
 } ListInterface;
 
 extern ListInterface iList;
@@ -494,6 +499,7 @@ typedef struct _DeQueueInterface {
     int (*PopFront)(Deque *d,void *outbuf);
     Deque *(*Create)(size_t elementSize);
 	Deque *(*Init)(Deque *d,size_t elementSize);
+	DestructorFunction (*SetDestructor)(Deque *Q,DestructorFunction fn);
 } DequeInterface;
 
 extern DequeInterface iDeque;
@@ -552,6 +558,7 @@ typedef struct tagDlist {
     Dlist *(*Init)(Dlist *dlist,size_t elementsize);
     int (*CopyElement)(Dlist *l,size_t idx,void *outbuf);/* Copies element to buffer */
     int (*InsertIn)(Dlist *l, size_t idx,Dlist *newData);/* Inserts list at position */
+	DestructorFunction (*SetDestructor)(Dlist *v,DestructorFunction fn);
 
 } DlistInterface;
 
@@ -635,6 +642,7 @@ typedef struct tagVector {
 	int (*Append)(Vector *AL1, Vector *AL2);
 	int (*Mismatch)(Vector *a1,Vector *a2,size_t *mismatch);
 	ContainerMemoryManager *(*GetAllocator)(Vector *AL);
+	DestructorFunction (*SetDestructor)(Vector *v,DestructorFunction fn);
 } VectorInterface;
 
 extern VectorInterface iVector;
@@ -777,6 +785,7 @@ typedef struct tagDictionary {
 	Dictionary *(*InitWithAllocator)(Dictionary *Dict,size_t elementsize,size_t hint,ContainerMemoryManager *allocator);
     StringCollection *(*GetKeys)(Dictionary *Dict);
 	ContainerMemoryManager *(*GetAllocator)(Dictionary *Dict);
+	DestructorFunction (*SetDestructor)(Dictionary *v,DestructorFunction fn);	
 } DictionaryInterface;
 
 extern DictionaryInterface iDictionary;
@@ -833,6 +842,7 @@ typedef struct tagHashTable {
     int (*deleteIterator)(Iterator *);
     int (*Save)(HashTable *HT,FILE *stream, SaveFunction saveFn,void *arg);
     HashTable *(*Load)(FILE *stream, ReadFunction readFn, void *arg);
+	DestructorFunction (*SetDestructor)(HashTable *v,DestructorFunction fn);
 } HashTableInterface;
 
 extern HashTableInterface iHashTable;
@@ -877,6 +887,7 @@ typedef struct tagBinarySearchTreeInterface {
     Iterator *(*newIterator)(BinarySearchTree *);
     int (*deleteIterator)(Iterator *);
     BinarySearchTree *(*Create)(size_t ElementSize);
+	DestructorFunction (*SetDestructor)(BinarySearchTree *v,DestructorFunction fn);
 } BinarySearchTreeInterface;
 
 extern BinarySearchTreeInterface iBinarySearchTree;
@@ -916,6 +927,7 @@ typedef struct tagRedBlackTreeInterface {
     CompareFunction Compare;
     Iterator *(*newIterator)(RedBlackTree *);
     int (*deleteIterator)(Iterator *);
+	DestructorFunction (*SetDestructor)(RedBlackTree *v,DestructorFunction fn);
 } RedBlackTreeInterface;
 
 extern RedBlackTreeInterface iRedBlackTree;
@@ -956,6 +968,7 @@ typedef struct tagTreeMapInterface {
     TreeMap *(*Create)(size_t ElementSize);
 	size_t (*GetElementSize)(TreeMap *d);
 	TreeMap *(*Load)(FILE *stream, ReadFunction loadFn,void *arg);
+	DestructorFunction (*SetDestructor)(TreeMap *v,DestructorFunction fn);
 } TreeMapInterface;
 
 extern TreeMapInterface iTreeMap;

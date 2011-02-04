@@ -26,6 +26,7 @@ struct Dlist {
     ErrorFunction RaiseError;        /* Error function */
 	ContainerHeap *Heap;
 	ContainerMemoryManager *Allocator;
+	DestructorFunction DestructorFn;
 };
 
 static const guid DlistGuid = {0xac2525ff, 0x2e2a, 0x4540,
@@ -211,6 +212,8 @@ static int Clear(Dlist *l)
 		while (rvp) {
 			tmp = rvp;
 			rvp = rvp->Next;
+			if (l->DestructorFn)
+				l->DestructorFn(tmp);
 			l->Allocator->free(tmp);
 		}
 	}
@@ -503,6 +506,8 @@ static int ReplaceAt(Dlist *l,size_t position,void *data)
 			position--;
 		}
 	}
+	if (l->DestructorFn)
+		l->DestructorFn(&rvp->Data);	
 	/* Replace the data there */
 	memcpy(&rvp->Data , data,l->ElementSize);
 	l->timestamp++;
@@ -1405,7 +1410,16 @@ static Dlist *Load(FILE *stream, ReadFunction loadFn,void *arg)
 	free(buf);
 	return result;
 }
-
+static DestructorFunction SetDestructor(Dlist *cb,DestructorFunction fn)
+{
+	DestructorFunction oldfn;
+	if (cb == NULL)
+		return NULL;
+	oldfn = cb->DestructorFn;
+	if (fn)
+		cb->DestructorFn = fn;
+	return oldfn;
+}
 
 DlistInterface iDlist = {
 	Size,
@@ -1450,5 +1464,6 @@ DlistInterface iDlist = {
 	Init,
 	CopyElement,
 	InsertIn,
+	SetDestructor,
 };
 

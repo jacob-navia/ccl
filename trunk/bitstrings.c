@@ -46,6 +46,7 @@ static unsigned char InvertedBitIndexMask[] ={
 #define BYTES_FROM_BITS(bitcount) (1+(bitcount)/CHAR_BIT)
 #define BITPOS(idx) (idx & (CHAR_BIT-1))
 static int ShiftLeftByOne(unsigned char *p, size_t z,unsigned carry);
+static int Add(BitString *b,int newval);
 
 static int NullPtrError(const char *fnName)
 {
@@ -499,7 +500,6 @@ static BitString *ObjectToBitString(unsigned char *p,size_t siz)
 	return result;
 }
 
-#if 0
 static int AddRange(BitString *b, size_t bitSize, unsigned char *data)
 {
 	size_t i,currentByte,idx;
@@ -512,6 +512,7 @@ static int AddRange(BitString *b, size_t bitSize, unsigned char *data)
 		return CONTAINER_ERROR_NOMEMORY;
 	/* Add first byte */
 	i = b->count & 7;
+	toShift = (unsigned)i;
 	currentByte = 0;
 	if (i) {
 		byte = data[currentByte++];
@@ -522,17 +523,16 @@ static int AddRange(BitString *b, size_t bitSize, unsigned char *data)
 			bitSize--;
 		}
 	}
-	if (bitsize == 0) return 1;
+	if (bitSize == 0) return 1;
 	idx = 1+ (b->count>>3);
 	while (bitSize >= CHAR_BIT) {
 		byte = data[currentByte++] << toShift;
-		byte |= (data[currentByte] << CHAR_BIT-toShift);
+		byte |= (data[currentByte] << (CHAR_BIT-toShift));
 		b->contents[idx++] = byte;
 		bitSize -= CHAR_BIT;
 	}
 	if (bitSize == 0) return 1;
-	i = bitSize;
-	byte = data[currentByte++];
+	byte = data[currentByte];
 	while (bitSize > 0) {
 		Add(b,byte&0x80);
 		byte <<= 1;
@@ -540,7 +540,6 @@ static int AddRange(BitString *b, size_t bitSize, unsigned char *data)
 	}
 	return 1;
 }
-#endif
 
 static BitString * StringToBitString(unsigned char * str)
 {

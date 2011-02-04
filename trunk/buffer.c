@@ -169,9 +169,22 @@ struct _CircularBuffer {
 	size_t head;
 	size_t tail;
 	ContainerMemoryManager *Allocator;
+	DestructorFunction DestructorFn;
 	unsigned char *data;
 };
 
+
+static DestructorFunction SetDestructor(CircularBuffer *cb,DestructorFunction fn)
+{
+	DestructorFunction oldfn;
+	if (cb == NULL)
+		return NULL;
+	oldfn = cb->DestructorFn;
+	if (fn)
+		cb->DestructorFn = fn;
+	return oldfn;
+}
+	
 static size_t Size(CircularBuffer *cb)
 {
 	if (cb == NULL)
@@ -264,10 +277,22 @@ static CircularBuffer *CreateCB(size_t sizElement,size_t sizeBuffer)
 
 static int CBClear(CircularBuffer *cb)
 {
+	unsigned char *p;
+	size_t i;
 	if (cb == NULL) {
 		iError.RaiseError("iCircularBuffer.Clear",CONTAINER_ERROR_BADARG);
 		return CONTAINER_ERROR_BADARG;
 	}
+	if (cb->head == cb->tail)
+		return 0;
+	if (cb->DestructorFn) {
+		p = cb->data;
+		for (i=cb->tail; i<cb->head;i++) {
+			cb->DestructorFn(p);
+			p += cb->ElementSize;
+		}
+	}
+	memset(p,0,cb->ElementSize*(cb->head-cb->tail));
 	cb->head = cb->tail = 0;
 	return 1;
 }
@@ -278,6 +303,7 @@ static int CBFinalize(CircularBuffer *cb)
 		iError.RaiseError("iCircularBuffer.Finalize",CONTAINER_ERROR_BADARG);
 		return CONTAINER_ERROR_BADARG;
 	}
+	CBClear(cb);
 	cb->Allocator->free(cb->data);
 	cb->Allocator->free(cb);
 	return 1;
@@ -302,4 +328,5 @@ CircularBufferInterface iCircularBuffer = {
 	CBClear,
 	CBFinalize,
 	Sizeof,
+	SetDestructor,
 };
