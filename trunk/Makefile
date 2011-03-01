@@ -15,11 +15,11 @@ MAKEFILES=Makefile Makefile.lcc Makefile.msvc
 OBJS=vector.o containererror.o dlist.o qsortex.o test.o bitstrings.o generic.o \
     dictionary.o list.o strcollection.o searchtree.o heap.o malloc_debug.o \
     bloom.o fgetline.o pool.o pooldebug.o redblacktree.o scapegoat.o queue.o \
-    buffer.o
+    buffer.o test.o
 
 dotest:	libccl.a test.o
 	gcc -o dotest $CFLAGS) test.c libccl.a -lm
-libccl.a:	$(OBJS) 
+libccl.a:	$(OBJS) containers.h ccl_internal.h
 	ar r libccl.a $(OBJS)
 clean:
 	rm -f $(OBJS) libccl.a dotest
