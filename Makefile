@@ -17,7 +17,7 @@ OBJS=vector.o containererror.o dlist.o qsortex.o test.o bitstrings.o generic.o \
     bloom.o fgetline.o pool.o pooldebug.o redblacktree.o scapegoat.o queue.o \
     buffer.o
 
-dotest:	libccl.a test.c
+dotest:	libccl.a test.o
 	gcc -o dotest test.c libccl.a -lm
 libccl.a:	$(OBJS) 
 	ar r libccl.a $(OBJS)
