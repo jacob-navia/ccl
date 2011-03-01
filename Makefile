@@ -18,7 +18,7 @@ OBJS=vector.o containererror.o dlist.o qsortex.o test.o bitstrings.o generic.o \
     buffer.o test.o
 
 dotest:	libccl.a test.o
-	gcc -o dotest $CFLAGS) test.c libccl.a -lm
+	gcc -o dotest $(CFLAGS) test.c libccl.a -lm
 libccl.a:	$(OBJS) containers.h ccl_internal.h
 	ar r libccl.a $(OBJS)
 clean:
