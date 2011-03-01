@@ -618,6 +618,7 @@ static int Remove(BinarySearchTree *tree, const void *data, void *ExtraArgs)
 
 
 
+#if 0
 static int hide(BinarySearchTree *tree, BinarySearchTreeNode *node, const void *data,void *ExtraArgs)
 {
 	int retval=-1;
@@ -637,6 +638,7 @@ static int hide(BinarySearchTree *tree, BinarySearchTreeNode *node, const void *
 	}
 	return retval;
 }
+#endif
 static void *lookup(BinarySearchTree *tree, BinarySearchTreeNode *node, void *data,CompareInfo *ExtraArgs)
 {
 	void *retval=NULL;
