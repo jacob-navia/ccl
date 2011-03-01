@@ -285,8 +285,8 @@ static int CBClear(CircularBuffer *cb)
 	}
 	if (cb->head == cb->tail)
 		return 0;
+	p = cb->data;
 	if (cb->DestructorFn) {
-		p = cb->data;
 		for (i=cb->tail; i<cb->head;i++) {
 			cb->DestructorFn(p);
 			p += cb->ElementSize;

@@ -77,7 +77,7 @@ static int NoMemoryError(StringCollection *SC,const char *fnName)
 	return doerrorCall(SC->RaiseError,fnName,CONTAINER_ERROR_NOMEMORY);
 }
 
-static int Strcmp(unsigned char *s1,unsigned char *s2,CompareInfo *ci)
+static int Strcmp(const unsigned char *s1,const unsigned char *s2,CompareInfo *ci)
 {
 	return strcmp((char *)s1,(char *)s2);
 }
