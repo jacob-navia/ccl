@@ -1148,6 +1148,7 @@ static Vector *CastToArray(StringCollection *SC)
 	return AL;
 }
 
+/* Bug fixes proposed by oetelaar.automatisering */
 static StringCollection *CreateFromFile(unsigned char *fileName)
 {
 	StringCollection *result;
@@ -1166,18 +1167,24 @@ static StringCollection *CreateFromFile(unsigned char *fileName)
 		return NULL;
 	}
 	result = iStringCollection.Create(10);
-	if (result == NULL)
+	if (result == NULL) {
+		fclose(f); /* Was missing! */
 		return NULL;
+	}
 	r = GetLine(&line,&llen,f,mm);
 	while (r >= 0) {
 		if (iStringCollection.Add(result,line) <= 0) {
 			Finalize(result);
+			free(line); /* was missing! */
+			fclose(f);
 			return NULL;
 		}
 		r = GetLine(&line,&llen,f,mm);
 	}
 	if (r != EOF) {
 		Finalize(result);
+		free(line);
+		fclose(f);
 		return NULL;
 	}
 	free(line);
