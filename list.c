@@ -970,6 +970,7 @@ static int Reverse(List *l)
 static int AddRange(List * AL,size_t n, void *data)
 {
         unsigned char *p;
+	list_element *oldLast;
 
         if (AL == NULL) {
                 iError.RaiseError("iList.AddRange",CONTAINER_ERROR_BADARG);
@@ -984,9 +985,13 @@ static int AddRange(List * AL,size_t n, void *data)
                 return CONTAINER_ERROR_BADARG;
         }
         p = data;
+	oldLast = AL->Last;
         while (n > 0) {
                 int r = Add_nd(AL,p);
                 if (r < 0) {
+			AL->Last = oldLast;
+			if (AL->Last)
+				AL->Last->Next = NULL;
                         return r;
                 }
                 p += AL->ElementSize;
