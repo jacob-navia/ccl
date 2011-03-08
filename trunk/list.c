@@ -1464,7 +1464,7 @@ static List *Load(FILE *stream, ReadFunction loadFn,void *arg)
     result = iList.Create(L.ElementSize);
     if (result == NULL) {
         iError.RaiseError("iList.Load",CONTAINER_ERROR_NOMEMORY);
-        free(buf);
+        free(buf); /* Was missing! */
         return NULL;
     }
     result->Flags = L.Flags;
