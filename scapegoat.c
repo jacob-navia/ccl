@@ -876,6 +876,7 @@ static TreeMap *Load(FILE *stream, ReadFunction loadFn,void *arg)
     result = Create(L.ElementSize);
     if (result == NULL) {
         iError.RaiseError("Load",CONTAINER_ERROR_NOMEMORY);
+        free(buf);
         return NULL;
     }
     result->Flags = L.Flags;
