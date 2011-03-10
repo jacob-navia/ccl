@@ -264,27 +264,47 @@ static BitString *GetRange(BitString *bs,size_t start,size_t end)
 {
 	size_t t,len;
 	BitString *result;
-	size_t startbyte,endbyte,shiftamount;
+	size_t startbyte,endbyte,shiftamount,bytesToCopy,idx;
 
 	if (bs == NULL) {
 		NullPtrError("GetRange");
 		return NULL;
 	}
-	if (end >= bs->count)		end = bs->count;
 	if (start > end) {
 		t = start;
 		start = end;
 		end = t;
 	}
-	len  = end-start;
+	if (end >= bs->count)
+		end = bs->count;
+	if (end != start)
+		len  = end-start;
+	else len = 0;
 	result = Create(len);
-	startbyte = BYTES_FROM_BITS(start);
-	endbyte = BYTES_FROM_BITS(end);
+	if (len == 0)
+		return result;
+	startbyte = start/CHAR_BIT;
+	endbyte = end/CHAR_BIT;
 	shiftamount = start&(CHAR_BIT-1);
-	/* Copy the first byte */
-	result->contents[0] = (bs->contents[0] >> shiftamount);
-	memcpy(result->contents,bs->contents+startbyte,endbyte-startbyte);
-	if (shiftamount)		RightShift(result,shiftamount);
+	/* Copy the first byte. Bring the first bit to be copied into
+	   the position zero by shifting right all bits smaller than
+	   the start index */
+	result->contents[0] = (bs->contents[startbyte] >> shiftamount);
+	bytesToCopy = 1+(endbyte-startbyte);
+	idx = 1;
+	while (bytesToCopy) {
+		/* Perform 2 shifts to eliminate all lower order bits */
+		unsigned b = (bs->contents[++startbyte] >> (CHAR_BIT-shiftamount));
+		b = b << (CHAR_BIT-shiftamount);
+		result->contents[idx-1] |= b;
+		b = (bs->contents[startbyte] >> shiftamount);
+		b = (bs->contents[startbyte] << shiftamount);
+		result->contents[idx] |= b;
+		bytesToCopy--;
+		idx++;
+	}
+	/* Since we have modified directly the bits, set now the count to its correct
+	  value. */
 	result->count = len;
 	return result;
 }
