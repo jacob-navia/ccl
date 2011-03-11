@@ -1063,6 +1063,7 @@ typedef struct tagBitString {
 	unsigned char *(*GetBits)(BitString *BitStr);
 	int        (*CopyBits)(BitString *bitstr,unsigned char *buf);
 	int        (*Memset)(BitString *b,size_t siz,int newval);
+	int (*AddRange)(BitString *b,size_t bitSize,unsigned char *data);
 } BitStringInterface;
 
 extern BitStringInterface iBitString;
