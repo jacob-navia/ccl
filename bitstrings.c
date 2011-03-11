@@ -282,13 +282,13 @@ static BitString *GetRange(BitString *bs,size_t start,size_t end)
 	result = Create(len);
 	if (len == 0)
 		return result;
+	result->count = len;
 	startbyte = start/CHAR_BIT;
 	endbyte = end/CHAR_BIT;
 	shiftamount = start&(CHAR_BIT-1);
 	if (shiftamount == 0) {
 		/* Optimize this case. We can do just a memory move */
 		memmove(result->contents,bs->contents+startbyte,endbyte-startbyte);
-		result->count = len;
 		return result;
 	}
 	/* Copy the first byte. Bring the first bit to be copied into
@@ -305,9 +305,6 @@ static BitString *GetRange(BitString *bs,size_t start,size_t end)
 		bytesToCopy--;
 		idx++;
 	}
-	/* Since we have modified directly the bits, set now the count to its correct
-	  value. */
-	result->count = len;
 	return result;
 }
 
@@ -491,6 +488,10 @@ static BitString * Not(BitString *bsl)
 	size_t len,i;
 	BitString *result;
 
+	if (bsl == NULL) {
+		NullPtrError("Not");
+		return NULL;
+	}
 	len = bsl->count;
 	result = Create(len);
 	for (i=0; i<len;i++) {
@@ -1410,6 +1411,7 @@ BitStringInterface iBitString = {
 	GetBits,
 	CopyBits,
 	Memset,
+	AddRange,
 };
 
 
