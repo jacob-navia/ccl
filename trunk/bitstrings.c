@@ -223,7 +223,7 @@ static int RightShift(BitString *bs,size_t shift)
 }
 
 static int LeftShift(BitString *bs,size_t shift){
-	unsigned int tmp=0,tmp1,Mask;
+	unsigned int tmp=0,tmp1;
 	size_t left=0;
 	unsigned char *pdata;
 	size_t len,bytesize;
@@ -245,12 +245,11 @@ static int LeftShift(BitString *bs,size_t shift){
 		memset(pdata,0,left);
 	}
 	if (shift) {
-		Mask = ~(((unsigned)-1) << shift);
 		while (len >= CHAR_BIT) {
 			tmp1 = *pdata;
 			*pdata = (unsigned char)((*pdata << shift) | tmp);
 			len -= CHAR_BIT;
-			tmp = (tmp1 >> (CHAR_BIT-shift))&Mask;
+			tmp = (tmp1 >> (CHAR_BIT-shift));
 			pdata++;
 		}
 		if (len) {
@@ -270,6 +269,8 @@ static BitString *GetRange(BitString *bs,size_t start,size_t end)
 		NullPtrError("GetRange");
 		return NULL;
 	}
+	if (start >= bs->count)
+		return NULL;
 	if (start > end) {
 		t = start;
 		start = end;
@@ -277,28 +278,29 @@ static BitString *GetRange(BitString *bs,size_t start,size_t end)
 	}
 	if (end >= bs->count)
 		end = bs->count;
-	if (end != start)
-		len  = end-start;
-	else len = 0;
+	len  = end-start;
 	result = Create(len);
 	if (len == 0)
 		return result;
 	startbyte = start/CHAR_BIT;
 	endbyte = end/CHAR_BIT;
 	shiftamount = start&(CHAR_BIT-1);
+	if (shiftamount == 0) {
+		/* Optimize this case. We can do just a memory move */
+		memmove(result->contents,bs->contents+startbyte,endbyte-startbyte);
+		result->count = len;
+		return result;
+	}
 	/* Copy the first byte. Bring the first bit to be copied into
 	   the position zero by shifting right all bits smaller than
 	   the start index */
 	result->contents[0] = (bs->contents[startbyte] >> shiftamount);
-	bytesToCopy = 1+(endbyte-startbyte);
+	bytesToCopy = (endbyte-startbyte);
 	idx = 1;
 	while (bytesToCopy) {
-		/* Perform 2 shifts to eliminate all lower order bits */
-		unsigned b = (bs->contents[++startbyte] >> (CHAR_BIT-shiftamount));
-		b = b << (CHAR_BIT-shiftamount);
+		unsigned b = (bs->contents[++startbyte] << (CHAR_BIT-shiftamount));
 		result->contents[idx-1] |= b;
-		b = (bs->contents[startbyte] >> shiftamount);
-		b = (bs->contents[startbyte] << shiftamount);
+		b = (bs->contents[startbyte] >> (CHAR_BIT-shiftamount));
 		result->contents[idx] |= b;
 		bytesToCopy--;
 		idx++;
