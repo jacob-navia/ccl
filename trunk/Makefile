@@ -24,5 +24,5 @@ libccl.a:	$(OBJS) containers.h ccl_internal.h
 clean:
 	rm -f $(OBJS) libccl.a dotest
 zip:	$(SRC)
-	zip -9 container-lib-src.zip $(SRC) $(DOCS) $(MAKEFILES) 
+	rm container-lib-src.zip;rm -rf ccl;svn export . ccl;zip -9 -r  container-lib-src.zip ccl 
 

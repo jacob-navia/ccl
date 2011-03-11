@@ -504,7 +504,7 @@ static int NotAssign(BitString *bsl)
 	size_t len,i;
 
 	if (bsl == NULL) {
-		return NullPtrError("XorAssign");
+		return NullPtrError("NotAssign");
 	}
 	len = bsl->count;
 	for (i=0; i<len;i++) {
