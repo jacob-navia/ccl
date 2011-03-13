@@ -1051,7 +1051,7 @@ typedef struct tagBitString {
 	int        (*RemoveAt)(BitString *bitStr,size_t idx);
     BitString *(*GetRange)(BitString *b,size_t start,size_t end);
     BitString *(*StringToBitString)(unsigned char *);
-    BitString *(*ObjectToBitString)(unsigned char *p,size_t size);
+    BitString *(*ObjectToBitString)(size_t size,void *data);
     int        (*LeftShift)(BitString *bs,size_t shift);
     int        (*RightShift)(BitString *bs,size_t shift);
     size_t     (*Print)(BitString *b,size_t bufsiz,unsigned char *out);
@@ -1061,8 +1061,9 @@ typedef struct tagBitString {
     BitString *(*Create)(size_t bitlen);
 	BitString *(*Init)(BitString *BitStr,size_t bitlen);
 	unsigned char *(*GetBits)(BitString *BitStr);
-	int        (*CopyBits)(BitString *bitstr,unsigned char *buf);
+	int        (*CopyBits)(BitString *bitstr,void *buf);
 	int        (*Memset)(BitString *b,size_t siz,int newval);
+	int (*AddRange)(BitString *b, size_t bitSize, void *data);
 } BitStringInterface;
 
 extern BitStringInterface iBitString;
