@@ -1,8 +1,3 @@
-/* -------------------------------------------------------------------
-                        Double linked list routines sample implementation
-                         This is not ready yet...
----------------------------------------------------------------------- */
-
 #ifndef DEFAULT_START_SIZE
 #define DEFAULT_START_SIZE 20
 #endif

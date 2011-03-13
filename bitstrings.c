@@ -515,7 +515,7 @@ static int NotAssign(BitString *bsl)
 }
 
 
-static BitString *ObjectToBitString(unsigned char *p,size_t siz)
+static BitString *ObjectToBitString(size_t siz,void *p)
 {
 	BitString *result = Create(CHAR_BIT*siz);
 	memcpy(result->contents,p,siz);
@@ -523,9 +523,10 @@ static BitString *ObjectToBitString(unsigned char *p,size_t siz)
 	return result;
 }
 
-static int AddRange(BitString *b, size_t bitSize, unsigned char *data)
+static int AddRange(BitString *b, size_t bitSize, void *pdata)
 {
 	size_t i,currentByte,idx;
+	unsigned char *data = pdata;
 	unsigned toShift,byte;
 	if (bitSize == 0) return 0;
 	if (b == NULL || data == NULL) {
@@ -1323,7 +1324,7 @@ static unsigned char *GetBits(BitString *b)
 	return b->contents;
 }
 
-static int CopyBits(BitString *b,unsigned char *buf)
+static int CopyBits(BitString *b,void *buf)
 {
 	if (b == NULL) {
 		return NullPtrError("CopyBits");
