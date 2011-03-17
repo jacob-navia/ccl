@@ -16,7 +16,7 @@ with C" by Kyle Loudon, and "C unleashed" of Heathfield, Kirby et al.
 /*  The tree nodes. */
 typedef struct tagBinarySearchTreeNode {
 	char               hidden;
-	signed char        factor; // Thanks to Alan Curry for this
+	signed char        factor; /* Thanks to Alan Curry for this */
 	struct tagBinarySearchTreeNode *left;
 	struct tagBinarySearchTreeNode *right;
 	char               data[MINIMUM_ARRAY_INDEX];
