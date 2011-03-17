@@ -751,7 +751,7 @@ typedef struct tagDictionary {
     int (*Erase)(Dictionary *Dict,const unsigned char *);
     /* Frees the memory used by the dictionary */
     int (*Finalize)(Dictionary *Dict);
-    /* Calls the given function for all strings. "Arg" is a used supplied argument */
+    /* Calls the given function for all objects. "Arg" is a used supplied argument */
     /* (that can be NULL) that is passed to the function to call */
     int (*Apply)(Dictionary *Dict,int (*Applyfn)(const unsigned char *Key,
                                                   const void *data,void *arg),void *arg);
