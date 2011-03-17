@@ -289,21 +289,25 @@ static BitString *GetRange(BitString *bs,size_t start,size_t end)
 	if (shiftamount == 0) {
 		/* Optimize this case. We can do just a memory move */
 		memmove(result->contents,bs->contents+startbyte,endbyte-startbyte);
-		return result;
 	}
-	/* Copy the first byte. Bring the first bit to be copied into
-	   the position zero by shifting right all bits smaller than
-	   the start index */
-	result->contents[0] = (bs->contents[startbyte] >> shiftamount);
-	bytesToCopy = (endbyte-startbyte);
-	idx = 1;
-	while (bytesToCopy) {
-		unsigned b = (bs->contents[++startbyte] << (CHAR_BIT-shiftamount));
-		result->contents[idx-1] |= b;
-		b = (bs->contents[startbyte] >> (CHAR_BIT-shiftamount));
-		result->contents[idx] |= b;
-		bytesToCopy--;
-		idx++;
+	else {
+		/* Copy the first byte. Bring the first bit to be copied into
+		   the position zero by shifting right all bits smaller than
+		   the start index */
+		result->contents[0] = (bs->contents[startbyte] >> shiftamount);
+		bytesToCopy = (endbyte-startbyte);
+		idx = 1;
+		while (bytesToCopy) {
+			/* Put the low bits of the next byte into the correct
+			   position of the last byte of the result */
+			unsigned b = (bs->contents[++startbyte] << (CHAR_BIT-shiftamount));
+			result->contents[idx-1] |= b;
+			/* Put the high bits now in the low position of the result */
+			b = (bs->contents[startbyte] >> (CHAR_BIT-shiftamount));
+			result->contents[idx] |= b;
+			bytesToCopy--;
+			idx++;
+		}
 	}
 	return result;
 }
@@ -455,12 +459,14 @@ static BitString * Xor(BitString *bsl,BitString *bsr)
 	len = bsl->count < bsr->count ? bsl->count : bsr->count;
 	resultlen = bsl->count < bsr->count ? bsr->count : bsl->count;
 	result = Create(resultlen);
+	len = 1+(len >>3);
 	for (i=0; i<len;i++) {
 		result->contents[i] = bsl->contents[i] ^ bsr->contents[i];
 	}
 	if (bsl->count < bsr->count)		src = bsr;
 	else
 	    src = bsl;
+	resultlen = 1+(resultlen>>3);
 	while (i < resultlen) {
 		result->contents[i] = src->contents[i];
 		i++;
@@ -477,6 +483,7 @@ static int XorAssign(BitString *bsl,BitString *bsr)
 	}
 
 	len = bsl->count < bsr->count ? bsl->count : bsr->count;
+	len = 1+(len >> 3);
 	for (i=0; i<len;i++) {
 		bsl->contents[i] ^= bsr->contents[i];
 	}
@@ -494,6 +501,7 @@ static BitString * Not(BitString *bsl)
 	}
 	len = bsl->count;
 	result = Create(len);
+	len = 1+(len >> 3);
 	for (i=0; i<len;i++) {
 		result->contents[i] = ~bsl->contents[i];
 	}
@@ -507,7 +515,7 @@ static int NotAssign(BitString *bsl)
 	if (bsl == NULL) {
 		return NullPtrError("NotAssign");
 	}
-	len = bsl->count;
+	len = 1+(bsl->count>> 3);
 	for (i=0; i<len;i++) {
 		bsl->contents[i] = ~bsl->contents[i];
 	}
