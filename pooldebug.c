@@ -508,7 +508,7 @@ static Pool *newPool_debug( const char *file_line)
     pool->owner = GetCurrentThread();
 #endif /* THREAD_VERSION */
      if ((pool_allocator = calloc(1,sizeof(Allocator))) == NULL) {
-        Free(pool); /* Was missing! */
+        free(pool); /* Was missing! */
         return NULL;
     }
     pool_allocator->owner = pool;
