@@ -288,7 +288,7 @@ static BitString *GetRange(BitString *bs,size_t start,size_t end)
 	shiftamount = start&(CHAR_BIT-1);
 	if (shiftamount == 0) {
 		/* Optimize this case. We can do just a memory move */
-		memmove(result->contents,bs->contents+startbyte,endbyte-startbyte);
+		memmove(result->contents,bs->contents+startbyte,1+endbyte-startbyte);
 	}
 	else {
 		/* Copy the first byte. Bring the first bit to be copied into
@@ -303,7 +303,7 @@ static BitString *GetRange(BitString *bs,size_t start,size_t end)
 			unsigned b = (bs->contents[++startbyte] << (CHAR_BIT-shiftamount));
 			result->contents[idx-1] |= b;
 			/* Put the high bits now in the low position of the result */
-			b = (bs->contents[startbyte] >> (CHAR_BIT-shiftamount));
+			b = (bs->contents[startbyte] >> shiftamount);
 			result->contents[idx] |= b;
 			bytesToCopy--;
 			idx++;
@@ -1349,10 +1349,10 @@ static BitString *Init(BitString *set, size_t bitlen)
 	size_t bytesiz;
 
 	memset(set,0,sizeof(BitString));
-	bytesiz = 1+bytesizeFromBitLen(bitlen);
+	bytesiz = 8+bytesizeFromBitLen(bitlen);
 	bytesiz = roundup(bytesiz);
 	set->contents = CurrentMemoryManager->malloc(bytesiz);
-	if (set->contents == NULL	) {
+	if (set->contents == NULL) {
 		return NULL;
 	}
 	memset(set->contents,0,bytesiz);
