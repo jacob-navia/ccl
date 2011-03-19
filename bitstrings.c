@@ -261,20 +261,13 @@ static int LeftShift(BitString *bs,size_t shift){
 
 static BitString *GetRange(BitString *bs,size_t start,size_t end)
 {
-	size_t t,len;
+	size_t len;
 	BitString *result;
 	size_t startbyte,endbyte,shiftamount,bytesToCopy,idx;
 
-	if (bs == NULL) {
+	if (bs == NULL || start >=bs->count || start > end) {
 		NullPtrError("GetRange");
 		return NULL;
-	}
-	if (start >= bs->count)
-		return NULL;
-	if (start > end) {
-		t = start;
-		start = end;
-		end = t;
 	}
 	if (end >= bs->count)
 		end = bs->count;
@@ -462,14 +455,6 @@ static BitString * Xor(BitString *bsl,BitString *bsr)
 	len = 1+(len >>3);
 	for (i=0; i<len;i++) {
 		result->contents[i] = bsl->contents[i] ^ bsr->contents[i];
-	}
-	if (bsl->count < bsr->count)		src = bsr;
-	else
-	    src = bsl;
-	resultlen = 1+(resultlen>>3);
-	while (i < resultlen) {
-		result->contents[i] = src->contents[i];
-		i++;
 	}
 	result->count = resultlen;
 	return result;
