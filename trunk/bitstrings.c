@@ -443,7 +443,7 @@ static int AndAssign(BitString *bsl,BitString *bsr)
 static BitString * Xor(BitString *bsl,BitString *bsr)
 {
 	size_t len,i,resultlen;
-	BitString *result,*src;
+	BitString *result;
 
 	if (bsl == NULL || bsr == NULL) {
 		NullPtrError("Xor");
