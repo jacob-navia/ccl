@@ -22,7 +22,7 @@ dotest:	libccl.a test.o
 libccl.a:	$(OBJS) containers.h ccl_internal.h
 	ar r libccl.a $(OBJS)
 clean:
-	rm -f $(OBJS) libccl.a dotest
+	rm -rf $(OBJS) libccl.a dotest dotest.dSYM
 zip:	$(SRC)
 	rm container-lib-src.zip;rm -rf ccl;svn export . ccl;zip -9 -r  container-lib-src.zip ccl 
 
