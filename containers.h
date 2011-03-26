@@ -191,7 +191,7 @@ typedef struct tagGenericContainerInterface {
     int (*deleteIterator)(Iterator *);
     int (*Save)(GenericContainer *Gen,FILE *stream, SaveFunction saveFn,void *arg);
 } GenericContainerInterface;
-extern GenericContainerInterface iGenericContainer;
+extern GenericContainerInterface iGeneric;
 
 /************************************************************************** */
 /*                                                                          */
