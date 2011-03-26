@@ -20,9 +20,9 @@ static int initVector(void)
 static int InitObserver(Observer *result,void *ObservedObject, ObserverFunction callback, unsigned flags)
 {
 	GenericContainer *gen = ObservedObject;
-	unsigned Subjectflags = iGenericContainer.GetFlags(gen);
+	unsigned Subjectflags = iGeneric.GetFlags(gen);
 	Subjectflags |= CONTAINER_HAS_OBSERVER;
-	iGenericContainer.SetFlags(gen,Subjectflags);
+	iGeneric.SetFlags(gen,Subjectflags);
 	memset(result,0,sizeof(Observer));
 	result->ObservedObject = ObservedObject;
 	result->Callback = callback;
