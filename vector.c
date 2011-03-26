@@ -3,21 +3,19 @@
 #ifndef DEFAULT_START_SIZE
 #define DEFAULT_START_SIZE 20
 #endif
-/* Definition of the String Collection type */
+/* Definition of the vector type */
 struct _Vector {
     VectorInterface *VTable; /* The table of functions */
     size_t count;                  /* number of elements in the array */
-    unsigned int Flags;             /* Read-only or other flags */
-    size_t ElementSize;		/* Size of the elements stored in this array. */
-    void *contents;               /* The contents of the collection */
-    size_t capacity;                /* allocated space in the contents vector */
-	unsigned timestamp;
-    /* Element comparison function */
-	CompareFunction CompareFn;
-    /* Error function */
-    ErrorFunction RaiseError;
-	ContainerMemoryManager *Allocator;
-	DestructorFunction DestructorFn;
+    unsigned int Flags;            /* Read-only or other flags */
+    size_t ElementSize;	           /* Size of the elements stored in this array. */
+    void *contents;                /* The contents of the collection */
+    size_t capacity;               /* allocated space in the contents vector */
+    unsigned timestamp;            /* Incremented at each change */
+    CompareFunction CompareFn;     /* Element comparison function */
+    ErrorFunction RaiseError;      /* Error function */
+    ContainerMemoryManager *Allocator;
+    DestructorFunction DestructorFn;
 } ;
 
 static const guid VectorGuid = {0xba53f11e, 0x5879, 0x49e5,
@@ -57,7 +55,6 @@ static void *DuplicateElement(Vector *AL,void *str,size_t size,const char *funct
 	result = MALLOC(AL,size);
 	if (result == NULL) {
 		iError.RaiseError(functionName,CONTAINER_ERROR_NOMEMORY);
-		return NULL;
 	}
 	else memcpy(result,str,size);
 	return result;
@@ -103,21 +100,26 @@ static int Resize(Vector *AL)
 {
 	size_t newcapacity;
 	void **oldcontents;
+	int r = 1;
 
 	if (AL == NULL) {
-		return NullPtrError("Resize");
+		r = NullPtrError("Resize");
 	}
-	newcapacity = AL->capacity + 1+AL->capacity/4;
-	oldcontents = AL->contents;
-	AL->contents = AL->Allocator->realloc(AL->contents,newcapacity*AL->ElementSize);
-	if (AL->contents == NULL) {
-		AL->RaiseError("iVector.Resize",CONTAINER_ERROR_NOMEMORY);
-		AL->contents = oldcontents;
-		return CONTAINER_ERROR_NOMEMORY;
+	else {
+		newcapacity = AL->capacity + 1+AL->capacity/4;
+		oldcontents = AL->contents;
+		AL->contents = AL->Allocator->realloc(AL->contents,newcapacity*AL->ElementSize);
+		if (AL->contents == NULL) {
+			AL->RaiseError("iVector.Resize",CONTAINER_ERROR_NOMEMORY);
+			AL->contents = oldcontents;
+			r = CONTAINER_ERROR_NOMEMORY;
+		}
+		else {
+			AL->capacity = newcapacity;
+			AL->timestamp++;
+		}
 	}
-	AL->capacity = newcapacity;
-	AL->timestamp++;
-	return 1;
+	return r;
 }
 
 static int ResizeTo(Vector *AL,size_t newcapacity)
@@ -1323,6 +1325,32 @@ static Vector *Create(size_t elementsize,size_t startsize)
 	return CreateWithAllocator(elementsize,startsize,CurrentMemoryManager);
 }
 
+static int SearchWithKey(Vector *vec,size_t startByte,size_t sizeKey,size_t startidx,void *item,size_t *result)
+{
+	size_t i;
+	char *p;
+
+	if (vec == NULL || result == NULL) {
+		return NullPtrError("SearchWithKey");
+	}
+	if (startByte >= vec->ElementSize) {
+		return 0;
+	}
+	if (sizeKey >= (vec->ElementSize-startByte))
+		sizeKey = vec->ElementSize-startByte;
+	if (startidx >= vec->count)
+		return 0;
+	p = vec->contents;
+	for (i=startidx; i<vec->count; i++) {
+		if (memcmp(p+startByte,item,sizeKey) == 0) {
+			*result = i;
+			return 1;
+		}
+		p += vec->ElementSize;
+	}
+	return 0;
+}
+
 static Vector *Init(Vector *result,size_t elementsize,size_t startsize)
 {
 	size_t es;
@@ -1415,4 +1443,5 @@ VectorInterface iVector = {
 	Mismatch,
 	GetAllocator,
 	SetDestructor,
+	SearchWithKey,
 };
