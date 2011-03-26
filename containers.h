@@ -36,6 +36,7 @@ typedef int bool;
 
 /* General container flags */
 #define CONTAINER_READONLY	1
+#define CONTAINER_HAS_OBSERVER	2
 /************************************************************************** */
 /*                                                                          */
 /*                          ErrorHandling                                   */
@@ -643,6 +644,7 @@ typedef struct tagVector {
 	int (*Mismatch)(Vector *a1,Vector *a2,size_t *mismatch);
 	ContainerMemoryManager *(*GetAllocator)(Vector *AL);
 	DestructorFunction (*SetDestructor)(Vector *v,DestructorFunction fn);
+	int (*SearchWithKey)(Vector *vec,size_t startByte,size_t sizeKey,size_t startIndex,void *item,size_t *result);
 } VectorInterface;
 
 extern VectorInterface iVector;
@@ -1086,4 +1088,31 @@ extern BloomFilterInterface iBloomFilter;
 
 int decode_ule128(FILE *stream, size_t *val);
 int encode_ule128(FILE *stream, size_t val);
+/************************************************************************** */
+/*                                                                          */
+/*                          Observer interface                              */
+/*                                                                          */
+/************************************************************************** */
+enum CCL_OPERATIONS{
+        CCL_ADD=1,
+        CCL_ERASE = CCL_ADD<<1,
+        CCL_CLEAR = CCL_ERASE<<1,
+        CCL_FINALIZE = CCL_CLEAR<<1,
+        CCL_PUSH = CCL_FINALIZE << 1,
+        CCL_POP = CCL_PUSH << 1,
+        CCL_REPLACE = CCL_POP << 1,
+        CCL_INSERT = CCL_REPLACE << 1,
+        CCL_APPEND = CCL_INSERT << 1
+};
+#define CCL_MODIFY (CCL_ADD|CCL_ERASE|CCL_CLEAR|CCL_FINALIZE|CCL_POP|CCL_PUSH|CCL_REPLACE|CCL_INSERT|CCL_APPEND)
+#define CCL_ADDITIONS (CCL_ADD|CCL_PUSH|CCL_INSERT|CCL_APPEND)
+#define CCL_DELETIONS (CCL_ERASE|CCL_CLEAR|CCL_FINALIZE|CCL_POP)
+typedef void (*ObserverFunction)(void *ObservedObject,unsigned operation, void *ExtraInfo);
+
+typedef struct tagObserverInterface {
+	int (*Subscribe)(void *ObservedObject, ObserverFunction callback, unsigned Operations);
+	int (*Notify)(void *ObservedObject,unsigned operation,void *ExtraInfo);
+	size_t (*Unsubscribe)(void *ObservedObject,ObserverFunction callback);
+} ObserverInterface;
+extern ObserverInterface iObserver;
 #endif
