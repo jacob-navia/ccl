@@ -172,6 +172,8 @@ static int Add(Vector *AL,void *newval)
 	p += AL->count*AL->ElementSize;
 	memcpy(p,newval,AL->ElementSize);
 	AL->timestamp++;
+	if (AL->Flags & CONTAINER_HAS_OBSERVER)
+		iObserver.Notify(AL,CCL_ADD,newval);
 	++AL->count;
 	return 1;
 }
