@@ -597,8 +597,11 @@ static int EraseAt(Vector *AL,size_t idx)
 		return ErrorReadOnly(AL,"Erase");
 	}
 	p = AL->contents;
+	p += AL->ElementSize * idx;
+	if (AL->Flags & CONTAINER_HAS_OBSERVER)
+		iObserver.Notify(AL,CCL_ERASE,p,NULL);
 	if (AL->DestructorFn) {
-		AL->DestructorFn(p+AL->ElementSize*idx);
+		AL->DestructorFn(p);
 	}
 	if (idx < (AL->count-1)) {
 		memmove(p+AL->ElementSize*idx,p+AL->ElementSize*(idx+1),(AL->count-idx)*AL->ElementSize);
@@ -672,6 +675,8 @@ static int Finalize(Vector *AL)
 	int result = Clear(AL);
 	if (result < 0)
 		return result;
+	if (AL->Flags & CONTAINER_HAS_OBSERVER)
+		iObserver.Notify(AL,CCL_FINALIZE,AL,NULL);
 	AL->Allocator->free(AL);
 	return result;
 }
@@ -822,6 +827,9 @@ static int ReplaceAt(Vector *AL,size_t idx,void *newval)
 	}
 	p = AL->contents;
 	p += idx*AL->ElementSize;
+	if (AL->Flags & CONTAINER_HAS_OBSERVER) {
+		iObserver.Notify(AL,CCL_REPLACEAT,p,newval);
+	}
 	if (AL->DestructorFn)
 		AL->DestructorFn(p);
 	memcpy(p,newval,AL->ElementSize);
@@ -952,6 +960,8 @@ static int Append(Vector *AL1, Vector *AL2)
 	memcpy(p,AL2->contents,AL2->ElementSize*AL2->count);
 	AL1->timestamp++;
 	AL1->count = newCount;
+	if (AL1->Flags & CONTAINER_HAS_OBSERVER)
+		iObserver.Notify(AL1,CCL_APPEND,AL2,NULL);
 	AL2->Allocator->free(AL2);
     return 1;
 }
