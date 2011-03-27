@@ -1102,16 +1102,18 @@ enum CCL_OPERATIONS{
         CCL_POP = CCL_PUSH << 1,
         CCL_REPLACE = CCL_POP << 1,
         CCL_INSERT = CCL_REPLACE << 1,
-        CCL_APPEND = CCL_INSERT << 1
+        CCL_APPEND = CCL_INSERT << 1,
+	CCL_ADDRANGE = CCL_APPEND << 1,
+	CCL_COPY = CCL_ADDRANGE << 1
 };
-#define CCL_MODIFY (CCL_ADD|CCL_ERASE|CCL_CLEAR|CCL_FINALIZE|CCL_POP|CCL_PUSH|CCL_REPLACE|CCL_INSERT|CCL_APPEND)
-#define CCL_ADDITIONS (CCL_ADD|CCL_PUSH|CCL_INSERT|CCL_APPEND)
+#define CCL_MODIFY (CCL_ADD|CCL_ERASE|CCL_CLEAR|CCL_FINALIZE|CCL_POP|CCL_PUSH|CCL_REPLACE|CCL_INSERT|CCL_APPEND|CCL_ADDRANGE)
+#define CCL_ADDITIONS (CCL_ADD|CCL_PUSH|CCL_INSERT|CCL_APPEND|CCL_ADDRANGE)
 #define CCL_DELETIONS (CCL_ERASE|CCL_CLEAR|CCL_FINALIZE|CCL_POP)
-typedef void (*ObserverFunction)(void *ObservedObject,unsigned operation, void *ExtraInfo);
+typedef void (*ObserverFunction)(void *ObservedObject,unsigned operation, void *ExtraInfo[]);
 
 typedef struct tagObserverInterface {
 	int (*Subscribe)(void *ObservedObject, ObserverFunction callback, unsigned Operations);
-	int (*Notify)(void *ObservedObject,unsigned operation,void *ExtraInfo);
+	int (*Notify)(void *ObservedObject,unsigned operation,void *ExtraInfo1,void *ExtraInfo2);
 	size_t (*Unsubscribe)(void *ObservedObject,ObserverFunction callback);
 } ObserverInterface;
 extern ObserverInterface iObserver;

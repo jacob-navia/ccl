@@ -173,7 +173,7 @@ static int Add(Vector *AL,void *newval)
 	memcpy(p,newval,AL->ElementSize);
 	AL->timestamp++;
 	if (AL->Flags & CONTAINER_HAS_OBSERVER)
-		iObserver.Notify(AL,CCL_ADD,newval);
+		iObserver.Notify(AL,CCL_ADD,newval,NULL);
 	++AL->count;
 	return 1;
 }
@@ -221,6 +221,9 @@ static int AddRange(Vector * AL,size_t n,void *data)
 	memcpy(p,data,n*AL->ElementSize);
 	AL->count += n;
 	AL->timestamp++;
+	if (AL->Flags & CONTAINER_HAS_OBSERVER)
+		iObserver.Notify(AL,CCL_ADDRANGE,(void *)n,data);
+
 	return 1;
 }
 
@@ -280,6 +283,9 @@ static int Clear(Vector *AL)
 	AL->count = 0;
 	AL->timestamp = 0;
 	AL->Flags = 0;
+	if (AL->Flags & CONTAINER_HAS_OBSERVER)
+		iObserver.Notify(AL,CCL_CLEAR,NULL,NULL);
+
 	return 1;
 }
 
@@ -371,6 +377,8 @@ static Vector *Copy(Vector *AL)
 	result->RaiseError = AL->RaiseError;
 	result->VTable = AL->VTable;
 	result->count = AL->count;
+	if (AL->Flags & CONTAINER_HAS_OBSERVER)
+		iObserver.Notify(AL,CCL_COPY,result,NULL);
 	return result;
 }
 
@@ -521,6 +529,8 @@ static int InsertAt(Vector *AL,size_t idx,void *newval)
 	memcpy(p,newval,AL->ElementSize);
 	AL->timestamp++;
 	++AL->count;
+	if (AL->Flags & CONTAINER_HAS_OBSERVER)
+		iObserver.Notify(AL,CCL_INSERT,newval,(void *)idx);
 	return 1;
 }
 
@@ -567,6 +577,8 @@ static int InsertIn(Vector *AL, size_t idx, Vector *newData)
 	memcpy(p,newData->contents,newData->ElementSize*newData->count);
 	AL->timestamp++;
 	AL->count = newCount;
+	if (AL->Flags & CONTAINER_HAS_OBSERVER)
+		iObserver.Notify(AL,CCL_INSERT,newData->contents,(void *)newData->count);
 	return 1;
 }
 
