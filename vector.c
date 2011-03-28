@@ -578,7 +578,7 @@ static int InsertIn(Vector *AL, size_t idx, Vector *newData)
 	AL->timestamp++;
 	AL->count = newCount;
 	if (AL->Flags & CONTAINER_HAS_OBSERVER)
-		iObserver.Notify(AL,CCL_INSERT,newData->contents,(void *)newData->count);
+		iObserver.Notify(AL,CCL_INSERT_IN,newData,NULL);
 	return 1;
 }
 
@@ -676,7 +676,7 @@ static int Finalize(Vector *AL)
 	if (result < 0)
 		return result;
 	if (AL->Flags & CONTAINER_HAS_OBSERVER)
-		iObserver.Notify(AL,CCL_FINALIZE,AL,NULL);
+		iObserver.Notify(AL,CCL_FINALIZE,NULL,NULL);
 	AL->Allocator->free(AL);
 	return result;
 }

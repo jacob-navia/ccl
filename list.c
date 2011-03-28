@@ -203,10 +203,14 @@ static int Add_nd(List *l,void *elem)
 
 static int Add(List *l,void *elem)
 {
+    int r;
     if (l == NULL) return NullPtrError("Add");
     if (elem == NULL) return NullPtrError("Add");
     if (l->Flags &CONTAINER_LIST_READONLY) return ErrorReadOnly(l,"Add");
-	return Add_nd(l,elem);
+    r = Add_nd(l,elem);
+    if (r && (l->Flags & CONTAINER_HAS_OBSERVER))
+        iObserver.Notify(l,CCL_ADD,elem,NULL);
+    return r;
 }
 
 
@@ -395,6 +399,9 @@ static List *Copy(List *l)
 		result->Last = newElem;
         elem = elem->Next;
     }
+    if (l->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(l,CCL_COPY,result,NULL);
+
     return result;
 }
 /*------------------------------------------------------------------------
@@ -412,6 +419,8 @@ static int Finalize(List *l)
     int t=0;
 
     t = Clear(l);
+    if (l->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(l,CCL_FINALIZE,NULL,NULL);
     if (t < 0)
         return t;
 	l->Allocator->free(l);
