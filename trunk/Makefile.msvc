@@ -24,6 +24,7 @@ OBJS=\
 	scapegoat.obj \
 	searchtree.obj \
 	strcollection.obj \
+	observer.obj \
 	buffer.obj
 
 EXE=dotest.exe
@@ -360,6 +361,8 @@ queue.obj:	containers.h queue.c
 
 buffer.obj:	buffer.c containers.h
 	$(CC) -c $(CFLAGS) buffer.c
+observer.obj:	observer.c containers.h
+	$(CC) $(CFLAGS) observer.c
 
 # Build test.c
 TEST_C=\

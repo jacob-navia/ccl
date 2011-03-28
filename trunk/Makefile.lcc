@@ -27,6 +27,7 @@ OBJS=\
 	scapegoat.obj \
 	searchtree.obj \
 	strcollection.obj \
+	observer.obj \
 	buffer.obj 
 
 EXE=dotest.exe
@@ -230,8 +231,10 @@ strcollection.obj: $(STRCOLLECTION_C) $(SRCDIR)\strcollection.c
 queue.obj:	$(SRCDIR)\containers.h queue.c
 	$(CC) $(CFLAGS) queue.c
 
-egenric.obj:	generic.c $(HEADERS)
+geenric.obj:	generic.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\generic.c
+observer.obj:	observer.c containers.h
+	$(CC) $(CFLAGS) observer.c
 
 # Build test.c
 TEST_C=\
