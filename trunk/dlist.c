@@ -234,9 +234,27 @@ static int Clear(Dlist *l)
  Errors:        The element to be added can't be NULL, and the Dlist
                 must be writable.
 ------------------------------------------------------------------------*/
+static int Add_nd(Dlist *l,void *elem)
+{
+        dlist_element *newl = new_dlink(l,elem,"iList.Add");
+        if (newl == 0)
+                return CONTAINER_ERROR_NOMEMORY;
+        if (l->count ==  0) {
+                l->First = newl;
+        }
+        else {
+                l->Last->Next = newl;
+                newl->Previous = l->Last;
+        }
+        l->Last = newl;
+        l->timestamp++;
+        ++l->count;
+	return 1;
+}
+
 static int Add(Dlist *l,void *elem)
 {
-	dlist_element *newl;
+	int r;
 	if (elem == NULL || l == NULL) {
 		if (l)
 			l->RaiseError("iDlist.Add",CONTAINER_ERROR_BADARG);
@@ -248,21 +266,11 @@ static int Add(Dlist *l,void *elem)
 		l->RaiseError("iDlist.Add",CONTAINER_ERROR_READONLY);
 		return CONTAINER_ERROR_READONLY;
 	}
-	newl = new_dlink(l,elem,"iList.Add");
-	if (newl == 0)
-		return CONTAINER_ERROR_NOMEMORY;
-	if (l->count ==  0) {
-		l->First = newl;
-	}
-	else {
-		l->Last->Next = newl;
-		newl->Previous = l->Last;
-	}
-	l->Last = newl;
-	l->timestamp++;
-	++l->count;
-    if (l->Flags & CONTAINER_HAS_OBSERVER)
-        iObserver.Notify(l,CCL_ADD,elem,NULL);
+	r = Add_nd(l,elem);
+	if (r < 0)
+		return r;
+	if (l->Flags & CONTAINER_HAS_OBSERVER)
+		iObserver.Notify(l,CCL_ADD,elem,NULL);
 
 	return 1;
 }
@@ -285,7 +293,7 @@ static int AddRange(Dlist * AL,size_t n, void *data)
         }
 		p = data;
         while (n > 0) {
-                int r = Add(AL,p);
+                int r = Add_nd(AL,p);
                 if (r < 0) {
                         return r;
                 }
@@ -420,8 +428,8 @@ static Dlist *Copy(Dlist *l)
 	result->RaiseError = l->RaiseError;
 	result->Compare = l->Compare;
 	result->VTable = l->VTable;
-    if (l->Flags & CONTAINER_HAS_OBSERVER)
-        iObserver.Notify(l,CCL_COPY,result,NULL);
+	if (l->Flags & CONTAINER_HAS_OBSERVER)
+		iObserver.Notify(l,CCL_COPY,result,NULL);
 
 	return result;
 }
@@ -562,9 +570,11 @@ static Dlist *GetRange(Dlist *l,size_t start,size_t end)
 		}
 	}
 	while (start <= end && rvp != NULL) {
-		int r = result->VTable->Add(result,&rvp->Data);
-		if (r < 0)
-			break;
+		int r = Add_nd(result,&rvp->Data);
+		if (r < 0) {
+			Finalize(result);
+			return NULL;
+		}
 		rvp = rvp->Next;
 		start++;
 	}
