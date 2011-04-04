@@ -136,6 +136,8 @@ static int Contains(List *l,void *data)
 ------------------------------------------------------------------------*/
 static int Clear_nd(List *l)
 {
+    if (l->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(l,CCL_CLEAR,NULL,NULL);
 #ifdef NO_GC
     if (l->Heap)
         iHeap.Finalize(l->Heap);
@@ -657,6 +659,9 @@ static int PushFront(List *l,void *pdata)
         l->Last = rvp;
     l->count++;
     l->timestamp++;
+    if (l->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(l,CCL_PUSH,pdata,NULL);
+
     return 1;
 }
 
@@ -695,6 +700,9 @@ static int PopFront(List *l,void *result)
     }
     else l->Allocator->free(le);
     l->timestamp++;
+    if (l->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(l,CCL_POP,result,NULL);
+
     return 1;
 }
 
@@ -747,6 +755,9 @@ static int InsertIn(List *l, size_t idx,List *newData)
     newData->Allocator->free(newData);
     l->timestamp++;
     l->count = newCount;
+    if (l->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(l,CCL_INSERT_IN,newData,NULL);
+
     return 1;
 }
 
@@ -790,6 +801,9 @@ static int InsertAt(List *l,size_t pos,void *pdata)
     }
     l->count++;
     l->timestamp++;
+    if (l->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(l,CCL_INSERT_AT,pdata,(void *)pos);
+
     return 1;
 }
 
@@ -907,6 +921,8 @@ static int RemoveAt(List *l,size_t position)
     else l->Allocator->free(removed);
     l->timestamp++;
     --l->count;
+    if (l->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(l,CCL_ERASE_AT,removed,(void *)position);
     return 1;
 }
 
@@ -929,6 +945,12 @@ static int Append(List *l1,List *l2)
         l1->RaiseError("iList.Append",CONTAINER_ERROR_INCOMPATIBLE);
         return CONTAINER_ERROR_INCOMPATIBLE;
     }
+    if (l1->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(l1,CCL_APPEND,l2,NULL);
+
+    if (l2->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(l2,CCL_FINALIZE,NULL,NULL);
+
     if (l1->count == 0) {
         l1->First = l2->First;
         l1->Last = l2->Last;
@@ -1007,6 +1029,9 @@ static int AddRange(List * AL,size_t n, void *data)
 				n--;
         }
         AL->timestamp++;
+    if (AL->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(AL,CCL_ADDRANGE,data,(void *)n);
+
         return 1;
 }
 

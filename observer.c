@@ -43,20 +43,24 @@ static int Subscribe(void *ObservedObject, ObserverFunction callback, unsigned f
 	return r;
 }
 
-static int Notify(void *ObservedObject,unsigned operation,void *ExtraInfo)
+static int Notify(void *ObservedObject,unsigned operation,void *ExtraInfo1,void *ExtraInfo2)
 {
 	int r,count;
 	size_t idx = 0;
+	void *ExtraInfo[2];
 	Observer obs,*pObserver;
+
 	memset(&obs,0,sizeof(obs));
 	obs.ObservedObject = ObservedObject;
+	ExtraInfo[0] = ExtraInfo1;
+	ExtraInfo[1] = ExtraInfo2;
 	r = iVector.SearchWithKey(ObserverVector,0,sizeof(void *),idx,&obs,&idx);
 	if (r <= 0)
 		return 0;
 	do {
 		pObserver = iVector.GetElement(ObserverVector,idx);
 		if (pObserver->Flags & operation) {
-			pObserver->Callback(ObservedObject,operation,ExtraInfo);	
+			pObserver->Callback(ObservedObject,operation,ExtraInfo);
 			count++;
 		}
 		idx++;
