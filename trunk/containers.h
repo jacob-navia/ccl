@@ -283,7 +283,7 @@ typedef struct StringCollection StringCollection;
 /* Forward declaration of the string collection type */
 typedef struct _Vector Vector;
 
-typedef int (*StringCompareFn)(unsigned char *s1,unsigned char *s2,CompareInfo *info);
+typedef int (*StringCompareFn)(const unsigned char *s1,const unsigned char *s2,CompareInfo *info);
 /* Definition of the functions associated with this type. */
 typedef struct tagStringCollection {
 /* -----------------------------------------------This is the generic container part */
@@ -1097,13 +1097,15 @@ enum CCL_OPERATIONS{
         CCL_ADD=1,
 	CCL_ADDRANGE = CCL_ADD << 1,
         CCL_ERASE = CCL_ADDRANGE<<1,
-        CCL_CLEAR = CCL_ERASE<<1,
+	CCL_ERASE_AT = CCL_ERASE << 1,
+        CCL_CLEAR = CCL_ERASE_AT<<1,
         CCL_FINALIZE = CCL_CLEAR<<1,
         CCL_PUSH = CCL_FINALIZE << 1,
         CCL_POP = CCL_PUSH << 1,
         CCL_REPLACE = CCL_POP << 1,
 	CCL_REPLACEAT = CCL_REPLACE << 1,
         CCL_INSERT = CCL_REPLACEAT << 1,
+	CCL_INSERT_AT = CCL_INSERT << 1,
 	CCL_INSERT_IN = CCL_INSERT << 1,
         CCL_APPEND = CCL_INSERT_IN << 1,
 	CCL_COPY = CCL_APPEND << 1

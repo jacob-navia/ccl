@@ -190,6 +190,9 @@ static Dlist *Splice ( Dlist *list, void *ppos, Dlist *toInsert, int dir )
 static int Clear(Dlist *l)
 {
 
+    if (l->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(l,CCL_CLEAR,NULL,NULL);
+
 	if (l == NULL) {
 		iError.RaiseError("iDlist.Size",CONTAINER_ERROR_BADARG);
 		return CONTAINER_ERROR_BADARG;
@@ -258,6 +261,9 @@ static int Add(Dlist *l,void *elem)
 	l->Last = newl;
 	l->timestamp++;
 	++l->count;
+    if (l->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(l,CCL_ADD,elem,NULL);
+
 	return 1;
 }
 
@@ -286,6 +292,9 @@ static int AddRange(Dlist * AL,size_t n, void *data)
                 p += AL->ElementSize;
         }
         AL->timestamp++;
+    if (AL->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(AL,CCL_ADDRANGE,data,(void *)n);
+
         return 1;
 }
 
@@ -411,6 +420,9 @@ static Dlist *Copy(Dlist *l)
 	result->RaiseError = l->RaiseError;
 	result->Compare = l->Compare;
 	result->VTable = l->VTable;
+    if (l->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(l,CCL_COPY,result,NULL);
+
 	return result;
 }
 
@@ -433,6 +445,8 @@ static int Finalize(Dlist *l)
 		return CONTAINER_ERROR_BADARG;
 	}
 	t = l->VTable->Clear(l);
+    if (l->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(l,CCL_FINALIZE,NULL,NULL);
 	if (t < 0)
 		return t;
 	l->Allocator->free(l);
@@ -639,6 +653,9 @@ static int PushFront(Dlist *l,void *pdata)
 		l->Last = rvp;
 	l->count++;
 	l->timestamp++;
+    if (l->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(l,CCL_PUSH,pdata,NULL);
+
 	return 1;
 }
 
@@ -666,6 +683,9 @@ static int PushBack(Dlist *l,void *pdata)
 	}
 	l->count++;
 	l->timestamp++;
+    if (l->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(l,CCL_PUSH,pdata,NULL);
+
 	return 1;
 }
 
@@ -706,6 +726,9 @@ static int PopFront(Dlist *l,void *result)
 	le->Next = l->FreeList;
 	l->FreeList = le;
 	l->timestamp++;
+    if (l->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(l,CCL_POP,result,NULL);
+
 	return 1;
 }
 
@@ -785,6 +808,9 @@ static int InsertAt(Dlist *l,size_t pos,void *pdata)
 	}
 	l->timestamp++;
 	++l->count;
+    if (l->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(l,CCL_INSERT_AT,pdata,(void *)pos);
+
 	return 1;
 }
 
@@ -838,12 +864,16 @@ static int InsertIn(Dlist *l, size_t idx,Dlist *newData)
 	newData->Allocator->free(newData);
 	l->timestamp++;
 	l->count = newCount;
+    if (l->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(l,CCL_INSERT_IN,newData,NULL);
+
 	return 1;
 }
 
 static int EraseAt(Dlist *l,size_t position)
 {
 	dlist_element *rvp=NULL,*last;
+	void *removed=NULL;
 
 	if (l == NULL) {
 		iError.RaiseError("iDlist.InsertIn",CONTAINER_ERROR_BADARG);
@@ -881,12 +911,17 @@ static int EraseAt(Dlist *l,size_t position)
 		last->Next = rvp->Next;
 		last->Next->Previous = last;
 	}
+	if (rvp)
+		removed = rvp->Data;
 	if (l->Heap && rvp) {
 		iHeap.AddToFreeList(l->Heap,rvp);
 	}
 	else if  (rvp) l->Allocator->free(rvp);
 	l->timestamp++;
 	--l->count;
+    if (removed && (l->Flags & CONTAINER_HAS_OBSERVER))
+        iObserver.Notify(l,CCL_ERASE_AT,removed,(void *)position);
+
 	return 1;
 }
 
@@ -1259,6 +1294,11 @@ static int Append(Dlist *l1, Dlist *l2)
 	}
     l1->count += l2->count;
 	l1->timestamp++;
+    if (l1->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(l1,CCL_APPEND,l2,NULL);
+    if (l2->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(l2,CCL_FINALIZE,NULL,NULL);
+
 	l2->Allocator->free(l2);
     return 1;
 }
