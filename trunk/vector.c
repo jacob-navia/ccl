@@ -67,10 +67,10 @@ static int DefaultVectorCompareFunction(const void *left,const void *right,Compa
 	return memcmp(left,right,siz);
 }
 
-static size_t GetCount(const Vector *AL)
+static size_t Size(const Vector *AL)
 {
 	if (AL == NULL) {
-		NullPtrError("GetCount");
+		NullPtrError("Size");
 		return 0;
 	}
 	return AL->count;
@@ -654,7 +654,7 @@ static int PopBack(Vector *AL,void *result)
     AL->count--;
     if (result) {
         p = AL->contents;
-        p += AL->ElementSize*AL->count;
+        p += AL->ElementSize*(AL->count-1);
         memcpy(result,p,AL->ElementSize);
     }
     AL->timestamp++;
@@ -1421,7 +1421,7 @@ static DestructorFunction SetDestructor(Vector *cb,DestructorFunction fn)
 
 
 VectorInterface iVector = {
-	GetCount,
+	Size,
 	GetFlags, 
 	SetFlags, 
 	Clear,
