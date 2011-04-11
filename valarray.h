@@ -136,6 +136,24 @@ extern ValArrayInterface iValArrayLongLong;
 extern ValArrayInterface iValArrayFloat;
 
 
+/****************************************************************************
+ *          ValArrayUInt                                                *
+ ****************************************************************************/
+#undef ElementType
+#undef ValArrayInterface
+#undef ElementType
+#undef ValArray
+#undef tagValArray
+#undef _ValArray
+#define _ValArray _ValArrayUInt
+#define tagValArray tagValArrayUIntInterface
+#define ElementType unsigned int
+#define ValArrayInterface ValArrayUIntInterface
+#define ValArray ValArrayUInt
+#include "valarraygen.h"
+extern ValArrayInterface iValArrayUInt;
+
+
 #undef ElementType
 #undef ValArrayInterface
 #undef ElementType
