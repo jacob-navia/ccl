@@ -16,6 +16,14 @@ static const guid ValArrayGuid = {0xba53f11e, 0x5879, 0x49e5,
 {0x9e,0x3a,0xea,0x7d,0xd8,0xcb,0xd9,0xd6}
 };
 static size_t GetElementSize(const ValArray *AL);
+static int DivisionByZero(const ValArray *AL,char *fnName)
+{
+	char buf[512];
+
+	sprintf(buf,"iValArray.%s",fnName);
+	AL->RaiseError(buf,CONTAINER_ERROR_DIVISION_BY_ZERO);
+	return CONTAINER_ERROR_DIVISION_BY_ZERO;
+}
 static int ErrorReadOnly(ValArray *AL,char *fnName)
 {
     char buf[512];
@@ -1189,6 +1197,16 @@ static int SumTo(ValArray *left,ValArray *right)
 	return 1;
 }
 
+static int SumToScalar(ValArray *left,ElementType right)
+{
+        size_t i;
+
+        for (i=0; i<left->count; i++)
+                left->contents[i] += right;
+        return 1;
+}
+
+
 static int SubtractFrom(ValArray *left,ValArray *right)
 {
         size_t i;
@@ -1200,6 +1218,16 @@ static int SubtractFrom(ValArray *left,ValArray *right)
                 left->contents[i] -= right->contents[i];
         return 1;
 }
+
+static int SubtractFromScalar(ValArray *left,ElementType right)
+{
+        size_t i;
+
+        for (i=0; i<left->count; i++)
+                left->contents[i] -= right;
+        return 1;
+}
+
 
 static int MultiplyWith(ValArray *left,ValArray *right)
 {
@@ -1213,6 +1241,16 @@ static int MultiplyWith(ValArray *left,ValArray *right)
         return 1;
 }
 
+static int MultiplyWithScalar(ValArray *left,ElementType right)
+{
+        size_t i;
+
+        for (i=0; i<left->count; i++)
+                left->contents[i] *= right;
+        return 1;
+}
+
+
 static int DivideBy(ValArray *left,ValArray *right)
 {
         size_t i;
@@ -1221,11 +1259,221 @@ static int DivideBy(ValArray *left,ValArray *right)
                 return ErrorIncompatible(left,"DivideBy");
         }
         for (i=0; i<left->count; i++)
-                left->contents[i] /= right->contents[i];
+		if (right->contents[i])
+                	left->contents[i] /= right->contents[i];
+		else
+			DivisionByZero(left,"DivideBy");
+        return 1;
+}
+
+static int DivideByScalar(ValArray *left,ElementType right)
+{
+        size_t i;
+
+	if (right == 0)
+		return DivisionByZero(left,"DivideByScalar");
+        for (i=0; i<left->count; i++)
+                left->contents[i] /= right;
         return 1;
 }
 
 
+static unsigned char *CompareEqual(ValArray *left,ValArray *right,unsigned char *bytearray)
+{
+	size_t len = left->count,i,siz;
+
+	if (len != right->count) {
+		ErrorIncompatible(left,"Compare");
+		return NULL;
+	}
+	siz = 1 + len/CHAR_BIT;
+	if (bytearray == NULL)
+		bytearray = left->Allocator->malloc(siz);
+	if (bytearray == NULL) {
+		iError.RaiseError("ValArray.Compare",CONTAINER_ERROR_NOMEMORY);
+		return NULL;
+	}
+	memset(bytearray,0,siz);
+	for (i=0; i<len;i++) {
+		bytearray[i/CHAR_BIT] |= (left->contents[i] == right->contents[i]);
+		if ((CHAR_BIT-1) != (i&(CHAR_BIT-1)))
+			bytearray[i] <<= 1;
+	}
+	return bytearray;
+}
+
+static unsigned char *CompareEqualScalar(ValArray *left,ElementType right,unsigned char *bytearray)
+{
+        size_t len = left->count,i,siz;
+
+        siz = 1 + len/CHAR_BIT;
+        if (bytearray == NULL)
+                bytearray = left->Allocator->malloc(siz);
+        if (bytearray == NULL) {
+                iError.RaiseError("ValArray.Compare",CONTAINER_ERROR_NOMEMORY);
+                return NULL;
+        }
+        memset(bytearray,0,siz);
+        for (i=0; i<len;i++) {
+                bytearray[i/CHAR_BIT] |= (left->contents[i] == right);
+                if ((CHAR_BIT-1) != (i&(CHAR_BIT-1)))
+                        bytearray[i] <<= 1;
+        }
+        return bytearray;
+}
+
+static char *Compare(ValArray *left,ValArray *right, char *bytearray)
+{
+        size_t len = left->count,i,siz;
+
+        if (len != right->count) {
+                ErrorIncompatible(left,"Compare");
+                return NULL;
+        }
+        siz =  len;
+        if (bytearray == NULL)
+                bytearray = left->Allocator->malloc(siz);
+        if (bytearray == NULL) {
+                iError.RaiseError("ValArray.Compare",CONTAINER_ERROR_NOMEMORY);
+                return NULL;
+        }
+        memset(bytearray,0,siz);
+        for (i=0; i<len;i++) {
+                bytearray[i] = (left->contents[i] < right->contents[i]) ?
+			-1 : (left->contents[i] > right->contents[i]) ? 1 : 0;
+        }
+        return bytearray;
+}
+
+static char *CompareScalar(ValArray *left,ElementType right,char *bytearray)
+{
+        size_t len = left->count,i,siz;
+
+        siz =  len;
+        if (bytearray == NULL)
+                bytearray = left->Allocator->malloc(siz);
+        if (bytearray == NULL) {
+                iError.RaiseError("ValArray.Compare",CONTAINER_ERROR_NOMEMORY);
+                return NULL;
+        }
+        memset(bytearray,0,siz);
+        for (i=0; i<len;i++) {
+                bytearray[i] = (left->contents[i] < right) ?
+                        -1 : (left->contents[i] > right) ? 1 : 0;
+        }
+        return bytearray;
+}
+
+
+static int Fill(ValArray *dst,ElementType data)
+{
+	size_t top = dst->count;
+	size_t i;
+	for (i=0; i<top;i++) {
+		dst->contents[i]=data;
+	}
+	return 1;
+}
+
+#ifdef IS_UNSIGNED
+static int Or(ValArray *left,ValArray *right)
+{
+        size_t i;
+
+        if (left->count != right->count) {
+                return ErrorIncompatible(left,"Or");
+        }
+        for (i=0; i<left->count; i++)
+                left->contents[i] |= right->contents[i];
+        return 1;
+}
+static int OrScalar(ValArray *left,ElementType right)
+{
+        size_t i;
+
+        for (i=0; i<left->count; i++)
+                left->contents[i] |= right;
+        return 1;
+}
+
+static int And(ValArray *left,ValArray *right)
+{
+        size_t i;
+
+        if (left->count != right->count) {
+                return ErrorIncompatible(left,"And");
+        }
+        for (i=0; i<left->count; i++)
+                left->contents[i] &= right->contents[i];
+        return 1;
+}
+static int AndScalar(ValArray *left,ElementType right)
+{
+        size_t i;
+
+        for (i=0; i<left->count; i++)
+                left->contents[i] &= right;
+        return 1;
+}
+
+static int Xor(ValArray *left,ValArray *right)
+{
+        size_t i;
+
+        if (left->count != right->count) {
+                return ErrorIncompatible(left,"Xor");
+        }
+        for (i=0; i<left->count; i++)
+                left->contents[i] ^= right->contents[i];
+        return 1;
+}
+
+static int XorScalar(ValArray *left,ElementType right)
+{
+        size_t i;
+
+        for (i=0; i<left->count; i++)
+                left->contents[i] ^= right;
+        return 1;
+}
+
+static int Not(ValArray *left)
+{
+        size_t i;
+
+        for (i=0; i<left->count; i++)
+                left->contents[i] = ~left->contents[i];
+        return 1;
+}
+
+static int RightShift(ValArray *,int);
+
+static int LeftShift(ValArray *data,int shift)
+{
+        size_t i;
+
+	if (shift < 0)
+		return RightShift(data,-shift);
+        for (i=0; i<data->count; i++)
+                data->contents[i] <<= shift;
+        return 1;
+}
+
+static int RightShift(ValArray *data,int shift)
+{
+        size_t i;
+
+        if (shift < 0)
+                return LeftShift(data,-shift);
+	else if (shift == 0)
+		return 1;
+        for (i=0; i<data->count; i++)
+                data->contents[i] >>= shift;
+        return 1;
+}
+
+
+#endif
 
 ValArrayInterface iValArray = {
 	Size,
@@ -1278,4 +1526,24 @@ ValArrayInterface iValArray = {
 	SubtractFrom,
 	MultiplyWith,
 	DivideBy,
+	SumToScalar,
+	SubtractFromScalar,
+	MultiplyWithScalar,
+	DivideByScalar,
+	CompareEqual,
+	CompareEqualScalar,
+	Compare,
+	CompareScalar,
+	Fill,
+#ifdef IS_UNSIGNED
+	Or,
+	And,
+	Xor,
+	Not,
+	LeftShift,
+	RightShift,
+	OrScalar,
+	AndScalar,
+	XorScalar,
+#endif
 };

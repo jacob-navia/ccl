@@ -61,6 +61,7 @@ typedef int bool;
 #define CONTAINER_ERROR_INCOMPATIBLE    -18
 #define CONTAINER_ERROR_BADPOINTER      -19
 #define CONTAINER_ERROR_BUFFEROVERFLOW  -20
+#define CONTAINER_ERROR_DIVISION_BY_ZERO -21
 
 typedef void (*ErrorFunction)(const char *,int,...);
 typedef int (*DestructorFunction)(void *);
@@ -70,7 +71,7 @@ typedef struct tagError {
     void (*EmptyErrorFunction)(const char *fname,int errcode,...);
     char *(*StrError)(int errcode);
     ErrorFunction (*SetErrorFunction)(ErrorFunction);
-	int (*LibraryError)(const char *interfaceName,const char *functionName,int errorCode);
+    int (*LibraryError)(const char *interfaceName,const char *functionName,int errorCode);
 } ErrorInterface;
 
 extern ErrorInterface iError;

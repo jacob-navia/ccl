@@ -75,7 +75,6 @@ static int LibraryError(const char *interfaceName,const char *fnname, int errorC
 	return errorCode;
 }
 
-
 ErrorInterface iError = {
 	ContainerRaiseError,
 	EmptyErrorFunction,

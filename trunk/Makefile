@@ -42,4 +42,7 @@ valarrayuint.o:		valarraygen.c valarrayuint.c containers.h valarraygen.h
 observer.o:	containers.h observer.c 
 buffer.o:	containers.h buffer.c
 vector.o:	containers.h vector.c
-
+buffer.o:	containers.h buffer.c
+vector.o:	containers.h vector.c
+bloom.o:	containers.h bloom.c
+containererror.o:	containers.h containererror.c

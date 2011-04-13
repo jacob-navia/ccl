@@ -59,6 +59,28 @@ typedef struct tagValArray {
     int (*SubtractFrom)(ValArray *left, ValArray *right);
     int (*MultiplyWith)(ValArray *left, ValArray *right);
     int (*DivideBy)(ValArray *left, ValArray *right);
+    int (*SumToScalar)(ValArray *left,ElementType right);
+    int (*SubtractFromScalar)(ValArray *left, ElementType right);
+    int (*MultiplyWithScalar)(ValArray *left, ElementType right);
+    int (*DivideByScalar)(ValArray *left, ElementType right);
+    unsigned char *(*CompareEqual)(ValArray *left, ValArray *right,unsigned char *bytearray);
+    unsigned char *(*CompareEqualScalar)(ValArray *left, ElementType right,unsigned char *bytearray);
+    char *(*Compare)(ValArray *left, ValArray *right,char *bytearray);
+    char *(*CompareScalar)(ValArray *left, ElementType right,char *bytearray);
+
+    int (*Fill)(ValArray *dst,ElementType fillValue);
+#ifdef IS_UNSIGNED
+    int (*Or)(ValArray *left, ValArray *right);
+    int (*And)(ValArray *left, ValArray *right);
+    int (*Xor)(ValArray *left, ValArray *right);
+    int (*Not)(ValArray *left);
+    int (*LeftShift)(ValArray *data,int shift);
+    int (*RightShift)(ValArray *data,int shift);
+    int (*OrScalar)(ValArray *left, ElementType right);
+    int (*AndScalar)(ValArray *left, ElementType right);
+    int (*XorScalar)(ValArray *left, ElementType right);
+
+#endif
 } ValArrayInterface;
 
 
