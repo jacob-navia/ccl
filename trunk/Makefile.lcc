@@ -5,7 +5,7 @@ CC=lcc.exe
 LINKER=lcclnk.exe
 HEADERS=containers.h
 OBJS=\
-	vector.obj \
+	arraylist.obj \
 	bitstrings.obj \
 	bloom.obj \
 	containererror.obj \
@@ -26,9 +26,15 @@ OBJS=\
 	redblacktree.obj \
 	scapegoat.obj \
 	searchtree.obj \
-	strcollection.obj \
-	observer.obj \
-	buffer.obj 
+	strcollection.obj 
+	valarraydouble.c \
+	valarrayint.c \
+	valarrayuint.c \
+	valarraysize_t.c \
+	valarrayfloat.c \
+	valarraylongdouble.c \
+	valarrayuint.c \
+	valarrayshort.c \
 
 EXE=dotest.exe
 LIBS=ccl.lib
@@ -39,9 +45,9 @@ $(EXE):	$(OBJS) Makefile test.obj ccl.lib
 ccl.lib: $(OBJS) 
 	lcclib /out:ccl.lib $(OBJS)
 
-# Build vector.c
-vector.obj: $(HEADERS) $(SRCDIR)\vector.c
-	$(CC) -c $(CFLAGS) $(SRCDIR)\vector.c
+# Build arraylist.c
+arraylist.obj: $(HEADERS) $(SRCDIR)\arraylist.c
+	$(CC) -c $(CFLAGS) $(SRCDIR)\arraylist.c
 
 # Build bitstrings.c
 
@@ -231,10 +237,29 @@ strcollection.obj: $(STRCOLLECTION_C) $(SRCDIR)\strcollection.c
 queue.obj:	$(SRCDIR)\containers.h queue.c
 	$(CC) $(CFLAGS) queue.c
 
-geenric.obj:	generic.c $(HEADERS)
+generic.obj:	generic.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\generic.c
-observer.obj:	observer.c containers.h
-	$(CC) $(CFLAGS) observer.c
+valarrayint.obj:	valarrayint.c valarraygen.c valarraygen.h valarray.h containers.h
+	$(CC) -c $(CFLAGS) $(SRCDIR)\valarrayint.c
+
+valarrayuint.obj:	valarrayuint.c valarraygen.c valarraygen.h valarray.h containers.h
+	$(CC) -c $(CFLAGS) $(SRCDIR)\valarrayuint.c
+
+valarrayfloat.obj:	valarrayfloat.c valarraygen.c valarraygen.h valarray.h containers.h
+	$(CC) -c $(CFLAGS) $(SRCDIR)\valarrayfloat.c
+
+valarraydouble.obj:	valarraydouble.c valarraygen.c valarraygen.h valarray.h containers.h
+	$(CC) -c $(CFLAGS) $(SRCDIR)\valarraydouble.c
+
+valarraylongdouble.obj:	valarraylongdouble.c valarraygen.c valarraygen.h valarray.h containers.h
+	$(CC) -c $(CFLAGS) $(SRCDIR)\valarraylongdouble.c
+
+valarrayshort.obj:	valarrayshort.c valarraygen.c valarraygen.h valarray.h containers.h
+	$(CC) -c $(CFLAGS) $(SRCDIR)\valarrayshort.c
+
+valarraysize_t.obj:	valarraysize_t.c valarraygen.c valarraygen.h valarray.h containers.h
+	$(CC) -c $(CFLAGS) $(SRCDIR)\valarraysize_t.c
+
 
 # Build test.c
 TEST_C=\
@@ -255,8 +280,6 @@ intarray.obj:	containers.h intarray.c
 
 test.obj: $(TEST_C) $(SRCDIR)\test.c
 	$(CC) -c $(CFLAGS) $(SRCDIR)\test.c
-buffer.obj:	buffer.c $(SRCDIR)\containers.h
-	$(CC) $(CFLAGS) $(SRCDIR)\buffer.c
 
 link:
 	$(LINKER)  -subsystem console -o $(SRCDIR)\lcc\ansicstl.exe $(OBJS) $(LIBS)
