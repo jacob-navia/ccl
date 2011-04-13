@@ -150,7 +150,9 @@ extern ValArrayInterface iValArrayFloat;
 #define ElementType unsigned int
 #define ValArrayInterface ValArrayUIntInterface
 #define ValArray ValArrayUInt
+#define IS_UNSIGNED
 #include "valarraygen.h"
+#undef IS_UNSIGNED
 extern ValArrayInterface iValArrayUInt;
 
 
