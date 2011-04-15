@@ -81,6 +81,10 @@ typedef struct tagValArray {
     int (*XorScalar)(ValArray *left, ElementType right);
 
 #endif
+#ifdef IS_INTEGER
+    int (*Mod)(ValArray *left, ValArray *right);
+    int (*ModScalar)(ValArray *left, ElementType right);
+#endif
 } ValArrayInterface;
 
 

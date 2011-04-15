@@ -229,16 +229,15 @@ static int AddRange(Vector * AL,size_t n,void *data)
 
 static Vector *GetRange(Vector *AL, size_t start,size_t end)
 {
-	Vector *result;
+	Vector *result=NULL;
 	void *p;
 	unsigned oldFlags;
+	size_t top;
 	
 	if (AL == NULL) {
 		iError.RaiseError("iVector.GetRange",CONTAINER_ERROR_BADARG);
-		return NULL;
+		return result;
 	}
-	result = AL->VTable->Create(AL->ElementSize,AL->count);
-	result->VTable = AL->VTable;
 	if (AL->count == 0)
 		return result;
 	if (end >= AL->count)
@@ -247,7 +246,13 @@ static Vector *GetRange(Vector *AL, size_t start,size_t end)
 		return result;
 	oldFlags = AL->Flags;
 	AL->Flags = (unsigned)(~CONTAINER_READONLY);
-	while (start <= end) {
+	top = end - start;
+	result = AL->VTable->Create(AL->ElementSize,top);
+	if (result == NULL) {
+		iError.RaiseError("iVector.GetRange",CONTAINER_ERROR_NOMEMORY);
+		return NULL;
+	}
+	while (start < end) {
 		p = AL->VTable->GetElement(AL,start);
 		result->VTable->Add(result,p);
 		start++;
@@ -272,6 +277,10 @@ static int Clear(Vector *AL)
 	if (AL->Flags & CONTAINER_READONLY) {
 		return ErrorReadOnly(AL,"Clear");
 	}
+
+	if (AL->Flags & CONTAINER_HAS_OBSERVER)
+		iObserver.Notify(AL,CCL_CLEAR,NULL,NULL);
+
 	if (AL->DestructorFn) {
 		size_t i;
 		unsigned char *p = AL->contents;
@@ -283,8 +292,6 @@ static int Clear(Vector *AL)
 	AL->count = 0;
 	AL->timestamp = 0;
 	AL->Flags = 0;
-	if (AL->Flags & CONTAINER_HAS_OBSERVER)
-		iObserver.Notify(AL,CCL_CLEAR,NULL,NULL);
 
 	return 1;
 }
