@@ -15,6 +15,6 @@
 #define ValArrayInterface ValArrayUIntInterface
 #define ValArray ValArrayUInt
 #define iValArrayInterface iValArrayUInt
-#define IS_UNSIGNED
+#define __IS_UNSIGNED__
 #include "valarraygen.c"
-#undef IS_UNSIGNED
+#undef __IS_UNSIGNED__
