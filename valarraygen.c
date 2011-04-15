@@ -1,6 +1,12 @@
 #ifndef DEFAULT_START_SIZE
 #define DEFAULT_START_SIZE 20
 #endif
+
+typedef struct tagSlice {
+	size_t start;
+	size_t length;
+	size_t increment;
+} SliceSpecs;
 struct _ValArray {
     ValArrayInterface *VTable; /* The table of functions */
     size_t count;                  /* number of elements in the array */
@@ -9,8 +15,11 @@ struct _ValArray {
     unsigned timestamp;            /* Incremented at each change */
     ErrorFunction RaiseError;      /* Error function */
     ContainerMemoryManager *Allocator;
+    SliceSpecs *Slice;
     ElementType *contents;        /* The contents of the collection */
 };
+
+static ElementType GetElement(ValArray *AL,size_t idx);
 
 static const guid ValArrayGuid = {0xba53f11e, 0x5879, 0x49e5,
 {0x9e,0x3a,0xea,0x7d,0xd8,0xcb,0xd9,0xd6}
@@ -146,22 +155,34 @@ static int ResizeTo(ValArray *AL,size_t newcapacity)
 ------------------------------------------------------------------------*/
 static int Add(ValArray *AL,ElementType newval)
 {
+	int r;
+	size_t pos;
 	if (AL == NULL) {
 		return NullPtrError("Add");
 	}
 	if (AL->Flags & CONTAINER_READONLY) {
 		return ErrorReadOnly(AL,"Add");
 	}
-	if (AL->count >= AL->capacity) {
-		int r = Resize(AL);
+	pos = AL->count;
+	if (AL->Slice)
+		pos += AL->Slice->increment-1;
+	if ( pos >= AL->capacity) {
+		if (pos != AL->count)
+			r = ResizeTo(AL,pos+pos/2);
+		else
+			r = Resize(AL);
 		if (r <= 0)
 			return r;
 	}
-	AL->contents[AL->count] = newval;
+	AL->contents[pos] = newval;
 	AL->timestamp++;
 	if (AL->Flags & CONTAINER_HAS_OBSERVER)
-		iObserver.Notify(AL,CCL_ADD,&newval,NULL);
+		iObserver.Notify(AL,CCL_ADD,&newval,AL->Slice);
 	++AL->count;
+	if (AL->Slice) {
+		AL->Slice->length++;
+		AL->count += AL->Slice->increment-1;
+	}
 	return 1;
 }
 
@@ -176,7 +197,8 @@ static int Add(ValArray *AL,ElementType newval)
 ------------------------------------------------------------------------*/
 static int AddRange(ValArray * AL,size_t n,ElementType *data)
 {
-	size_t newcapacity;
+	size_t i,newcapacity;
+	size_t sliceIncrement=1;
 
 	if (n == 0)
 		return 1;
@@ -186,7 +208,9 @@ static int AddRange(ValArray * AL,size_t n,ElementType *data)
 	if (AL->Flags & CONTAINER_READONLY) {
 		return ErrorReadOnly(AL,"AddRange");
 	}
-	newcapacity = AL->count+n;
+	if (AL->Slice)
+		sliceIncrement = AL->Slice->increment;
+	newcapacity = AL->count+n*sliceIncrement;
 	if (newcapacity >= AL->capacity-1) {
 		ElementType *newcontents;
 		newcapacity += AL->count/4;
@@ -198,8 +222,18 @@ static int AddRange(ValArray * AL,size_t n,ElementType *data)
 		AL->capacity = newcapacity;
 		AL->contents = newcontents;
 	}
-	memcpy(AL->contents+AL->count,data,n*sizeof(ElementType));
-	AL->count += n;
+	if (sliceIncrement == 1) {
+		memcpy(AL->contents+AL->count,data,n*sizeof(ElementType));
+		AL->count += n;
+	}
+	else {
+		size_t start = AL->count;
+		memset(AL->contents+AL->count,0,sizeof(ElementType)*n*sliceIncrement);
+		for (i=0; i<n;i++) {
+			AL->contents[start] = *data++;
+			start += sliceIncrement;
+		}
+	}
 	AL->timestamp++;
 	if (AL->Flags & CONTAINER_HAS_OBSERVER)
 		iObserver.Notify(AL,CCL_ADDRANGE,(void *)n,&data);
@@ -209,29 +243,30 @@ static int AddRange(ValArray * AL,size_t n,ElementType *data)
 
 static ValArray *GetRange(ValArray *AL, size_t start,size_t end)
 {
-	ValArray *result;
-	unsigned oldFlags;
-	
-	if (AL == NULL) {
-		iError.RaiseError("iValArray.GetRange",CONTAINER_ERROR_BADARG);
-		return NULL;
-	}
-	result = Create(AL->count);
-	result->VTable = AL->VTable;
-	if (AL->count == 0)
-		return result;
-	if (end >= AL->count)
-		end = AL->count-1;
-	if (start > end)
-		return result;
-	oldFlags = AL->Flags;
-	AL->Flags = (unsigned)(~CONTAINER_READONLY);
-	while (start <= end) {
-		Add(result,AL->contents[start]);
-		start++;
-	}
-	AL->Flags = result->Flags = oldFlags;
-	return result;
+        ValArray *result=NULL;
+        ElementType p;
+        size_t top;
+
+        if (AL->count == 0)
+                return result;
+        if (AL->Slice == NULL && end >= AL->count)
+                end = AL->count-1;
+	else if (AL->Slice && end >= AL->Slice->length)
+		end = AL->Slice->length;
+        if (start > end)
+                return result;
+        top = end - start;
+        result = Create(top);
+        if (result == NULL) {
+                iError.RaiseError("iValArray.GetRange",CONTAINER_ERROR_NOMEMORY);
+                return NULL;
+        }
+        while (start < end) {
+                p = GetElement(AL,start);
+                Add(result,p);
+                start++;
+        }
+        return result;
 }
 
 /*------------------------------------------------------------------------
@@ -250,28 +285,40 @@ static int Clear(ValArray *AL)
 	if (AL->Flags & CONTAINER_READONLY) {
 		return ErrorReadOnly(AL,"Clear");
 	}
+
+	if (AL->Flags & CONTAINER_HAS_OBSERVER)
+		iObserver.Notify(AL,CCL_CLEAR,NULL,NULL);
+
 	AL->count = 0;
 	AL->timestamp = 0;
 	AL->Flags = 0;
-	if (AL->Flags & CONTAINER_HAS_OBSERVER)
-		iObserver.Notify(AL,CCL_CLEAR,NULL,NULL);
+	if (AL->Slice) {
+		AL->Allocator->free(AL->Slice);
+		AL->Slice = NULL;
+	}
 
 	return 1;
 }
 
 static int Contains(ValArray *AL,ElementType data)
 {
-	size_t i;
+	size_t i,incr=1,start=0,top;
 	ElementType *p;
 
 	if (AL == NULL) {
 		return NullPtrError("Contains");
 	}
 	p = AL->contents;
-	for (i = 0; i<AL->count;i++) {
+	top = AL->count;
+	if (AL->Slice) {
+		start = AL->Slice->start;
+		top = AL->Slice->length;
+		incr = AL->Slice->increment;
+	}
+	for (i = start; i<top;i++) {
 		if (*p == data)
 			return 1;
-		p++;
+		p += incr;
 	}
 	return 0;
 }
@@ -288,7 +335,26 @@ static int Equal(ValArray *AL1,ValArray *AL2)
 		return 0;
 	if (AL1->count == 0)
 		return 1;
-	if (memcmp(AL1->contents,AL2->contents,sizeof(ElementType)*AL1->count) != 0)
+	if (AL1->Slice == NULL && AL2->Slice)
+		return 0;
+	if (AL1->Slice && AL2->Slice == NULL)
+		return 0;
+	if (AL1->Slice && AL2->Slice) {
+		if (AL1->Slice->start != AL2->Slice->start ||
+		    AL1->Slice->length != AL2->Slice->length ||
+		    AL1->Slice->increment != AL2->Slice->increment)
+		return 0;
+	} 
+	if (AL1->Slice) {
+		size_t i,start=AL1->Slice->start;
+
+		for (i=0; i<AL1->Slice->length;i++) {
+			if (AL1->contents[start] != AL2->contents[start])
+				return 0;
+			start += AL1->Slice->increment;
+		}
+	}
+	else if (memcmp(AL1->contents,AL2->contents,sizeof(ElementType)*AL1->count) != 0)
 		return 0;
 	return 1;
 }
@@ -1473,6 +1539,22 @@ static int RightShift(ValArray *data,int shift)
 }
 
 
+#endif
+
+#ifdef __IS_SIZE_T
+static ValArraySize_t *BuildSlice(size_t start,size_t size,size_t increment)
+{
+	size_t i;
+	ValAraySize_t result = iValArraySize_t.Create(size);
+
+	if (result) {
+		for (i=0; i<size;i++) {
+			result->contents[i] = start;
+			start += increment;
+		}
+	}
+	return result;
+}
 #endif
 
 ValArrayInterface iValArray = {
