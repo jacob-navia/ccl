@@ -69,7 +69,9 @@ typedef struct tagValArray {
     char *(*CompareScalar)(ValArray *left, ElementType right,char *bytearray);
 
     int (*Fill)(ValArray *dst,ElementType fillValue);
-#ifdef IS_UNSIGNED
+    int (*SetSlice)(ValArray *src,size_t start,size_t length,size_t increment);
+    int (*ResetSlice)(ValArray *array);
+#ifdef __IS_UNSIGNED__
     int (*Or)(ValArray *left, ValArray *right);
     int (*And)(ValArray *left, ValArray *right);
     int (*Xor)(ValArray *left, ValArray *right);
@@ -81,7 +83,7 @@ typedef struct tagValArray {
     int (*XorScalar)(ValArray *left, ElementType right);
 
 #endif
-#ifdef IS_INTEGER
+#ifdef __IS_INTEGER__
     int (*Mod)(ValArray *left, ValArray *right);
     int (*ModScalar)(ValArray *left, ElementType right);
 #endif

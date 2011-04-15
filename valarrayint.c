@@ -15,5 +15,6 @@
 #define ValArrayInterface ValArrayIntInterface
 #define ValArray ValArrayInt
 #define iValArrayInterface iValArrayInt
-
+#define __IS_INTEGER__
 #include "valarraygen.c"
+#undef __IS_INTEGER__
