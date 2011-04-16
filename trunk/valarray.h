@@ -65,7 +65,9 @@ extern ValArrayInterface iValArrayInt;
 #define ElementType long
 #define ValArrayInterface ValArrayLongInterface
 #define ValArray ValArrayLong
+#define __IS_INTEGER__
 #include "valarraygen.h"
+#undef __IS_INTEGER__
 extern ValArrayInterface iValArrayLong;
 
 
@@ -117,7 +119,9 @@ extern ValArrayInterface iValArrayLongDouble;
 #define ElementType long long
 #define ValArrayInterface ValArrayLongLongInterface
 #define ValArray ValArrayLongLong
+#define __IS_INTEGER__
 #include "valarraygen.h"
+#undef __IS_INTEGER__
 extern ValArrayInterface iValArrayLongLong;
 
 /****************************************************************************
@@ -153,8 +157,10 @@ extern ValArrayInterface iValArrayFloat;
 #define ValArrayInterface ValArrayUIntInterface
 #define ValArray ValArrayUInt
 #define __IS_UNSIGNED__
+#define __IS_INTEGER__
 #include "valarraygen.h"
 #undef __IS_UNSIGNED__
+#undef __IS_INTEGER__
 extern ValArrayInterface iValArrayUInt;
 
 
