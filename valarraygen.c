@@ -21,9 +21,6 @@ struct _ValArray {
 
 static ElementType GetElement(ValArray *AL,size_t idx);
 
-static const guid ValArrayGuid = {0xba53f11e, 0x5879, 0x49e5,
-{0x9e,0x3a,0xea,0x7d,0xd8,0xcb,0xd9,0xd6}
-};
 static size_t GetElementSize(const ValArray *AL);
 static int DivisionByZero(const ValArray *AL,char *fnName)
 {
@@ -371,7 +368,7 @@ static ElementType *CopyTo(ValArray *AL)
 	}
 	if (AL->Slice) {
                 size_t idx = AL->Slice->start,i;
-		for (i=0; i<AL->Slice->length; i++) {
+		for (i=0; i<top; i++) {
 			result[i] = AL->contents[idx];
 			idx += AL->Slice->increment;
 		} 
@@ -587,28 +584,37 @@ static size_t GetCapacity(const ValArray *AL)
 
 static int Mismatch(ValArray *a1, ValArray *a2,size_t *mismatch)
 {
-	size_t siz,i;
+	size_t siz1=a1->count,i,siz2=a2->count,incr1=1,incr2=1,start1=0,start2=0;
 	ElementType *p1,*p2;
 
 	*mismatch = 0;
 	if (a1 == a2)
 		return 0;
-	siz = a1->count;
-	if (siz > a2->count)
-		siz = a2->count;
-	if (siz == 0)
+	if (a1->Slice) {
+		siz1 = a1->Slice->length;
+		start1 = a1->Slice->start;
+		incr1 = a1->Slice->increment;
+	}
+	if (a2->Slice) {
+		siz2 = a2->Slice->length;
+		start2 = a2->Slice->start;
+		incr2 = a2->Slice->increment;
+	}
+	if (siz1 > siz2)
+		siz1 = siz2;
+	if (siz1 == 0)
 		return 1;
-	p1 = a1->contents;
-	p2 = a2->contents;
-	for (i=0;i<siz;i++) {
+	p1 = a1->contents+start1;
+	p2 = a2->contents+start2;
+	for (i=start1;i<siz1;i++) {
 		if (*p1 != *p2)  {
-			*mismatch = i;
+			*mismatch = i*incr1;
 			return 1;
 		}
-		p1++;
-		p2++;
+		p1 += incr1;
+		p2 += incr2;
 	}
-	*mismatch = i;
+	*mismatch = i*incr1;
 	if (a1->count != a2->count)
 		return 1;
 	return 0;
@@ -639,11 +645,16 @@ static int SetCapacity(ValArray *AL,size_t newCapacity)
 
 static int Apply(ValArray *AL,int (*Applyfn)(ElementType,void *),void *arg)
 {
-	size_t i;
+	size_t i,start=0,incr=1,top=AL->count;
 	ElementType *p;
 
+	if (AL->Slice) {
+		top = AL->Slice->length;
+		incr = AL->Slice->increment;
+		start = AL->Slice->start;
+	}
 	p=AL->contents;
-	for (i=0; i<AL->count;i++) {
+	for (i=start; i<top;i += incr) {
 		Applyfn(p[i],arg);
 	}
 	return 1;
@@ -1307,9 +1318,15 @@ static char *CompareScalar(ValArray *left,ElementType right,char *bytearray)
 
 static int Fill(ValArray *dst,ElementType data)
 {
-	size_t top = dst->count;
+	size_t top = dst->count,incr=1,start=0;
 	size_t i;
-	for (i=0; i<top;i++) {
+
+	if (dst->Slice) {
+		top = dst->Slice->length;
+		incr = dst->Slice->increment;
+		start = dst->Slice->start;
+	}
+	for (i=start; i<top;i += incr) {
 		dst->contents[i]=data;
 	}
 	return 1;
