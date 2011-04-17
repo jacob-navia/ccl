@@ -39,11 +39,37 @@ OBJS=\
 EXE=dotest.exe
 LIBS=cclmsvc.lib
 
-$(EXE):	$(OBJS) Makefile tlist.obj cclmsvc.lib
+$(EXE): $(OBJS) Makefile tlist.obj cclmsvc.lib
 	$(LINKER) /debug tlist.obj $(LIBS)
 
-cclmsvc.lib: $(OBJS) 
+cclmsvc.lib: $(OBJS)
 	lib /out:cclmsvc.lib $(OBJS)
+
+valarraylongdouble.obj:	valarraygen.c valarraylongdouble.c containers.h valarraygen.h valarray.h
+	$(CC) -c $(CFLAGS) $(SRCDIR)\valarraylongdouble.c
+
+valarraydouble.o:	valarraygen.c valarraydouble.c containers.h valarraygen.h valarray.h
+	$(CC) -c $(CFLAGS) $(SRCDIR)\valarraydouble.c
+
+valarrayint.obj:	valarraygen.c valarrayint.c containers.h valarraygen.h valarray.h
+	$(CC) -c $(CFLAGS) $(SRCDIR)\valarrayint.c
+
+valarrayshort.obj:	valarraygen.c valarrayshort.c containers.h valarraygen.h valarray.h
+	$(CC) -c $(CFLAGS) $(SRCDIR)\valarrayshort.c
+
+valarraysize_t.obj:	valarraygen.c valarraysize_t.c containers.h valarraygen.h valarray.h
+	$(CC) -c $(CFLAGS) $(SRCDIR)\valarraysize_t.c
+
+valarrayfloat.obj:	valarraygen.c valarrayfloat.c containers.h valarraygen.h valarray.h
+	$(CC) -c $(CFLAGS) $(SRCDIR)\valarrayfloat.c
+
+valarrayuint.obj:	valarraygen.c valarrayuint.c containers.h valarraygen.h valarray.h
+	$(CC) -c $(CFLAGS) $(SRCDIR)\valarrayuint.c
+
+valarraylonglong.obj:	valarraygen.c valarraylonglong.c containers.h valarraygen.h valarray.h
+	$(CC) -c $(CFLAGS) $(SRCDIR)\valarraylonglong.c
+generic.obj:	generic.c containers.h
+	$(CC) $(CFLAGS) $(SRCDIR)\generic.c
 
 # Build vector.c
 ARRAYLIST_C=\
