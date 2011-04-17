@@ -1,6 +1,6 @@
 # Wedit Makefile for project ansicStl
 SRCDIR=.
-CFLAGS=-I. -Zi -W4 -D_CRT_SECURE_NO_WARNINGS
+CFLAGS=-I. -Zi -W4 -D_CRT_SECURE_NO_WARNINGS -c
 CC=cl.exe
 LINKER=link.exe
 OBJS=\
@@ -12,6 +12,7 @@ OBJS=\
 	dictionary.obj \
 	dlist.obj \
 	fgetline.obj \
+	generic.obj \
 	hashtable.obj \
 	heap.obj \
 	list.obj \
@@ -25,6 +26,14 @@ OBJS=\
 	searchtree.obj \
 	strcollection.obj \
 	observer.obj \
+	valarrayuint.obj \
+	valarrayint.obj \
+	valarrayfloat.obj \
+	valarraydouble.obj \
+	valarraylongdouble.obj \
+	valarraylonglong.obj \
+	valarrayshort.obj \
+	valarraysize_t.obj \
 	buffer.obj
 
 EXE=dotest.exe
