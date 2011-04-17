@@ -45,7 +45,7 @@ static int Subscribe(void *ObservedObject, ObserverFunction callback, unsigned f
 
 static int Notify(void *ObservedObject,unsigned operation,void *ExtraInfo1,void *ExtraInfo2)
 {
-	int r,count;
+	int r,count=0;
 	size_t idx = 0;
 	void *ExtraInfo[2];
 	Observer obs,*pObserver;
@@ -66,7 +66,7 @@ static int Notify(void *ObservedObject,unsigned operation,void *ExtraInfo1,void 
 		idx++;
 		r = iVector.SearchWithKey(ObserverVector,0,sizeof(void *),idx,&obs,&idx);
 	} while (r > 0);
-	return 0;
+	return count;
 }
 
 static size_t Unsubscribe(void *ObservedObject,ObserverFunction callback)
