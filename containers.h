@@ -318,7 +318,7 @@ typedef struct tagStringCollection {
     /* Writes the string collection in binary form to a stream */
     int (*Save)(StringCollection *SC,FILE *stream, SaveFunction saveFn,void *arg);
     StringCollection *(*Load)(FILE *stream, ReadFunction readFn,void *arg);
-	size_t (*GetElementSize)(StringCollection *SC);
+    size_t (*GetElementSize)(const StringCollection *SC);
  /* -------------------------------------------This is the Sequential container part */
     /* Adds one element at the end. Given string is copied */
     int (*Add)(StringCollection *SC,unsigned char *newval);
@@ -343,7 +343,7 @@ typedef struct tagStringCollection {
     Vector *(*FindTextIndex)(StringCollection *SC,unsigned char *text);
 	Vector *(*FindTextPositions)(StringCollection *SC,unsigned char *text);
     int (*WriteToFile)(StringCollection *SC, unsigned char *filename);
-    StringCollection *(*IndexIn)(StringCollection *SC,Vector *AL);
+    StringCollection *(*IndexIn)(const StringCollection *SC,const Vector *AL);
     StringCollection *(*CreateFromFile)(unsigned char *fileName);
     StringCollection *(*Create)(size_t startsize);
     StringCollection *(*CreateWithAllocator)(size_t startsize,ContainerMemoryManager *allocator);
@@ -357,7 +357,7 @@ typedef struct tagStringCollection {
     int (*Insert)(StringCollection *SC,unsigned char *);
     int (*InsertIn)(StringCollection *source, size_t idx, StringCollection *newData);
     /* Returns the string at the given position */
-    unsigned char *(*GetElement)(StringCollection *SC,size_t idx);
+    unsigned char *(*GetElement)(const StringCollection *SC,size_t idx);
     /* Returns the current capacity of the collection */
     size_t (*GetCapacity)(StringCollection *SC);
     /* Sets the capacity if there are no items in the collection */
@@ -607,7 +607,7 @@ typedef struct tagVector {
 	/* Adds one element at the end. Given element is copied */
     int (*Add)(Vector *AL,void *newval);
     /* Returns the string at the given position */
-    void *(*GetElement)(Vector *AL,size_t idx);
+    void *(*GetElement)(const Vector *AL,size_t idx);
     /* Pushes a string, using the collection as a stack */
     int (*PushBack)(Vector *AL,void *str);
     /* Pops the last string off the collection */
@@ -637,7 +637,7 @@ typedef struct tagVector {
 	Vector *(*CreateWithAllocator)(size_t elementsize,size_t startsize,ContainerMemoryManager *allocator);
     Vector *(*Init)(Vector *r,size_t elementsize,size_t startsize);
     int (*AddRange)(Vector *AL,size_t n, void *newvalues);
-    Vector *(*GetRange)(Vector *AL, size_t start, size_t end);
+    Vector *(*GetRange)(const Vector *AL, size_t start, size_t end);
     int (*CopyElement)(Vector *AL,size_t idx,void *outbuf);
     void **(*CopyTo)(Vector *AL);
 	int (*Reverse)(Vector *AL);
