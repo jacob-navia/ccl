@@ -183,7 +183,7 @@ static int AddRange(ValArray * AL,size_t n,const ElementType *data)
 	}
 	AL->timestamp++;
 	if (AL->Flags & CONTAINER_HAS_OBSERVER)
-		iObserver.Notify(AL,CCL_ADDRANGE,(void *)n,&data);
+		iObserver.Notify(AL,CCL_ADDRANGE,(void *)n,(ElementType *)&data);
 
 	return 1;
 }
@@ -552,11 +552,21 @@ static int PushBack(ValArray *AL,ElementType data)
 ------------------------------------------------------------------------*/
 static int PopBack(ValArray *AL,ElementType *result)
 {
+    size_t idx;
     if (AL->count == 0)
             return 0;
     AL->count--;
+    if (AL->Slice) {
+        idx = AL->Slice->start + (AL->Slice->length-1)*AL->Slice->increment;
+        AL->Slice->length--;
+        if (AL->Slice->length == 0) {
+            AL->Allocator->free(AL->Slice);
+            AL->Slice = NULL;
+        }
+    }
+    else idx = AL->count;
     if (result) {
-       *result = AL->contents[AL->count];
+       *result = AL->contents[idx];
     }
     AL->timestamp++;
     return 1;
@@ -1543,7 +1553,7 @@ static ElementType Min(const ValArray *src)
 }
 
 
-ValArrayInterface iValArray = {
+ValArrayInterface iValArrayInterface = {
 	Size,
 	GetFlags, 
 	SetFlags, 
