@@ -239,7 +239,7 @@ static void TestBitstring(void){
 	d = iBitString.And(c,b);
 	PrintBitstring(d,"011 AND 1101101");
 	i = iBitString.BitBlockCount(c);
-	printf("The block count of c is %d\n",i);
+	printf("The block count of c is %ld\n",i);
 }
 
 #include <stdio.h>
@@ -458,7 +458,7 @@ static int testStreamBuffers(void)
 	}
 	buf[0]=0;
 	iStreamBuffer.Write(sb,&buf,1);
-	printf("Buffer size is: %d\n",iStreamBuffer.Size(sb));
+	printf("Buffer size is: %ld\n",iStreamBuffer.Size(sb));
 	iStreamBuffer.SetPosition(sb,0);
 	p = iStreamBuffer.GetData(sb);
 	while (*p) {
