@@ -56,7 +56,7 @@ static int doerrorCall(ErrorFunction err,const char *fnName,int code)
 	err(buf,code);
 	return code;
 }
-static int ReadOnlyError(StringCollection *SC,const char *fnName)
+static int ReadOnlyError(const StringCollection *SC,const char *fnName)
 {
 	return doerrorCall(SC->RaiseError,fnName,CONTAINER_ERROR_READONLY);
 }
@@ -67,7 +67,7 @@ static int BadArgError(StringCollection *SC,const char *fnName)
 }
 
 
-static int IndexError(StringCollection *SC,const char *fnName)
+static int IndexError(const StringCollection *SC,const char *fnName)
 {
 	return doerrorCall(SC->RaiseError,fnName,CONTAINER_ERROR_INDEX);
 }
@@ -433,7 +433,7 @@ static int Finalize(StringCollection *SC)
     return 1;
 }
 
-static unsigned char *GetElement(StringCollection *SC,size_t idx)
+static unsigned char *GetElement(const StringCollection *SC,size_t idx)
 {
 	if (SC == NULL) {
 		NullPtrError("GetElement");
@@ -450,7 +450,7 @@ static unsigned char *GetElement(StringCollection *SC,size_t idx)
     return SC->contents[idx];
 }
 
-static StringCollection *IndexIn(StringCollection *SC,Vector *AL)
+static StringCollection *IndexIn(const StringCollection *SC,const Vector *AL)
 {
 	StringCollection *result = NULL;
 	size_t i,top,idx;
@@ -1410,7 +1410,7 @@ static StringCollection *Create(size_t startsize)
 	return CreateWithAllocator(startsize,CurrentMemoryManager);
 }
 
-static size_t GetElementSize(StringCollection *sc)
+static size_t GetElementSize(const StringCollection *sc)
 {
 	return sizeof(void *);
 }
