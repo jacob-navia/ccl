@@ -22,7 +22,7 @@ static const guid VectorGuid = {0xba53f11e, 0x5879, 0x49e5,
 {0x9e,0x3a,0xea,0x7d,0xd8,0xcb,0xd9,0xd6}
 };
 
-static int ErrorReadOnly(Vector *AL,char *fnName)
+static int ErrorReadOnly(const Vector *AL,char *fnName)
 {
 	char buf[512];
 
@@ -227,11 +227,10 @@ static int AddRange(Vector * AL,size_t n,void *data)
 	return 1;
 }
 
-static Vector *GetRange(Vector *AL, size_t start,size_t end)
+static Vector *GetRange(const Vector *AL, size_t start,size_t end)
 {
 	Vector *result=NULL;
-	void *p;
-	unsigned oldFlags;
+	char *p;
 	size_t top;
 	
 	if (AL == NULL) {
@@ -244,20 +243,15 @@ static Vector *GetRange(Vector *AL, size_t start,size_t end)
 		end = AL->count-1;
 	if (start > end)
 		return result;
-	oldFlags = AL->Flags;
-	AL->Flags = (unsigned)(~CONTAINER_READONLY);
-	top = end - start;
+	top = end-start;
 	result = AL->VTable->Create(AL->ElementSize,top);
 	if (result == NULL) {
 		iError.RaiseError("iVector.GetRange",CONTAINER_ERROR_NOMEMORY);
 		return NULL;
 	}
-	while (start < end) {
-		p = AL->VTable->GetElement(AL,start);
-		result->VTable->Add(result,p);
-		start++;
-	}
-	AL->Flags = result->Flags = oldFlags;
+	p = AL->contents;
+	memcpy(result->contents,p+start*AL->ElementSize,(top)*AL->ElementSize);
+	result->count = end-start;
 	return result;
 }
 
@@ -467,7 +461,7 @@ static int IndexOf(Vector *AL,void *data,void *ExtraArgs,size_t *result)
 	return CONTAINER_ERROR_NOTFOUND;
 }
 
-static void *GetElement(Vector *AL,size_t idx)
+static void *GetElement(const Vector *AL,size_t idx)
 {
 	char *p;
 	if (AL == NULL) {
@@ -658,12 +652,12 @@ static int PopBack(Vector *AL,void *result)
 	}
     if (AL->count == 0)
             return 0;
-    AL->count--;
     if (result) {
         p = AL->contents;
         p += AL->ElementSize*(AL->count-1);
         memcpy(result,p,AL->ElementSize);
     }
+    AL->count--;
     AL->timestamp++;
     return 1;
 }
