@@ -16,6 +16,8 @@
 #define ValArray ValArrayLongLong
 #define iValArrayInterface iValArrayLongLong
 #define __IS_INTEGER__
+#define MaxElementType LLONG_MAX
+#define MinElementType	LLONG_MIN
 static const guid ValArrayGuidInt = {0xe4386077, 0x540f, 0x4ec0, {0xac,0x95,0xa0,0x96,0x10,0x98,0xc4,0x7f}};
 #define ValArrayGuid ValArrayGuidInt
 #include "valarraygen.c"

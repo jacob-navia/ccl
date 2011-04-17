@@ -24,7 +24,7 @@ typedef struct tagValArray {
         /* Sequential container specific fields */
 
     int (*Add)(ValArray *AL,ElementType newval);
-    ElementType (*GetElement)(ValArray *AL,size_t idx);
+    ElementType (*GetElement)(const ValArray *AL,size_t idx);
     int (*PushBack)(ValArray *AL,ElementType data);
     int (*PopBack)(ValArray *AL,ElementType *result);
     int (*InsertAt)(ValArray *AL,size_t idx,ElementType newval);
@@ -37,7 +37,7 @@ typedef struct tagValArray {
 
     int (*Insert)(ValArray *AL,ElementType);
     int (*InsertIn)(ValArray *AL, size_t idx, ValArray *newData);
-    ValArray *(*IndexIn)(ValArray *SC,ValArraySize_t *AL);
+    ValArray *(*IndexIn)(const ValArray *SC,const ValArraySize_t *AL);
     size_t (*GetCapacity)(const ValArray *AL);
     int (*SetCapacity)(ValArray *AL,size_t newCapacity);
 
@@ -46,8 +46,8 @@ typedef struct tagValArray {
     ValArray *(*Create)(size_t startsize);
     ValArray *(*CreateWithAllocator)(size_t startsize, ContainerMemoryManager *allocator);
     ValArray *(*Init)(ValArray *AL,size_t startsize);
-    int (*AddRange)(ValArray *AL,size_t n, ElementType *newvalues);
-    ValArray *(*GetRange)(ValArray *AL, size_t start, size_t end);
+    int (*AddRange)(ValArray *AL,size_t n, const ElementType *newvalues);
+    ValArray *(*GetRange)(const ValArray *AL, size_t start, size_t end);
     int (*CopyElement)(ValArray *AL,size_t idx,ElementType *outbuf);
     ElementType *(*CopyTo)(ValArray *AL);
     int (*Reverse)(ValArray *AL);
@@ -55,37 +55,43 @@ typedef struct tagValArray {
     int (*Mismatch)(ValArray *a1, ValArray *a2,size_t *mismatch);
     ContainerMemoryManager *(*GetAllocator)(ValArray *AL);
     DestructorFunction (*SetDestructor)(ValArray *cb,DestructorFunction fn);
-    int (*SumTo)(ValArray *left,ValArray *right);
-    int (*SubtractFrom)(ValArray *left, ValArray *right);
-    int (*MultiplyWith)(ValArray *left, ValArray *right);
-    int (*DivideBy)(ValArray *left, ValArray *right);
+
+    /* ValArray specific functions */
+    int (*SumTo)(ValArray *left,const ValArray *right);
+    int (*SubtractFrom)(ValArray *left, const ValArray *right);
+    int (*MultiplyWith)(ValArray *left, const ValArray *right);
+    int (*DivideBy)(ValArray *left, const ValArray *right);
     int (*SumToScalar)(ValArray *left,ElementType right);
     int (*SubtractFromScalar)(ValArray *left, ElementType right);
     int (*MultiplyWithScalar)(ValArray *left, ElementType right);
     int (*DivideByScalar)(ValArray *left, ElementType right);
-    unsigned char *(*CompareEqual)(ValArray *left, ValArray *right,unsigned char *bytearray);
-    unsigned char *(*CompareEqualScalar)(ValArray *left, ElementType right,unsigned char *bytearray);
-    char *(*Compare)(ValArray *left, ValArray *right,char *bytearray);
-    char *(*CompareScalar)(ValArray *left, ElementType right,char *bytearray);
+    unsigned char *(*CompareEqual)(const ValArray *left,const ValArray *right,unsigned char *bytearray);
+    unsigned char *(*CompareEqualScalar)(const ValArray *left, const ElementType right, unsigned char *bytearray);
+    char *(*Compare)(const ValArray *left, const ValArray *right,char *bytearray);
+    char *(*CompareScalar)(const ValArray *left, const ElementType right,char *bytearray);
 
     int (*Fill)(ValArray *dst,ElementType fillValue);
+    int (*FillSequential)(ValArray *dst,ElementType start, ElementType increment);
     int (*SetSlice)(ValArray *src,size_t start,size_t length,size_t increment);
     int (*ResetSlice)(ValArray *array);
+    int (*GetSlice)(ValArray *array,size_t *start,size_t *length, size_t *increment);
+    ElementType (*Max)(const ValArray *src);
+    ElementType (*Min)(const ValArray *src);
 #ifdef __IS_UNSIGNED__
-    int (*Or)(ValArray *left, ValArray *right);
-    int (*And)(ValArray *left, ValArray *right);
-    int (*Xor)(ValArray *left, ValArray *right);
+    int (*Or)(ValArray *left, const ValArray *right);
+    int (*And)(ValArray *left, const ValArray *right);
+    int (*Xor)(ValArray *left, const ValArray *right);
     int (*Not)(ValArray *left);
-    int (*LeftShift)(ValArray *data,int shift);
-    int (*RightShift)(ValArray *data,int shift);
-    int (*OrScalar)(ValArray *left, ElementType right);
-    int (*AndScalar)(ValArray *left, ElementType right);
-    int (*XorScalar)(ValArray *left, ElementType right);
+    int (*BitLeftShift)(ValArray *data,int shift);
+    int (*BitRightShift)(ValArray *data, const int shift);
+    int (*OrScalar)(ValArray *left, const ElementType right);
+    int (*AndScalar)(ValArray *left, const ElementType right);
+    int (*XorScalar)(ValArray *left, const ElementType right);
 
 #endif
 #ifdef __IS_INTEGER__
-    int (*Mod)(ValArray *left, ValArray *right);
-    int (*ModScalar)(ValArray *left, ElementType right);
+    int (*Mod)(ValArray *left,const ValArray *right);
+    int (*ModScalar)(ValArray *left,const ElementType right);
 #endif
 } ValArrayInterface;
 
