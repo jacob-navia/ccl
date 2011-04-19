@@ -13,7 +13,6 @@ struct _ValArray {
     unsigned int Flags;            /* Read-only or other flags */
     size_t capacity;               /* allocated space in the contents vector */
     unsigned timestamp;            /* Incremented at each change */
-    ErrorFunction RaiseError;      /* Error function */
     ContainerMemoryManager *Allocator;
     SliceSpecs *Slice;
     ElementType *contents;        /* The contents of the collection */
@@ -22,29 +21,41 @@ struct _ValArray {
 static ElementType GetElement(const ValArray *AL,size_t idx);
 
 static size_t GetElementSize(const ValArray *AL);
-static int DivisionByZero(const ValArray *AL,char *fnName)
+static int doerror(char *fnName,int code)
 {
-	char buf[512];
+        char buf[512];
 
-	sprintf(buf,"iValArray.%s",fnName);
-	AL->RaiseError(buf,CONTAINER_ERROR_DIVISION_BY_ZERO);
-	return CONTAINER_ERROR_DIVISION_BY_ZERO;
+        sprintf(buf,"iValArray.%s",fnName);
+	iValArrayInterface.RaiseError(buf,code);
+	return code;
 }
 
-static int ErrorIncompatible(const ValArray *AL, char *fnName)
+static int DivisionByZero(char *fnName)
 {
-    char buf[512];
+	return doerror(fnName,CONTAINER_ERROR_DIVISION_BY_ZERO);
+}
 
-    sprintf(buf,"iValarray.%s",fnName);
-    AL->RaiseError(buf,CONTAINER_ERROR_INCOMPATIBLE);
-    return CONTAINER_ERROR_INCOMPATIBLE;
+static int ErrorIncompatible(char *fnName)
+{
+    return doerror(fnName,CONTAINER_ERROR_INCOMPATIBLE);
 
 }
+
+static int NoMemory(char *fnName)
+{
+    return doerror(fnName,CONTAINER_ERROR_NOMEMORY);
+}
+
+static int IndexError(char *fnName)
+{
+    return doerror(fnName,CONTAINER_ERROR_INDEX);
+}
+
 
 static ValArray *Create(size_t startsize);
 
 #define CHUNKSIZE 20
-static int ValArrayDefaultCompareFn(const void *pleft,const void *pright,CompareInfo *notused)
+static int ValArrayDefaultCompareFn(const void *pleft,const void *pright)
 {
 	const ElementType *left = pleft,*right = pright;
 	return *left < *right ? -1 : (*left > *right ? 1 : 0);
@@ -60,7 +71,7 @@ static unsigned GetFlags(const ValArray *AL)
 }
 static unsigned SetFlags(ValArray *AL,unsigned newval)
 {
-	int oldval;
+	unsigned oldval;
 	oldval = AL->Flags;
 	AL->Flags = newval;
 	return oldval;
@@ -77,7 +88,7 @@ static int Resize(ValArray *AL)
 	oldcontents = AL->contents;
 	AL->contents = AL->Allocator->realloc(AL->contents,newcapacity*sizeof(ElementType));
 	if (AL->contents == NULL) {
-		AL->RaiseError("iValArray.Resize",CONTAINER_ERROR_NOMEMORY);
+		NoMemory("Resize");
 		AL->contents = oldcontents;
 		r = CONTAINER_ERROR_NOMEMORY;
 	}
@@ -95,7 +106,7 @@ static int ResizeTo(ValArray *AL,size_t newcapacity)
 	oldcontents = AL->contents;
 	AL->contents = AL->Allocator->realloc(AL->contents,newcapacity*sizeof(ElementType));
 	if (AL->contents == NULL) {
-		AL->RaiseError("iValArray.ResizeTo",CONTAINER_ERROR_NOMEMORY);
+		NoMemory("ResizeTo");
 		AL->contents = oldcontents;
 		return CONTAINER_ERROR_NOMEMORY;
 	}
@@ -109,7 +120,7 @@ static int ResizeTo(ValArray *AL,size_t newcapacity)
  Purpose:       Adds an item at the end of the ValArray
  Input:         The ValArray and the item to be added
  Output:        The number of items in the ValArray or negative if
-                error
+		error
  Errors:
 ------------------------------------------------------------------------*/
 static int Add(ValArray *AL,ElementType newval)
@@ -142,11 +153,11 @@ static int Add(ValArray *AL,ElementType newval)
 /*------------------------------------------------------------------------
  Procedure:     AddRange ID:1
  Purpose:       Adds a range of data at the end of an existing
-                arrraylist. 
+		arrraylist. 
  Input:         The ValArray and the data to be added
  Output:        One (OK) or negative error code
  Errors:        ValArray must be writable and data must be
-                different of NULL
+		different of NULL
 ------------------------------------------------------------------------*/
 static int AddRange(ValArray * AL,size_t n,const ElementType *data)
 {
@@ -163,8 +174,7 @@ static int AddRange(ValArray * AL,size_t n,const ElementType *data)
 		newcapacity += AL->count/4;
 		newcontents = AL->Allocator->realloc(AL->contents,newcapacity*sizeof(ElementType));
 		if (newcontents == NULL) {
-			AL->RaiseError("iValArray.AddRange",CONTAINER_ERROR_NOMEMORY);
-			return CONTAINER_ERROR_NOMEMORY;
+			return NoMemory("AddRange");
 		}
 		AL->capacity = newcapacity;
 		AL->contents = newcontents;
@@ -195,23 +205,23 @@ static ValArray *GetRange(const ValArray *AL, size_t start,size_t end)
         size_t top;
 
         if (AL->count == 0)
-                return result;
+		return result;
         if (AL->Slice == NULL && end >= AL->count)
-                end = AL->count-1;
+		end = AL->count-1;
 	else if (AL->Slice && end >= AL->Slice->length)
 		end = AL->Slice->length;
         if (start > end)
-                return result;
+		return result;
         top = end - start;
         result = Create(top);
         if (result == NULL) {
-                iError.RaiseError("iValArray.GetRange",CONTAINER_ERROR_NOMEMORY);
-                return NULL;
+		NoMemory("GetRange");
+		return NULL;
         }
         while (start < end) {
-                p = GetElement(AL,start);
-                Add(result,p);
-                start++;
+		p = GetElement(AL,start);
+		Add(result,p);
+		start++;
         }
         return result;
 }
@@ -219,7 +229,7 @@ static ValArray *GetRange(const ValArray *AL, size_t start,size_t end)
 /*------------------------------------------------------------------------
  Procedure:     Clear ID:1
  Purpose:       Frees all memory from an array list object without
-                freeing the object itself
+		freeing the object itself
  Input:         The array list to be cleared
  Output:        The number of objects that were in the array list
  Errors:        The array list must be writable
@@ -303,7 +313,7 @@ static ValArray *Copy(ValArray *AL)
 	
 	result = AL->Allocator->malloc(sizeof(*result));
 	if (result == NULL) {
-		iError.RaiseError("iValArray.Copy",CONTAINER_ERROR_NOMEMORY);
+		NoMemory("Copy");
 		return NULL;
 	}
 	memset(result,0,sizeof(*result));
@@ -313,7 +323,7 @@ static ValArray *Copy(ValArray *AL)
 	es = startsize * sizeof(ElementType);
 	result->contents = AL->Allocator->malloc(es);
 	if (result->contents == NULL) {
-		AL->RaiseError("iValArray.Copy",CONTAINER_ERROR_NOMEMORY);
+		NoMemory("Copy");
 		AL->Allocator->free(result);
 		return NULL;
 	}
@@ -321,7 +331,6 @@ static ValArray *Copy(ValArray *AL)
 		memset(result->contents,0,es);
 		result->capacity = startsize;
 		result->VTable = &iValArrayInterface;
-		result->RaiseError = iError.RaiseError;
 		result->Allocator = AL->Allocator;
 	}
 	if (AL->Slice == NULL)
@@ -334,7 +343,6 @@ static ValArray *Copy(ValArray *AL)
 		}
 	}
 	result->Flags = AL->Flags;
-	result->RaiseError = AL->RaiseError;
 	result->VTable = AL->VTable;
 	result->count = (AL->Slice == NULL) ? AL->count : AL->Slice->length;
 	if (AL->Flags & CONTAINER_HAS_OBSERVER)
@@ -346,8 +354,7 @@ static int CopyElement(ValArray *AL,size_t idx, ElementType *outbuf)
 {
 	size_t top = (AL->Slice) ? AL->Slice->length : AL->count;
 	if (idx >= top) {
-		AL->RaiseError("iValArray.CopyElement",CONTAINER_ERROR_INDEX);
-		return CONTAINER_ERROR_INDEX;
+		return IndexError("CopyElement");
 	}
 	if (AL->Slice) {
 		idx *= AL->Slice->start + idx * AL->Slice->increment;
@@ -363,11 +370,11 @@ static ElementType *CopyTo(ValArray *AL)
 	size_t top = (AL->Slice) ? AL->Slice->length : AL->count;
 	result = AL->Allocator->calloc(1+top,sizeof(ElementType));
 	if (result == NULL) {
-		AL->RaiseError("iValArray.CopyTo",CONTAINER_ERROR_NOMEMORY);
+		NoMemory("CopyTo");
 		return NULL;
 	}
 	if (AL->Slice) {
-                size_t idx = AL->Slice->start,i;
+		size_t idx = AL->Slice->start,i;
 		for (i=0; i<top; i++) {
 			result[i] = AL->contents[idx];
 			idx += AL->Slice->increment;
@@ -408,7 +415,7 @@ static ElementType GetElement(const ValArray *AL,size_t idx)
 		top = AL->Slice->length;
 	}
 	if (idx >=top ) {
-		AL->RaiseError("iValArray.GetElement",CONTAINER_ERROR_INDEX);
+		IndexError("GetElement");
 		return (ElementType)0;
 	}
 	idx = start+idx*incr;
@@ -418,26 +425,25 @@ static ElementType GetElement(const ValArray *AL,size_t idx)
 /*------------------------------------------------------------------------
  Procedure:     InsertAt ID:1
  Purpose:       Inserts data at the given position, that should be
-                between zero and the number of items in the array
-                list. If the index is equal to the count of items in
-                the array the item will be inserted at the end. Any
-                insertion in the middle or at the beginning provokes
-                a move of all items between the index and the end of
-                the array list
+		between zero and the number of items in the array
+		list. If the index is equal to the count of items in
+		the array the item will be inserted at the end. Any
+		insertion in the middle or at the beginning provokes
+		a move of all items between the index and the end of
+		the array list
  Input:         The array list, the index and the new data to be
-                inserted
+		inserted
  Output:        Error code less than zero if error, or positive
-                number bigger than zero otherwise
+		number bigger than zero otherwise
  Errors:        The index must be correct and the array list must be
-                writable
+		writable
 ------------------------------------------------------------------------*/
 static int InsertAt(ValArray *AL,size_t idx,ElementType newval)
 {
 	ElementType *p;
 	
 	if (idx > AL->count) {
-		AL->RaiseError("iValArray.InsertAt",CONTAINER_ERROR_INDEX);
-		return CONTAINER_ERROR_INDEX;
+		return IndexError(".InsertAt");
 	}
 	if (AL->count >= (AL->capacity-1)) {
 		int r = Resize(AL);
@@ -469,8 +475,7 @@ static int InsertIn(ValArray *AL, size_t idx, ValArray *newData)
 	ElementType *p;
 
 	if (idx > AL->count) {
-		AL->RaiseError("iValArray.InsertIn",CONTAINER_ERROR_INDEX);
-		return CONTAINER_ERROR_INDEX;
+		return IndexError("InsertIn");
 	}
 	newCount = AL->count + newData->count;
 	if (newCount >= (AL->capacity-1)) {
@@ -502,14 +507,15 @@ static int EraseAt(ValArray *AL,size_t idx)
 		top = AL->Slice->length;
 		incr = AL->Slice->increment;
 		start = AL->Slice->start;
+		p = AL->contents + start + idx * AL->Slice->increment;
+		idx += start + idx*incr;
 	}
+	p = AL->contents +idx;
 	if (idx >= top) {
-		AL->RaiseError("iValArray.Erase",CONTAINER_ERROR_INDEX);
-		return CONTAINER_ERROR_INDEX;
+		return IndexError("Erase");
 	}
-	p = AL->contents + start + idx * AL->Slice->increment;
 	if (AL->Flags & CONTAINER_HAS_OBSERVER)
-		iObserver.Notify(AL,CCL_ERASE,p,NULL);
+		iObserver.Notify(AL,CCL_ERASE_AT,(void *)idx,NULL);
 	if (idx < (AL->count-1)) {
 		memmove(p+idx,p+(idx+1),(AL->count-idx)*sizeof(ElementType));
 	}
@@ -542,8 +548,8 @@ static int PushBack(ValArray *AL,ElementType data)
 /*------------------------------------------------------------------------
  Procedure:     Pop ID:1
  Purpose:       Removes the last item of the list and returns its
-                data to the caller. It is the responsability of the
-                caller to free this memory. This is almost the same as
+		data to the caller. It is the responsability of the
+		caller to free this memory. This is almost the same as
 				the "Remove" function, with the only difference that the
 				data is NOT freed but returned to the caller.
  Input:         The array list to be popped
@@ -575,10 +581,10 @@ static int PopBack(ValArray *AL,ElementType *result)
 /*------------------------------------------------------------------------
  Procedure:     Finalize ID:1
  Purpose:       Releases all memory associated with an ValArray,
-                including the ValArray structure itself
+		including the ValArray structure itself
  Input:         The ValArray to be destroyed
  Output:        The number of items that the ValArray contained or
-                zero if error
+		zero if error
  Errors:        Input must be writable
 ------------------------------------------------------------------------*/
 static int Finalize(ValArray *AL)
@@ -648,8 +654,7 @@ static int SetCapacity(ValArray *AL,size_t newCapacity)
 	ElementType *newContents;
 	newContents = AL->Allocator->malloc(newCapacity*sizeof(ElementType));
 	if (newContents == NULL) {
-		AL->RaiseError("iValArray.SetCapacity",CONTAINER_ERROR_NOMEMORY);
-		return CONTAINER_ERROR_NOMEMORY;
+		return NoMemory("SetCapacity");
 	}
 	memset(AL->contents,0,sizeof(ElementType)*newCapacity);
 	AL->capacity = newCapacity;
@@ -683,10 +688,27 @@ static int Apply(ValArray *AL,int (*Applyfn)(ElementType,void *),void *arg)
 	return 1;
 }
 
+static int ForEach(ValArray *AL, ElementType (*ApplyFn)(ElementType))
+{
+	size_t i,start=0,incr=1,top=AL->count;
+	ElementType *p;
+
+	if (AL->Slice) {
+		top = AL->Slice->length;
+		incr = AL->Slice->increment;
+		start = AL->Slice->start;
+	}
+	p = AL->contents;
+	for (i=start; i<top;i += incr) {
+		p[i] = ApplyFn(p[i]);
+	}
+	return 1;
+}
+
 /*------------------------------------------------------------------------
  Procedure:     ReplaceAt ID:1
  Purpose:       Replace the data at the given position with new
-                data.
+		data.
  Input:         The list and the new data
  Output:        Returns the new data if OK, NULL if error.
  Errors:        Index error or read only errors are caught
@@ -694,8 +716,7 @@ static int Apply(ValArray *AL,int (*Applyfn)(ElementType,void *),void *arg)
 static int ReplaceAt(ValArray *AL,size_t idx,ElementType newval)
 {
 	if (idx >= AL->count) {
-		AL->RaiseError("iValArray.ReplaceAt",CONTAINER_ERROR_INDEX);
-		return CONTAINER_ERROR_INDEX;
+		return IndexError("ReplaceAt");
 	}
 	if (AL->Flags & CONTAINER_HAS_OBSERVER) {
 		iObserver.Notify(AL,CCL_REPLACEAT,&idx,&newval);
@@ -729,8 +750,8 @@ static ErrorFunction SetErrorFunction(ValArray *AL,ErrorFunction fn)
 {
 	ErrorFunction old;
 
-	old = AL->RaiseError;
-	if (fn) AL->RaiseError = fn;
+	old = iValArrayInterface.RaiseError;
+	if (fn) iValArrayInterface.RaiseError = fn;
 	return old;
 }
 
@@ -744,9 +765,9 @@ static size_t Sizeof(ValArray *AL)
 /*------------------------------------------------------------------------
  Procedure:     SetCompareFunction ID:1
  Purpose:       Defines the function to be used in comparison of
-                ValArray elements
+		ValArray elements
  Input:         The ValArray and the new comparison function. If the new
-                comparison function is NULL no changes are done.
+		comparison function is NULL no changes are done.
  Output:        Returns the old function
  Errors:        None
 ------------------------------------------------------------------------*/
@@ -761,7 +782,15 @@ static int Sort(ValArray *AL)
 
 	ci.Container = AL;
 	ci.ExtraArgs = NULL;
-	qsortEx(AL->contents,AL->count,sizeof(ElementType),ValArrayDefaultCompareFn,&ci);
+	if (AL->Slice) {
+		size_t i,j=0;
+		ElementType *sliceTab = AL->Allocator->calloc(sizeof(ElementType),AL->Slice->length);
+		for (i=AL->Slice->start;i<AL->Slice->length;i += AL->Slice->increment) {
+			sliceTab[j++] = AL->contents[i];
+		}
+		qsort(sliceTab,AL->Slice->length,sizeof(ElementType),ValArrayDefaultCompareFn);
+	}
+	else qsort(AL->contents,AL->count,sizeof(ElementType),ValArrayDefaultCompareFn);
 	return 1;
 }
 
@@ -797,15 +826,29 @@ static int Reverse(ValArray *AL)
 	if (AL->count < 2)
 		return 1;
 
-	p = AL->contents;
-	s = AL->count;
-	q = p + s*(AL->count-1);
-	while ( p < q ) {
-		t = *p;
-		*p = *q;
-		*q = t;
-		p++;
-		q--;
+	if (AL->Slice) {
+		p = AL->contents+AL->Slice->start;
+		s = AL->Slice->length;
+		q = p + (s*AL->Slice->increment-1);
+		while (p<q) {
+			t = *p;
+			*p = *q;
+			*q = t;
+			p += AL->Slice->increment;
+			q -= AL->Slice->increment;
+		}
+	}
+	else {
+		p = AL->contents;
+		s = AL->count;
+		q = p + s*(AL->count-1);
+		while ( p < q ) {
+			t = *p;
+			*p = *q;
+			*q = t;
+			p++;
+			q--;
+		}
 	}
 	AL->timestamp++;
 	return 1;
@@ -836,7 +879,7 @@ static void *GetNext(Iterator *it)
 	if (ali->index >= AL->count)
 		return NULL;
 	if (ali->timestamp != AL->timestamp) {
-		AL->RaiseError("GetNext",CONTAINER_ERROR_OBJECT_CHANGED);
+		iValArrayInterface.RaiseError("GetNext",CONTAINER_ERROR_OBJECT_CHANGED);
 		return NULL;
 	}
 	p = AL->contents + ali->index;
@@ -855,7 +898,7 @@ static void *GetPrevious(Iterator *it)
 	if (ali->index >= AL->count || ali->index == 0)
 		return NULL;
 	if (ali->timestamp != AL->timestamp) {
-		AL->RaiseError("iValArray.GetPrevious",CONTAINER_ERROR_OBJECT_CHANGED);
+		iValArrayInterface.RaiseError("iValArray.GetPrevious",CONTAINER_ERROR_OBJECT_CHANGED);
 		return NULL;
 	}
 	p = AL->contents + ali->index;
@@ -874,7 +917,7 @@ static void *GetLast(Iterator *it)
 	if (AL->count == 0)
 		return NULL;
 	if (ali->timestamp != AL->timestamp) {
-		AL->RaiseError("iValArray.GetLast",CONTAINER_ERROR_OBJECT_CHANGED);
+		iValArrayInterface.RaiseError("iValArray.GetLast",CONTAINER_ERROR_OBJECT_CHANGED);
 		return NULL;
 	}
 	p = AL->contents + (AL->count-1);
@@ -908,7 +951,7 @@ static Iterator *newIterator(ValArray *AL)
 
 	result = AL->Allocator->malloc(sizeof(struct ValArrayIterator)+ sizeof(ElementType));
 	if (result == NULL) {
-		AL->RaiseError("iValArray.newIterator",CONTAINER_ERROR_NOMEMORY);
+		NoMemory("newIterator");
 		return NULL;
 	}
 	result->it.GetNext = GetNext;
@@ -1012,7 +1055,7 @@ static ValArray *Load(FILE *stream)
 		result->Flags = AL.Flags;
 		result->count = AL.count;
 	}
-	else iError.RaiseError("iValArray.Load",CONTAINER_ERROR_NOMEMORY);
+	else NoMemory("Load");
 	return result;
 }
 
@@ -1026,7 +1069,7 @@ static ValArray *CreateWithAllocator(size_t startsize,ContainerMemoryManager *al
 	/* Allocate space for the array list header structure */
 	result = allocator->malloc(sizeof(*result));
 	if (result == NULL) {
-		iError.RaiseError("iValArray.Create",CONTAINER_ERROR_NOMEMORY);
+		NoMemory("Create");
 		return NULL;
 	}
 	memset(result,0,sizeof(*result));
@@ -1035,7 +1078,7 @@ static ValArray *CreateWithAllocator(size_t startsize,ContainerMemoryManager *al
 	es = startsize * sizeof(ElementType);
 	result->contents = allocator->malloc(es);
 	if (result->contents == NULL) {
-		iError.RaiseError("iValArray.Create",CONTAINER_ERROR_NOMEMORY);
+		NoMemory("Create");
 		allocator->free(result);
 		result = NULL;
 	}
@@ -1043,7 +1086,6 @@ static ValArray *CreateWithAllocator(size_t startsize,ContainerMemoryManager *al
 		memset(result->contents,0,es);
 		result->capacity = startsize;
 		result->VTable = &iValArrayInterface;
-		result->RaiseError = iError.RaiseError;
 		result->Allocator = allocator;
 	}
 	return result;
@@ -1064,14 +1106,13 @@ static ValArray *Init(ValArray *result,size_t startsize)
 	es = startsize * sizeof(ElementType);
 	result->contents = CurrentMemoryManager->malloc(es);
 	if (result->contents == NULL) {
-		iError.RaiseError("iValArray.Init",CONTAINER_ERROR_NOMEMORY);
+		NoMemory("Init");
 		result = NULL;
 	}
 	else {
 		memset(result->contents,0,es);
 		result->capacity = startsize;
 		result->VTable = &iValArrayInterface;
-		result->RaiseError = iError.RaiseError;
 		result->Allocator = CurrentMemoryManager;
 	}
 	return result;
@@ -1102,7 +1143,7 @@ static int SumTo(ValArray *left,const ValArray *right)
 		incr_right = right->Slice->increment;
 	}
 	if (top_right != top_left) {
-		return ErrorIncompatible(left,"SumTo");
+		return ErrorIncompatible("SumTo");
 	}
 	idx_left = start_left;
 	idx_right = start_right;
@@ -1125,7 +1166,7 @@ static int SumToScalar(ValArray *left,ElementType right)
 	}
 	idx_left = start_left;
         for (i=start_left; i<top_left; i++) {
-                left->contents[idx_left] += right;
+		left->contents[idx_left] += right;
 		idx_left += incr_left;
 	}
         return 1;
@@ -1148,7 +1189,7 @@ static int SubtractFrom(ValArray *left,const ValArray *right)
 		incr_right = right->Slice->increment;
 	}
 	if (top_right != top_left) {
-		return ErrorIncompatible(left,"SumTo");
+		return ErrorIncompatible("SumTo");
 	}
 	idx_left = start_left;
 	idx_right = start_right;
@@ -1170,7 +1211,7 @@ static int SubtractFromScalar(ValArray *left,ElementType right)
 	}
 	idx_left = start_left;
         for (i=start_left; i<top_left; i++) {
-                left->contents[idx_left] -= right;
+		left->contents[idx_left] -= right;
 		idx_left += incr_left;
 	}
         return 1;
@@ -1181,10 +1222,10 @@ static int MultiplyWith(ValArray *left,const ValArray *right)
         size_t i;
 
         if (left->count != right->count) {
-                return ErrorIncompatible(left,"MultiplyWith");
+		return ErrorIncompatible("MultiplyWith");
         }
         for (i=0; i<left->count; i++)
-                left->contents[i] *= right->contents[i];
+		left->contents[i] *= right->contents[i];
         return 1;
 }
 
@@ -1193,7 +1234,7 @@ static int MultiplyWithScalar(ValArray *left,ElementType right)
         size_t i;
 
         for (i=0; i<left->count; i++)
-                left->contents[i] *= right;
+		left->contents[i] *= right;
         return 1;
 }
 
@@ -1203,13 +1244,13 @@ static int DivideBy(ValArray *left,const ValArray *right)
         size_t i;
 
         if (left->count != right->count) {
-                return ErrorIncompatible(left,"DivideBy");
+		return ErrorIncompatible("DivideBy");
         }
         for (i=0; i<left->count; i++)
 		if (right->contents[i])
-                	left->contents[i] /= right->contents[i];
+			left->contents[i] /= right->contents[i];
 		else
-			DivisionByZero(left,"DivideBy");
+			DivisionByZero("DivideBy");
         return 1;
 }
 
@@ -1218,9 +1259,9 @@ static int DivideByScalar(ValArray *left,ElementType right)
         size_t i;
 
 	if (right == 0)
-		return DivisionByZero(left,"DivideByScalar");
+		return DivisionByZero("DivideByScalar");
         for (i=0; i<left->count; i++)
-                left->contents[i] /= right;
+		left->contents[i] /= right;
         return 1;
 }
 
@@ -1230,13 +1271,13 @@ static int Mod(ValArray *left,const ValArray *right)
         size_t i;
 
         if (left->count != right->count) {
-                return ErrorIncompatible(left,"DivideBy");
+		return ErrorIncompatible("DivideBy");
         }
         for (i=0; i<left->count; i++)
-                if (right->contents[i])
-                        left->contents[i] %= right->contents[i];
-                else
-                        DivisionByZero(left,"Mod");
+		if (right->contents[i])
+			left->contents[i] %= right->contents[i];
+		else
+			DivisionByZero("Mod");
         return 1;
 }
 
@@ -1245,9 +1286,9 @@ static int ModScalar(ValArray *left, const ElementType right)
         size_t i;
 
         if (right == 0)
-                return DivisionByZero(left,"ModScalar");
+		return DivisionByZero("ModScalar");
         for (i=0; i<left->count; i++)
-                left->contents[i] %= right;
+		left->contents[i] %= right;
         return 1;
 }
 #endif
@@ -1257,14 +1298,14 @@ static unsigned char *CompareEqual(const ValArray *left,const ValArray *right,un
 	size_t len = left->count,i,siz;
 
 	if (len != right->count) {
-		ErrorIncompatible(left,"CompareEqual");
+		ErrorIncompatible("CompareEqual");
 		return NULL;
 	}
 	siz = 1 + len/CHAR_BIT;
 	if (bytearray == NULL)
 		bytearray = left->Allocator->malloc(siz);
 	if (bytearray == NULL) {
-		iError.RaiseError("ValArray.CompareEqual",CONTAINER_ERROR_NOMEMORY);
+		NoMemory("CompareEqual");
 		return NULL;
 	}
 	memset(bytearray,0,siz);
@@ -1282,16 +1323,16 @@ static unsigned char *CompareEqualScalar(const ValArray *left, const ElementType
 
         siz = 1 + len/CHAR_BIT;
         if (bytearray == NULL)
-                bytearray = left->Allocator->malloc(siz);
+		bytearray = left->Allocator->malloc(siz);
         if (bytearray == NULL) {
-                iError.RaiseError("ValArray.Compare",CONTAINER_ERROR_NOMEMORY);
-                return NULL;
+		NoMemory("Compare");
+		return NULL;
         }
         memset(bytearray,0,siz);
         for (i=0; i<len;i++) {
-                bytearray[i/CHAR_BIT] |= (left->contents[i] == right);
-                if ((CHAR_BIT-1) != (i&(CHAR_BIT-1)))
-                        bytearray[i] <<= 1;
+		bytearray[i/CHAR_BIT] |= (left->contents[i] == right);
+		if ((CHAR_BIT-1) != (i&(CHAR_BIT-1)))
+			bytearray[i] <<= 1;
         }
         return bytearray;
 }
@@ -1301,19 +1342,19 @@ static char *Compare(const ValArray *left,const ValArray *right, char *bytearray
         size_t len = left->count,i,siz;
 
         if (len != right->count) {
-                ErrorIncompatible(left,"Compare");
-                return NULL;
+		ErrorIncompatible("Compare");
+		return NULL;
         }
         siz =  len;
         if (bytearray == NULL)
-                bytearray = left->Allocator->malloc(siz);
+		bytearray = left->Allocator->malloc(siz);
         if (bytearray == NULL) {
-                iError.RaiseError("ValArray.Compare",CONTAINER_ERROR_NOMEMORY);
-                return NULL;
+		NoMemory("Compare");
+		return NULL;
         }
         memset(bytearray,0,siz);
         for (i=0; i<len;i++) {
-                bytearray[i] = (left->contents[i] < right->contents[i]) ?
+		bytearray[i] = (left->contents[i] < right->contents[i]) ?
 			-1 : (left->contents[i] > right->contents[i]) ? 1 : 0;
         }
         return bytearray;
@@ -1325,15 +1366,15 @@ static char *CompareScalar(const ValArray *left,const ElementType right,char *by
 
         siz =  len;
         if (bytearray == NULL)
-                bytearray = left->Allocator->malloc(siz);
+		bytearray = left->Allocator->malloc(siz);
         if (bytearray == NULL) {
-                iError.RaiseError("ValArray.Compare",CONTAINER_ERROR_NOMEMORY);
-                return NULL;
+		NoMemory("Compare");
+		return NULL;
         }
         memset(bytearray,0,siz);
         for (i=0; i<len;i++) {
-                bytearray[i] = (left->contents[i] < right) ?
-                        -1 : (left->contents[i] > right) ? 1 : 0;
+		bytearray[i] = (left->contents[i] < right) ?
+			-1 : (left->contents[i] > right) ? 1 : 0;
         }
         return bytearray;
 }
@@ -1369,10 +1410,10 @@ static int Or(ValArray *left, const ValArray *right)
         size_t i;
 
         if (left->count != right->count) {
-                return ErrorIncompatible(left,"Or");
+		return ErrorIncompatible("Or");
         }
         for (i=0; i<left->count; i++)
-                left->contents[i] |= right->contents[i];
+		left->contents[i] |= right->contents[i];
         return 1;
 }
 static int OrScalar(ValArray *left, const ElementType right)
@@ -1380,7 +1421,7 @@ static int OrScalar(ValArray *left, const ElementType right)
         size_t i;
 
         for (i=0; i<left->count; i++)
-                left->contents[i] |= right;
+		left->contents[i] |= right;
         return 1;
 }
 
@@ -1389,10 +1430,10 @@ static int And(ValArray *left, const ValArray *right)
         size_t i;
 
         if (left->count != right->count) {
-                return ErrorIncompatible(left,"And");
+		return ErrorIncompatible("And");
         }
         for (i=0; i<left->count; i++)
-                left->contents[i] &= right->contents[i];
+		left->contents[i] &= right->contents[i];
         return 1;
 }
 static int AndScalar(ValArray *left,const ElementType right)
@@ -1400,7 +1441,7 @@ static int AndScalar(ValArray *left,const ElementType right)
         size_t i;
 
         for (i=0; i<left->count; i++)
-                left->contents[i] &= right;
+		left->contents[i] &= right;
         return 1;
 }
 
@@ -1409,10 +1450,10 @@ static int Xor(ValArray *left,const ValArray *right)
         size_t i;
 
         if (left->count != right->count) {
-                return ErrorIncompatible(left,"Xor");
+		return ErrorIncompatible("Xor");
         }
         for (i=0; i<left->count; i++)
-                left->contents[i] ^= right->contents[i];
+		left->contents[i] ^= right->contents[i];
         return 1;
 }
 
@@ -1421,42 +1462,61 @@ static int XorScalar(ValArray *left, const ElementType right)
         size_t i;
 
         for (i=0; i<left->count; i++)
-                left->contents[i] ^= right;
+		left->contents[i] ^= right;
         return 1;
 }
 
 static int Not(ValArray *left)
 {
-        size_t i;
+        size_t i,s=0,top=left->count,incr=1;
 
-        for (i=0; i<left->count; i++)
-                left->contents[i] = ~left->contents[i];
-        return 1;
+        if (left->Slice) {
+                s = left->Slice->start;
+                top = left->Slice->length;
+                incr = left->Slice->increment;
+	}
+	for (i=s; i<top;i += incr) {
+		left->contents[i] = ~left->contents[i];
+		s += incr;
+	}
+	return 1;
 }
 
 static int RightShift(ValArray *,int);
 
 static int LeftShift(ValArray *data,int shift)
 {
-        size_t i;
-
+	size_t i,s=0,top=data->count,incr=1;
 	if (shift < 0)
 		return RightShift(data,-shift);
-        for (i=0; i<data->count; i++)
-                data->contents[i] <<= shift;
+	else if (shift == 0)
+		return 1;
+        if (data->Slice) {
+                s = data->Slice->start;
+                top = data->Slice->length;
+                incr = data->Slice->increment;
+	}
+        for (i=s; i<top; i += incr)
+		data->contents[i] <<= shift;
         return 1;
 }
 
 static int RightShift(ValArray *data,int shift)
 {
-        size_t i;
+        size_t i,s=0,incr=1,top=data->count;
 
         if (shift < 0)
-                return LeftShift(data,-shift);
+		return LeftShift(data,-shift);
 	else if (shift == 0)
 		return 1;
-        for (i=0; i<data->count; i++)
-                data->contents[i] >>= shift;
+
+        if (data->Slice) {
+                s = data->Slice->start;
+                top = data->Slice->length;
+                incr = data->Slice->increment;
+	}
+        for (i=s; i<top; i += incr)
+		data->contents[i] >>= shift;
         return 1;
 }
 
@@ -1478,8 +1538,7 @@ static int SetSlice(ValArray *array,size_t start,size_t length,size_t increment)
 	if (array->Slice == NULL) {
 		array->Slice = array->Allocator->malloc(sizeof(SliceSpecs));
 		if (array->Slice == NULL) {
-			iError.RaiseError("SetSlice",CONTAINER_ERROR_NOMEMORY);
-			return CONTAINER_ERROR_NOMEMORY;
+			return NoMemory("SetSlice");
 		}
 		result++;
 	}
@@ -1538,7 +1597,7 @@ static ElementType Min(const ValArray *src)
         size_t start=0,length=src->count,incr=1,i;
 
         if (src == NULL || src->count == 0)
-                return MaxElementType;
+		return MaxElementType;
 	if (src->Slice) {
 		start = src->Slice->start;
 		incr = src->Slice->increment;
@@ -1546,12 +1605,16 @@ static ElementType Min(const ValArray *src)
 	}
 	result = src->contents[start];
         for (i=start; i<length;i += incr) {
-                if (result > src->contents[i])
-                        result = src->contents[i];
+		if (result > src->contents[i])
+			result = src->contents[i];
         }
         return result;
 }
 
+static void RaiseError(const char *msg,int code,...)
+{
+	iError.RaiseError(msg,code);
+}
 
 ValArrayInterface iValArrayInterface = {
 	Size,
@@ -1600,6 +1663,8 @@ ValArrayInterface iValArrayInterface = {
 	Mismatch,
 	GetAllocator,
 	SetDestructor,
+
+	RaiseError,
 	SumTo,
 	SubtractFrom,
 	MultiplyWith,
@@ -1634,4 +1699,5 @@ ValArrayInterface iValArrayInterface = {
 	Mod,
 	ModScalar,
 #endif
+	ForEach,
 };

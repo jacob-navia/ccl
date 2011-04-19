@@ -600,7 +600,7 @@ static int EraseAt(Vector *AL,size_t idx)
 	p = AL->contents;
 	p += AL->ElementSize * idx;
 	if (AL->Flags & CONTAINER_HAS_OBSERVER)
-		iObserver.Notify(AL,CCL_ERASE,p,NULL);
+		iObserver.Notify(AL,CCL_ERASE_AT,p,NULL);
 	if (AL->DestructorFn) {
 		AL->DestructorFn(p);
 	}

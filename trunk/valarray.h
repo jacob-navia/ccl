@@ -153,7 +153,7 @@ extern ValArrayInterface iValArrayFloat;
 #undef _ValArray
 #define _ValArray _ValArrayUInt
 #define tagValArray tagValArrayUIntInterface
-#define ElementType unsigned int
+#define ElementType unsigned
 #define ValArrayInterface ValArrayUIntInterface
 #define ValArray ValArrayUInt
 #define __IS_UNSIGNED__
