@@ -1014,8 +1014,7 @@ int encode_ule128(FILE *stream, size_t val);
 enum CCL_OPERATIONS{
         CCL_ADD=1,
 	CCL_ADDRANGE = CCL_ADD << 1,
-        CCL_ERASE = CCL_ADDRANGE<<1,
-	CCL_ERASE_AT = CCL_ERASE << 1,
+	CCL_ERASE_AT = CCL_ADDRANGE << 1,
         CCL_CLEAR = CCL_ERASE_AT<<1,
         CCL_FINALIZE = CCL_CLEAR<<1,
         CCL_PUSH = CCL_FINALIZE << 1,

@@ -57,6 +57,7 @@ typedef struct tagValArray {
     DestructorFunction (*SetDestructor)(ValArray *cb,DestructorFunction fn);
 
     /* ValArray specific functions */
+    ErrorFunction RaiseError;      /* Error function */
     int (*SumTo)(ValArray *left,const ValArray *right);
     int (*SubtractFrom)(ValArray *left, const ValArray *right);
     int (*MultiplyWith)(ValArray *left, const ValArray *right);
@@ -93,6 +94,7 @@ typedef struct tagValArray {
     int (*Mod)(ValArray *left,const ValArray *right);
     int (*ModScalar)(ValArray *left,const ElementType right);
 #endif
+    int (*ForEach)(ValArray *src,ElementType (*ApplyFn)(ElementType));
 } ValArrayInterface;
 
 
