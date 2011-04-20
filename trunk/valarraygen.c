@@ -854,7 +854,47 @@ static int Reverse(ValArray *AL)
 	return 1;
 }
 
+/* http://eli.thegreenplace.net/2008/08/29/space-efficient-list-rotation */
+static int RotateLeft(ValArray *AL, size_t n)
+{
+	ElementType *p,*q,t;
 
+	if (n == 0)
+		return 1;
+	/* Reverse the first partition */
+	if (n > 1) {
+		p = AL->contents;
+		q = AL->contents+n;
+		while (p < q) {
+			t =*p;
+			*p = *q;
+			*q = t;
+			p++;
+			q--;
+		}
+	}
+	/* Reverse the second partition */
+	p = AL->contents+n+1;
+	q = AL->contents+AL->count-1;
+	if (n < AL->count-1) {
+		while (p<q) {
+			t = *p;
+			*p = *q;
+			*q = t;
+			p++,q--;
+		}
+	}
+	/* Now reverse the whole */
+	p = AL->contents;
+	q = p+(AL->count-1);
+	while (p<q) {
+		t = *p;
+		*p = *q;
+		*q = t;
+		p++,q--;
+	}
+	return 1;
+}
 /* ------------------------------------------------------------------------------ */
 /*                                Iterators                                       */
 /* ------------------------------------------------------------------------------ */
@@ -1379,29 +1419,52 @@ static char *CompareScalar(const ValArray *left,const ElementType right,char *by
         return bytearray;
 }
 
-
-static int FillSequential(ValArray *dst,ElementType start,ElementType increment)
+static ValArray *CreateSequence(size_t n,ElementType start, ElementType increment)
 {
+	ValArray *result = Create(n);
 	size_t i;
+
+	if (result == NULL) {
+		iValArrayInterface.RaiseError("iValArray.Create",CONTAINER_ERROR_NOMEMORY);
+		return NULL;
+	}
+	for (i=0; i<n;i++) {
+		result->contents[i] = start;
+		start += increment;
+	}
+	result->count = n;
+	return result;
+}
+
+static int FillSequential(ValArray *dst,size_t length,ElementType start,ElementType increment)
+{
+	size_t i,top = length;
+	int r;
 	
+	if (top > dst->capacity) {
+		r = ResizeTo(dst,top);
+		if (r < 0)
+			return r;
+	}
 	if (dst->Slice) {
 		size_t s = dst->Slice->start;
 		size_t l = dst->Slice->length;
 		size_t inc = dst->Slice->increment;
+		if (l > length) l = length;
 		for (i=s; i<l;i += inc) {
 			dst->contents[i] = start;
 			start += increment;
 		}
 	}
-	else for (i=0; i<dst->count;i++) {
+	else for (i=0; i<top;i++) {
 		dst->contents[i] = start;
 		start += increment;
 	}
 	return 1;
 }
-static int Fill(ValArray *dst,ElementType data)
+static int Memset(ValArray *dst,ElementType data,size_t length)
 {
-	return FillSequential(dst,data,0);
+	return FillSequential(dst,length,data,0);
 }
 
 #ifdef __IS_UNSIGNED__
@@ -1591,6 +1654,26 @@ static ElementType Max(const ValArray *src)
 	}
 	return result;
 }
+
+static int Abs(ValArray *src)
+{
+        size_t start=0,length=src->count,incr=1,i;
+
+        if (src->count == 0)
+                return 0;
+        if (src->Slice) {
+                start = src->Slice->start;
+                incr = src->Slice->increment;
+                length = src->Slice->length;
+        }
+        for (i=start; i<length;i += incr) {
+                if (0 > src->contents[i])
+                        src->contents[i] = -src->contents[i];
+        }
+        return 1;
+}
+
+
 static ElementType Min(const ValArray *src)
 {
         ElementType result=MaxElementType;
@@ -1677,13 +1760,15 @@ ValArrayInterface iValArrayInterface = {
 	CompareEqualScalar,
 	Compare,
 	CompareScalar,
-	Fill,
+	CreateSequence,
+	Memset,
 	FillSequential,
 	SetSlice,
 	ResetSlice,
 	GetSlice,
 	Max,
 	Min,
+	RotateLeft,
 #ifdef __IS_UNSIGNED__
 	Or,
 	And,
@@ -1700,4 +1785,5 @@ ValArrayInterface iValArrayInterface = {
 	ModScalar,
 #endif
 	ForEach,
+	Abs,
 };
