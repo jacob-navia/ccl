@@ -62,10 +62,12 @@ typedef struct tagValArray {
     int (*SubtractFrom)(ValArray *left, const ValArray *right);
     int (*MultiplyWith)(ValArray *left, const ValArray *right);
     int (*DivideBy)(ValArray *left, const ValArray *right);
-    int (*SumToScalar)(ValArray *left,ElementType right);
-    int (*SubtractFromScalar)(ValArray *left, ElementType right);
+    int (*SumScalarTo)(ValArray *left,ElementType right);
+    int (*SubtractScalarFrom)(ValArray *left, ElementType right);
+    int (*SubtractFromScalar)(ElementType left, ValArray *right);
     int (*MultiplyWithScalar)(ValArray *left, ElementType right);
     int (*DivideByScalar)(ValArray *left, ElementType right);
+    int (*DivideScalarBy)(ElementType left,ValArray *right);
     unsigned char *(*CompareEqual)(const ValArray *left,const ValArray *right,unsigned char *bytearray);
     unsigned char *(*CompareEqualScalar)(const ValArray *left, const ElementType right, unsigned char *bytearray);
     char *(*Compare)(const ValArray *left, const ValArray *right,char *bytearray);

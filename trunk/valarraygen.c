@@ -1240,7 +1240,7 @@ static int SubtractFrom(ValArray *left,const ValArray *right)
 	}
 	return 1;
 }
-static int SubtractFromScalar(ValArray *left,ElementType right)
+static int SubtractScalarFrom(ValArray *left,ElementType right)
 {
 	size_t i,top_left=left->count,start_left=0,incr_left=1,idx_left;
 
@@ -1253,6 +1253,24 @@ static int SubtractFromScalar(ValArray *left,ElementType right)
         for (i=start_left; i<top_left; i++) {
 		left->contents[idx_left] -= right;
 		idx_left += incr_left;
+	}
+        return 1;
+}
+
+
+static int SubtractFromScalar(ElementType left,ValArray *right)
+{
+	size_t i,top_right=right->count,start_right=0,incr_right=1,idx_right;
+
+	if (right->Slice) {
+		start_right = right->Slice->start;
+		incr_right = right->Slice->increment;
+		top_right = right->Slice->length;
+	}
+	idx_right = start_right;
+        for (i=start_right; i<top_right; i++) {
+		right->contents[idx_right] = left -right->contents[idx_right];
+		idx_right += incr_right;
 	}
         return 1;
 }
@@ -1304,6 +1322,18 @@ static int DivideByScalar(ValArray *left,ElementType right)
 		left->contents[i] /= right;
         return 1;
 }
+
+static int DivideScalarBy(ElementType left,ValArray *right)
+{
+        size_t i;
+
+        if (right == 0)
+                return DivisionByZero("DivideScalarBy");
+        for (i=0; i<right->count; i++)
+                right->contents[i] = left / right->contents[i];
+        return 1;
+}
+
 
 #ifdef __IS_INTEGER__
 static int Mod(ValArray *left,const ValArray *right)
@@ -1753,9 +1783,11 @@ ValArrayInterface iValArrayInterface = {
 	MultiplyWith,
 	DivideBy,
 	SumToScalar,
+	SubtractScalarFrom,
 	SubtractFromScalar,
 	MultiplyWithScalar,
 	DivideByScalar,
+	DivideScalarBy,
 	CompareEqual,
 	CompareEqualScalar,
 	Compare,
