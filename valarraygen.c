@@ -1136,6 +1136,17 @@ static ValArray *Create(size_t startsize)
 	return CreateWithAllocator(startsize,CurrentMemoryManager);
 }
 
+static ValArray *InitializeWith(size_t n,ElementType *data)
+{
+	ValArray *result = Create(n);
+	if (result == NULL)
+		return result;
+	memcpy(result->contents,data,n*sizeof(ElementType));
+	result->count = n;
+	return result;
+}
+
+
 static ValArray *Init(ValArray *result,size_t startsize)
 {
 	size_t es;
@@ -1724,6 +1735,24 @@ static ElementType Accumulate(ValArray *src)
 }
 
 
+static ElementType Product(ValArray *src)
+{
+        size_t start=0,length=src->count,incr=1,i;
+	ElementType result = 1;
+
+        if (src->count == 0)
+                return 0;
+        if (src->Slice) {
+                start = src->Slice->start;
+                incr = src->Slice->increment;
+                length = src->Slice->length;
+        }
+        for (i=start; i<length;i += incr) {
+		result *= src->contents[i];
+        }
+        return 1;
+}
+
 
 static ElementType Min(const ValArray *src)
 {
@@ -1814,6 +1843,7 @@ ValArrayInterface iValArrayInterface = {
 	Compare,
 	CompareScalar,
 	CreateSequence,
+	InitializeWith,
 	Memset,
 	FillSequential,
 	SetSlice,
@@ -1840,4 +1870,5 @@ ValArrayInterface iValArrayInterface = {
 	ForEach,
 	Abs,
 	Accumulate,
+	Product,
 };
