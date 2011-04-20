@@ -100,6 +100,7 @@ typedef struct tagValArray {
 #endif
     int (*ForEach)(ValArray *src,ElementType (*ApplyFn)(ElementType));
     int (*Abs)(ValArray *src);
+    ElementType (*Accumulate)(ValArray *src);
 } ValArrayInterface;
 
 
