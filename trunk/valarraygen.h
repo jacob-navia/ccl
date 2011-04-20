@@ -74,6 +74,7 @@ typedef struct tagValArray {
     char *(*CompareScalar)(const ValArray *left, const ElementType right,char *bytearray);
 
     ValArray *(*CreateSequence)(size_t n,ElementType start, ElementType increment);
+    ValArray *(*InitializeWith)(size_t n, ElementType *data);
     int (*Memset)(ValArray *dst,ElementType fillValue,size_t length);
     int (*FillSequential)(ValArray *dst,size_t length,ElementType start, ElementType increment);
     int (*SetSlice)(ValArray *src,size_t start,size_t length,size_t increment);
@@ -101,6 +102,7 @@ typedef struct tagValArray {
     int (*ForEach)(ValArray *src,ElementType (*ApplyFn)(ElementType));
     int (*Abs)(ValArray *src);
     ElementType (*Accumulate)(ValArray *src);
+    ElementType (*Product)(ValArray *src);
 } ValArrayInterface;
 
 
