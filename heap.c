@@ -122,7 +122,6 @@ static void AddToFreeList(ContainerHeap *heap,void *element)
  ------------------------------------------------------------------------*/
 static void DestroyHeap(ContainerHeap *l)
 {
-#ifdef NO_GC	
 	size_t i;
 	ContainerMemoryManager *m = l->Allocator;
 	
@@ -130,7 +129,7 @@ static void DestroyHeap(ContainerHeap *l)
 		m->free(l->Heap[i]);
 	}
 	m->free(l->Heap);
-#endif
+	m->free(l);
 }
 
 static void Clear(ContainerHeap *heap)
