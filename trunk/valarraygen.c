@@ -18,6 +18,11 @@ struct _ValArray {
     ElementType *contents;        /* The contents of the collection */
 };
 
+struct _Mask {
+	size_t length;
+	char data[MINIMUM_ARRAY_INDEX];
+};
+
 static ElementType GetElement(const ValArray *AL,size_t idx);
 
 static size_t GetElementSize(const ValArray *AL);
@@ -1376,7 +1381,7 @@ static int ModScalar(ValArray *left, const ElementType right)
 }
 #endif
 
-static unsigned char *CompareEqual(const ValArray *left,const ValArray *right,unsigned char *bytearray)
+static Mask *CompareEqual(const ValArray *left,const ValArray *right,Mask *bytearray)
 {
 	size_t len = left->count,i,siz;
 
@@ -1384,7 +1389,7 @@ static unsigned char *CompareEqual(const ValArray *left,const ValArray *right,un
 		ErrorIncompatible("CompareEqual");
 		return NULL;
 	}
-	siz = 1 + len/CHAR_BIT;
+	siz = 1 + len/CHAR_BIT+sizeof(Mask);
 	if (bytearray == NULL)
 		bytearray = left->Allocator->malloc(siz);
 	if (bytearray == NULL) {
@@ -1393,14 +1398,15 @@ static unsigned char *CompareEqual(const ValArray *left,const ValArray *right,un
 	}
 	memset(bytearray,0,siz);
 	for (i=0; i<len;i++) {
-		bytearray[i/CHAR_BIT] |= (left->contents[i] == right->contents[i]);
+		bytearray->data[i/CHAR_BIT] |= (left->contents[i] == right->contents[i]);
 		if ((CHAR_BIT-1) != (i&(CHAR_BIT-1)))
-			bytearray[i] <<= 1;
+			bytearray->data[i] <<= 1;
 	}
+	bytearray->length = len;
 	return bytearray;
 }
 
-static unsigned char *CompareEqualScalar(const ValArray *left, const ElementType right,unsigned char *bytearray)
+static Mask *CompareEqualScalar(const ValArray *left, const ElementType right,Mask *bytearray)
 {
         size_t len = left->count,i,siz;
 
@@ -1413,9 +1419,9 @@ static unsigned char *CompareEqualScalar(const ValArray *left, const ElementType
         }
         memset(bytearray,0,siz);
         for (i=0; i<len;i++) {
-		bytearray[i/CHAR_BIT] |= (left->contents[i] == right);
+		bytearray->data[i/CHAR_BIT] |= (left->contents[i] == right);
 		if ((CHAR_BIT-1) != (i&(CHAR_BIT-1)))
-			bytearray[i] <<= 1;
+			bytearray->data[i] <<= 1;
         }
         return bytearray;
 }
