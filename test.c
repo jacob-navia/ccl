@@ -75,6 +75,9 @@ static void testList(void)
 	}
 	if (iList.Size(l) != 0)
 		Abort();
+	iList.Finalize(l1);
+	iList.Finalize(l2);
+	iList.Finalize(l);
 }
 
 
@@ -127,6 +130,7 @@ static int testVector(void)
 	p = iVector.GetElement(AL,1);
 	printf("Item position 1:%s\n",*p);
 	PrintVector(AL);
+	iVector.Finalize(AL);
 	return errors;
 }
 
@@ -234,12 +238,20 @@ static void TestBitstring(void){
 	printf("Population count of original b is %d\n",(int)i);
 	i = (size_t)iBitString.BitBlockCount(original_b);
 	printf("Bit block count of original b is %d\n",(int)i);
+	iBitString.Finalize(b);
+	iBitString.Finalize(c);
+	iBitString.Finalize(d);
 	b = iBitString.StringToBitString("011");
 	c = iBitString.StringToBitString("1101101");
 	d = iBitString.And(c,b);
 	PrintBitstring(d,"011 AND 1101101");
 	i = iBitString.BitBlockCount(c);
 	printf("The block count of c is %ld\n",i);
+	iBitString.Finalize(b);
+	iBitString.Finalize(c);
+	iBitString.Finalize(d);
+	iBitString.Finalize(m);
+	iBitString.Finalize(original_b);
 }
 
 #include <stdio.h>
@@ -382,6 +394,8 @@ static void testBinarySearchTree(void)
 	d = 2.0;
 	iBinarySearchTree.Erase(tree,&d,NULL);
 	iBinarySearchTree.Apply(tree,printDoubleTree,stdout);
+	iBinarySearchTree.Finalize(tree);
+	iBinarySearchTree.Finalize(tree1);
 }
 
 static void testScapegoatTree(void)
