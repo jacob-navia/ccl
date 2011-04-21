@@ -721,7 +721,7 @@ static size_t PopFront(StringCollection *SC,unsigned char *buffer,size_t buflen)
     SC->count--;
     result = SC->contents[0];
 	if (SC->count) {
-		memcpy(SC->contents,SC->contents+1,SC->count*sizeof(void *));
+		memmove(SC->contents,SC->contents+1,SC->count*sizeof(void *));
 	}
 	SC->timestamp++;
 	tocopy = len;
