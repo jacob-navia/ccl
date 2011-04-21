@@ -709,18 +709,19 @@ static size_t Sizeof(TreeMap *tree)
 
 static int Clear(TreeMap *tree)
 {
+    Iterator *it;
+    void *obj;
 	if (tree->DestructorFn) {
-		Iterator *it = newIterator(tree);
-		void *obj;
+		it = newIterator(tree);
 	
 		for (obj = it->GetFirst(it);
 			 obj != NULL;
 			 obj = it->GetNext(it)) {
 			tree->DestructorFn(obj);
 		}
+		deleteIterator(it);
 	}
-    iHeap.Finalize(tree->Heap);
-    tree->Heap = iHeap.Create(tree->ElementSize+sizeof(struct Node),CurrentMemoryManager);
+
     tree->count = 0;
     tree->root=0;
     tree->max_size=0;            /* Max size since last complete rebalance. */
@@ -732,6 +733,7 @@ static int Clear(TreeMap *tree)
 static int Finalize(TreeMap *tree)
 {
     tree->VTable->Clear(tree);
+    iHeap.Finalize(tree->Heap);
     tree->Allocator->free(tree);
     return 1;
 }
@@ -746,6 +748,7 @@ static int Apply(TreeMap *tree,int (*Applyfn)(const void *data,void *arg),void *
     	 obj = it->GetNext(it)) {
     	Applyfn(obj,arg);
     }
+    deleteIterator(it);
     return 1;
 }
 
