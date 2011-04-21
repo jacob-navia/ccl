@@ -115,8 +115,6 @@ static int Clear(BitString *b)
 	if (b == NULL) return NullPtrError("Clear");
 	if (b->Flags&CONTAINER_READONLY)
 		return ReadOnlyError("Clear");
-	b->Allocator->free(b->contents);
-	b->contents = NULL;
 	b->count = 0;
 	return 1;
 }
@@ -126,7 +124,7 @@ static int Finalize(BitString *b)
 	if (b == NULL) return NullPtrError("Finalize");
 	if (b->Flags&CONTAINER_READONLY)
 		return ReadOnlyError("Finalize");
-	b->VTable->Clear(b);
+	b->Allocator->free(b->contents);
 	b->Allocator->free(b);
 	return 1;
 }
