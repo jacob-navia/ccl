@@ -11,7 +11,7 @@ typedef struct tagValArray {
     int (*Erase)(ValArray *AL,ElementType elem);
     int (*Finalize)(ValArray *AL);
     int (*Apply)(ValArray *AL,int (*Applyfn)(ElementType element,void * arg),void *arg);
-    int (*Equal)(ValArray *first,ValArray *second);
+    int (*Equal)(const ValArray *first, const ValArray *second);
     ValArray *(*Copy)(ValArray *AL);
     ErrorFunction (*SetErrorFunction)(ValArray *AL,ErrorFunction);
     size_t (*Sizeof)(ValArray *AL);
@@ -98,11 +98,14 @@ typedef struct tagValArray {
 #ifdef __IS_INTEGER__
     int (*Mod)(ValArray *left,const ValArray *right);
     int (*ModScalar)(ValArray *left,const ElementType right);
+#else
+    char *(*FCompare)(const ValArray *left, const ValArray *right,char *bytearray,ElementType tolerance);
 #endif
     int (*ForEach)(ValArray *src,ElementType (*ApplyFn)(ElementType));
     int (*Abs)(ValArray *src);
     ElementType (*Accumulate)(ValArray *src);
     ElementType (*Product)(ValArray *src);
+    int (*Inverse)(ValArray *src);
 } ValArrayInterface;
 
 

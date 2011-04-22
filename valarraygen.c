@@ -1,7 +1,7 @@
 #ifndef DEFAULT_START_SIZE
 #define DEFAULT_START_SIZE 20
 #endif
-
+#include <math.h>
 typedef struct tagSlice {
 	size_t start;
 	size_t length;
@@ -24,13 +24,14 @@ struct _Mask {
 };
 
 static ElementType GetElement(const ValArray *AL,size_t idx);
+static int Finalize(ValArray *AL);
 
 static size_t GetElementSize(const ValArray *AL);
 static int doerror(char *fnName,int code)
 {
         char buf[512];
 
-        sprintf(buf,"iValArray.%s",fnName);
+        (void)snprintf(buf,sizeof(buf),"iValArray.%s",fnName);
 	iValArrayInterface.RaiseError(buf,code);
 	return code;
 }
@@ -208,6 +209,7 @@ static ValArray *GetRange(const ValArray *AL, size_t start,size_t end)
         ValArray *result=NULL;
         ElementType p;
         size_t top;
+	int r;
 
         if (AL->count == 0)
 		return result;
@@ -225,7 +227,11 @@ static ValArray *GetRange(const ValArray *AL, size_t start,size_t end)
         }
         while (start < end) {
 		p = GetElement(AL,start);
-		Add(result,p);
+		r=Add(result,p);
+		if (r < 0) {
+			Finalize(result);
+			return NULL;
+		}
 		start++;
         }
         return result;
@@ -275,7 +281,7 @@ static int Contains(ValArray *AL,ElementType data)
 	return 0;
 }
 
-static int Equal(ValArray *AL1,ValArray *AL2)
+static int Equal(const ValArray *AL1, const ValArray *AL2)
 {
 	if (AL1 == AL2)
 		return 1;
@@ -421,7 +427,7 @@ static ElementType GetElement(const ValArray *AL,size_t idx)
 	}
 	if (idx >=top ) {
 		IndexError("GetElement");
-		return (ElementType)0;
+		return MinElementType;
 	}
 	idx = start+idx*incr;
 	return AL->contents[idx];
@@ -599,6 +605,7 @@ static int Finalize(ValArray *AL)
 		return result;
 	if (AL->Flags & CONTAINER_HAS_OBSERVER)
 		iObserver.Notify(AL,CCL_FINALIZE,NULL,NULL);
+	AL->Allocator->free(AL->contents);
 	AL->Allocator->free(AL);
 	return result;
 }
@@ -783,10 +790,6 @@ static CompareFunction SetCompareFunction(ValArray *l,CompareFunction fn)
 
 static int Sort(ValArray *AL)
 {
-	CompareInfo ci;
-
-	ci.Container = AL;
-	ci.ExtraArgs = NULL;
 	if (AL->Slice) {
 		size_t i,j=0;
 		ElementType *sliceTab = AL->Allocator->calloc(sizeof(ElementType),AL->Slice->length);
@@ -794,6 +797,11 @@ static int Sort(ValArray *AL)
 			sliceTab[j++] = AL->contents[i];
 		}
 		qsort(sliceTab,AL->Slice->length,sizeof(ElementType),ValArrayDefaultCompareFn);
+		j=0;
+		for (i=AL->Slice->start; i<AL->Slice->length; i += AL->Slice->increment) {
+			AL->contents[i] = sliceTab[j++];
+		}
+		AL->Allocator->free(sliceTab);
 	}
 	else qsort(AL->contents,AL->count,sizeof(ElementType),ValArrayDefaultCompareFn);
 	return 1;
@@ -1383,26 +1391,42 @@ static int ModScalar(ValArray *left, const ElementType right)
 
 static Mask *CompareEqual(const ValArray *left,const ValArray *right,Mask *bytearray)
 {
-	size_t len = left->count,i,siz;
 
-	if (len != right->count) {
-		ErrorIncompatible("CompareEqual");
-		return NULL;
+        size_t left_len = left->count,left_incr = 1,left_start=0;
+	size_t right_len = right->count,right_incr=1,right_start = 0;
+	size_t siz,i,j,k;
+
+	if (left->Slice) {
+		left_start = left->Slice->start;
+		left_incr = left->Slice->increment;
+		left_len = left->Slice->length;
 	}
-	siz = 1 + len/CHAR_BIT+sizeof(Mask);
-	if (bytearray == NULL)
-		bytearray = left->Allocator->malloc(siz);
-	if (bytearray == NULL) {
-		NoMemory("CompareEqual");
-		return NULL;
+	if (right->Slice) {
+		right_start = right->Slice->start;
+		right_incr = right->Slice->increment;
+		right_len = right->Slice->length;
 	}
-	memset(bytearray,0,siz);
-	for (i=0; i<len;i++) {
-		bytearray->data[i/CHAR_BIT] |= (left->contents[i] == right->contents[i]);
+        if (left_len != right_len) {
+		ErrorIncompatible("Compare");
+		return NULL;
+        }
+	siz = left_len;
+        if (bytearray == NULL)
+		bytearray = left->Allocator->malloc(left_len+sizeof(Mask));
+        if (bytearray == NULL) {
+		NoMemory("Compare");
+		return NULL;
+        }
+	memset(bytearray->data,0,siz);
+	j=right_start;
+	for (i=left_start; i<left_len;i += left_incr) {
+		bytearray->data[i/CHAR_BIT] |= (left->contents[i] == right->contents[j]);
 		if ((CHAR_BIT-1) != (i&(CHAR_BIT-1)))
-			bytearray->data[i] <<= 1;
+			bytearray->data[k] <<= 1;
+		k++;
+		j += right_incr;
 	}
-	bytearray->length = len;
+	bytearray->length = left_len;
 	return bytearray;
 }
 
@@ -1428,41 +1452,125 @@ static Mask *CompareEqualScalar(const ValArray *left, const ElementType right,Ma
 
 static char *Compare(const ValArray *left,const ValArray *right, char *bytearray)
 {
-        size_t len = left->count,i,siz;
+        size_t left_len = left->count,left_incr = 1,left_start=0;
+	size_t right_len = right->count,right_incr=1,right_start = 0;
+	size_t siz,i,j,k;
 
-        if (len != right->count) {
+	if (left->Slice) {
+		left_start = left->Slice->start;
+		left_incr = left->Slice->increment;
+		left_len = left->Slice->length;
+	}
+	if (right->Slice) {
+		right_start = right->Slice->start;
+		right_incr = right->Slice->increment;
+		right_len = right->Slice->length;
+	}
+        if (left_len != right_len) {
 		ErrorIncompatible("Compare");
 		return NULL;
         }
-        siz =  len;
+	siz = left_len * sizeof(ElementType);
         if (bytearray == NULL)
-		bytearray = left->Allocator->malloc(siz);
+		bytearray = left->Allocator->malloc(left_len);
         if (bytearray == NULL) {
 		NoMemory("Compare");
 		return NULL;
         }
         memset(bytearray,0,siz);
-        for (i=0; i<len;i++) {
-		bytearray[i] = (left->contents[i] < right->contents[i]) ?
-			-1 : (left->contents[i] > right->contents[i]) ? 1 : 0;
+	j = right_start;
+	i = left_start;
+        for (k=0;k<left_len;k++) {
+		bytearray[k] = (left->contents[i] < right->contents[j]) ?
+			-1 : (left->contents[i] > right->contents[j]) ? 1 : 0;
+		j += right_incr;
+		i += left_incr;
         }
         return bytearray;
 }
 
+#ifndef __IS_INTEGER__
+/* Adapted from <http://www-personal.umich.edu/~streak/>
+Knuth, D. E. (1998). The Art of Computer Programming.
+ Volume 2: Seminumerical Algorithms. 3rd ed. Addison-Wesley.
+ Section 4.2.2, p. 233. ISBN 0-201-89684-2.
+
+ Input parameters:
+ x1, x2: numbers to be compared
+ epsilon: determines tolerance
+*/
+static char *FCompare(const ValArray *left,const ValArray *right, char *bytearray,ElementType tolerance)
+{
+        size_t left_len = left->count,left_incr = 1,left_start=0;
+        size_t right_len = right->count,right_incr=1,right_start = 0;
+        size_t siz,i,j,k;
+
+        if (left->Slice) {
+                left_start = left->Slice->start;
+                left_incr = left->Slice->increment;
+                left_len = left->Slice->length;
+        }
+        if (right->Slice) {
+                right_start = right->Slice->start;
+                right_incr = right->Slice->increment;
+                right_len = right->Slice->length;
+        }
+        if (left_len != right_len) {
+                ErrorIncompatible("Compare");
+                return NULL;
+        }
+        siz = left_len * sizeof(ElementType);
+        if (bytearray == NULL)
+                bytearray = left->Allocator->malloc(left_len);
+        if (bytearray == NULL) {
+                NoMemory("Compare");
+                return NULL;
+        }
+        memset(bytearray,0,siz);
+        j = right_start;
+        i = left_start;
+        for (k=0;k<left_len;k++) {
+		int exponent;
+		ElementType delta,difference,x1,x2;
+		x1 = left->contents[i];
+		x2 = right->contents[j];
+		frexp(fabs(x1) > fabs(x2) ? x1 : x2,&exponent);
+		delta = ldexp(tolerance,exponent);
+		difference = x1-x2;
+		if (difference > delta)
+			bytearray[k] = 1; /* x1 > x2 */
+		else if (difference < -delta)
+			bytearray[k] = -1; /* x1 < x2 */
+		else	bytearray[k] = 0;
+		j += right_incr;
+		i += left_incr;
+        }
+        return bytearray;
+}
+#endif
+
+
 static char *CompareScalar(const ValArray *left,const ElementType right,char *bytearray)
 {
-        size_t len = left->count,i,siz;
+	size_t left_len = left->count,left_incr = 1,left_start=0;
+	size_t i,j=0;
 
-        siz =  len;
+
+	if (left->Slice) {
+		left_start = left->Slice->start;
+		left_incr = left->Slice->increment;
+		left_len = left->Slice->length;
+	}
         if (bytearray == NULL)
-		bytearray = left->Allocator->malloc(siz);
+		bytearray = left->Allocator->malloc(left_len);
         if (bytearray == NULL) {
 		NoMemory("Compare");
 		return NULL;
         }
-        memset(bytearray,0,siz);
-        for (i=0; i<len;i++) {
-		bytearray[i] = (left->contents[i] < right) ?
+
+        memset(bytearray,0,left_len);
+        for (i=left_start; i<left_len;i += left_incr) {
+		bytearray[j++] = (left->contents[i] < right) ?
 			-1 : (left->contents[i] > right) ? 1 : 0;
         }
         return bytearray;
@@ -1780,6 +1888,25 @@ static ElementType Min(const ValArray *src)
         return result;
 }
 
+static int Inverse(ValArray *s)
+{
+	size_t start=0,length=s->count,incr=1,i;
+	if (s == NULL || s->count == 0)
+		return 0;
+	if (s->Slice) {
+                start = s->Slice->start;
+                incr = s->Slice->increment;
+                length = s->Slice->length;
+        }
+	for (i=start; i<length; i += incr) {
+		if (s->contents[i]==0) {
+			return DivisionByZero("Inverse");
+		}
+		s->contents[i] =1/s->contents[i];
+	}
+	return 1;
+}
+
 static void RaiseError(const char *msg,int code,...)
 {
 	iError.RaiseError(msg,code);
@@ -1872,9 +1999,12 @@ ValArrayInterface iValArrayInterface = {
 #ifdef __IS_INTEGER__
 	Mod,
 	ModScalar,
+#else
+	FCompare,
 #endif
 	ForEach,
 	Abs,
 	Accumulate,
 	Product,
+	Inverse,
 };

@@ -13,7 +13,8 @@ SRC=	vector.c bloom.c containererror.c dlist.c qsortex.c heap.c \
 	bitstrings.c dictionary.c list.c strcollection.c searchtree.c \
 	containers.h redblacktree.c fgetline.c generic.c queue.c buffer.c observer.c \
 	valarraydouble.c valarraysize_t.c valarrayint.c valarraylongdouble.c valarraygen.c \
-	valarrayshort.c valarrayfloat.c valarrayuint.c valarraylonglong.c
+	valarrayshort.c valarrayfloat.c valarrayuint.c valarraylonglong.c \
+	valarrayulonglong.c
 DOCS=
 MAKEFILES=Makefile Makefile.lcc Makefile.msvc
 
@@ -22,14 +23,14 @@ OBJS=vector.o containererror.o dlist.o qsortex.o bitstrings.o generic.o \
     bloom.o fgetline.o pool.o pooldebug.o redblacktree.o scapegoat.o queue.o \
     buffer.o observer.o valarraydouble.o valarrayint.o valarraysize_t.o \
     valarraylongdouble.o valarrayshort.o valarrayfloat.o valarrayuint.o \
-    valarraylonglong.o
+    valarraylonglong.o valarrayulonglong.o
 
 dotest:	libccl.a test.o
 	gcc -o dotest $(CFLAGS) test.c libccl.a -lm
 libccl.a:	$(OBJS) containers.h ccl_internal.h
 	ar r libccl.a $(OBJS)
 clean:
-	rm -rf $(OBJS) libccl.a dotest dotest.dSYM
+	rm -rf $(OBJS) libccl.a dotest dotest.dSYM container-lib-src.zip
 zip:	$(SRC)
 	rm container-lib-src.zip;rm -rf ccl;svn export . ccl;zip -9 -r  container-lib-src.zip ccl 
 
@@ -41,6 +42,7 @@ valarraysize_t.o:       valarraygen.c valarraysize_t.c containers.h valarraygen.
 valarrayfloat.o:	valarraygen.c valarrayfloat.c containers.h valarraygen.h valarray.h
 valarrayuint.o:		valarraygen.c valarrayuint.c containers.h valarraygen.h valarray.h
 valarraylonglong.o:	valarraygen.c valarraylonglong.c containers.h valarraygen.h valarray.h
+valarrayulonglong.o:     valarraygen.c valarrayulonglong.c containers.h valarraygen.h valarray.h
 observer.o:	containers.h observer.c 
 buffer.o:	containers.h buffer.c
 vector.o:	containers.h vector.c
@@ -51,5 +53,10 @@ containererror.o:	containers.h containererror.c
 dlist.o:		dlist.c containers.h
 deque.o:	deque.c containers.h
 hashtable.o:	hashtable.c	containers.h
-
+dlist.o:	dlist.c containers.h
+list.o:		list.c containers.h
+dictionary.o:	dictionary.c containers.h
+qsortex.o:	qsortex.c containers.h
+generic.o:	generic.c containers.h
+heap.o:	heap.c containers.h
 

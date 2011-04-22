@@ -110,6 +110,7 @@ errMem:
 		iError.RaiseError("BloomFilter.Create",CONTAINER_ERROR_NOMEMORY);
 		return NULL;
 	}
+	memset(result->bits,0,1+nbOfBits/8);
 	result->nbOfBits = nbOfBits;
 	result->MaxNbOfElements = nbOfElements;
 	result->HashFunctions = k;

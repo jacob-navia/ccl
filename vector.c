@@ -678,6 +678,7 @@ static int Finalize(Vector *AL)
 		return result;
 	if (AL->Flags & CONTAINER_HAS_OBSERVER)
 		iObserver.Notify(AL,CCL_FINALIZE,NULL,NULL);
+	AL->Allocator->free(AL->contents);
 	AL->Allocator->free(AL);
 	return result;
 }
