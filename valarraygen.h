@@ -100,12 +100,12 @@ typedef struct tagValArray {
     int (*ModScalar)(ValArray *left,const ElementType right);
 #else
     char *(*FCompare)(const ValArray *left, const ValArray *right,char *bytearray,ElementType tolerance);
+    int (*Inverse)(ValArray *src);
 #endif
     int (*ForEach)(ValArray *src,ElementType (*ApplyFn)(ElementType));
     int (*Abs)(ValArray *src);
     ElementType (*Accumulate)(ValArray *src);
     ElementType (*Product)(ValArray *src);
-    int (*Inverse)(ValArray *src);
 } ValArrayInterface;
 
 
