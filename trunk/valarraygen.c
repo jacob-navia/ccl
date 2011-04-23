@@ -1547,6 +1547,26 @@ static char *FCompare(const ValArray *left,const ValArray *right, char *bytearra
         }
         return bytearray;
 }
+
+
+static int Inverse(ValArray *s)
+{
+	size_t start=0,length=s->count,incr=1,i;
+	if (s == NULL || s->count == 0)
+		return 0;
+	if (s->Slice) {
+                start = s->Slice->start;
+                incr = s->Slice->increment;
+                length = s->Slice->length;
+        }
+	for (i=start; i<length; i += incr) {
+		if (s->contents[i]==0) {
+			return DivisionByZero("Inverse");
+		}
+		s->contents[i] =1/s->contents[i];
+	}
+	return 1;
+}
 #endif
 
 
@@ -1888,25 +1908,6 @@ static ElementType Min(const ValArray *src)
         return result;
 }
 
-static int Inverse(ValArray *s)
-{
-	size_t start=0,length=s->count,incr=1,i;
-	if (s == NULL || s->count == 0)
-		return 0;
-	if (s->Slice) {
-                start = s->Slice->start;
-                incr = s->Slice->increment;
-                length = s->Slice->length;
-        }
-	for (i=start; i<length; i += incr) {
-		if (s->contents[i]==0) {
-			return DivisionByZero("Inverse");
-		}
-		s->contents[i] =1/s->contents[i];
-	}
-	return 1;
-}
-
 static void RaiseError(const char *msg,int code,...)
 {
 	iError.RaiseError(msg,code);
@@ -2001,10 +2002,10 @@ ValArrayInterface iValArrayInterface = {
 	ModScalar,
 #else
 	FCompare,
+	Inverse,
 #endif
 	ForEach,
 	Abs,
 	Accumulate,
 	Product,
-	Inverse,
 };
