@@ -872,12 +872,13 @@ static int RotateLeft(ValArray *AL, size_t n)
 {
 	ElementType *p,*q,t;
 
+	n %= AL->count;
 	if (n == 0)
 		return 1;
 	/* Reverse the first partition */
 	if (n > 1) {
 		p = AL->contents;
-		q = AL->contents+n;
+		q = AL->contents+n-1;
 		while (p < q) {
 			t =*p;
 			*p = *q;
@@ -887,7 +888,7 @@ static int RotateLeft(ValArray *AL, size_t n)
 		}
 	}
 	/* Reverse the second partition */
-	p = AL->contents+n+1;
+	p = AL->contents+n;
 	q = AL->contents+AL->count-1;
 	if (n < AL->count-1) {
 		while (p<q) {
