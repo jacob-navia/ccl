@@ -34,9 +34,10 @@ OBJS=\
 	valarrayfloat.obj \
 	valarraylongdouble.obj \
 	valarrayuint.obj \
+	valarraylonglong.obj \
+	valarrayulonglong.obj \
 	valarrayshort.obj \
 	observer.obj \
-
 
 EXE=dotest.exe
 
@@ -262,6 +263,8 @@ valarrayshort.obj:	valarrayshort.c valarraygen.c valarraygen.h valarray.h contai
 valarraysize_t.obj:	valarraysize_t.c valarraygen.c valarraygen.h valarray.h containers.h
 	$(CC) -c $(CFLAGS) $(SRCDIR)\valarraysize_t.c
 
+valarrayulonglong.obj:     valarrayulonglong.c valarraygen.c valarraygen.h valarray.h containers.h
+	$(CC) -c $(CFLAGS) $(SRCDIR)\valarrayulonglong.c
 
 # Build test.c
 TEST_C=\

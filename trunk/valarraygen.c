@@ -1420,6 +1420,7 @@ static Mask *CompareEqual(const ValArray *left,const ValArray *right,Mask *bytea
         }
 	memset(bytearray->data,0,siz);
 	j=right_start;
+	k=0;
 	for (i=left_start; i<left_len;i += left_incr) {
 		bytearray->data[i/CHAR_BIT] |= (left->contents[i] == right->contents[j]);
 		if ((CHAR_BIT-1) != (i&(CHAR_BIT-1)))
