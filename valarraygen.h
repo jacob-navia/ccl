@@ -93,7 +93,8 @@ typedef struct tagValArray {
     int (*OrScalar)(ValArray *left, const ElementType right);
     int (*AndScalar)(ValArray *left, const ElementType right);
     int (*XorScalar)(ValArray *left, const ElementType right);
-
+#else
+    int (*Abs)(ValArray *src); /* Abs only defined for float/signed types */
 #endif
 #ifdef __IS_INTEGER__
     int (*Mod)(ValArray *left,const ValArray *right);
@@ -103,7 +104,6 @@ typedef struct tagValArray {
     int (*Inverse)(ValArray *src);
 #endif
     int (*ForEach)(ValArray *src,ElementType (*ApplyFn)(ElementType));
-    int (*Abs)(ValArray *src);
     ElementType (*Accumulate)(ValArray *src);
     ElementType (*Product)(ValArray *src);
 } ValArrayInterface;

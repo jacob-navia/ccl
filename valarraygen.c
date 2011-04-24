@@ -1833,6 +1833,7 @@ static ElementType Max(const ValArray *src)
 	return result;
 }
 
+#ifndef __IS_UNSIGNED__
 static int Abs(ValArray *src)
 {
         size_t start=0,length=src->count,incr=1,i;
@@ -1850,6 +1851,7 @@ static int Abs(ValArray *src)
         }
         return 1;
 }
+#endif
 
 static ElementType Accumulate(ValArray *src)
 {
@@ -1997,6 +1999,8 @@ ValArrayInterface iValArrayInterface = {
 	OrScalar,
 	AndScalar,
 	XorScalar,
+#else
+	Abs, /* Abs is defined only for signed/float types */
 #endif
 #ifdef __IS_INTEGER__
 	Mod,
@@ -2006,7 +2010,6 @@ ValArrayInterface iValArrayInterface = {
 	Inverse,
 #endif
 	ForEach,
-	Abs,
 	Accumulate,
 	Product,
 };
