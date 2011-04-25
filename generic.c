@@ -1,18 +1,10 @@
 #include "containers.h"
 #include "ccl_internal.h"
+#if 0
 struct GenericContainer {
 	GenericContainerInterface *vTable;
-	size_t Size;
-	unsigned Flags;
-	size_t ElementSize;
 };
-
-struct SequentialContainer {
-	SequentialContainerInterface *vTable;
-	size_t Size;
-	unsigned Flags;
-	size_t ElementSize;
-};
+#endif
 
 static size_t Size(GenericContainer *gen)
 {
@@ -20,7 +12,7 @@ static size_t Size(GenericContainer *gen)
 		iError.RaiseError("iGeneric.Size",CONTAINER_ERROR_BADARG);
 		return 0;
 	}
-	return gen->Size;
+	return gen->vTable->Size(gen);
 }
 
 static unsigned GetFlags(GenericContainer  *gen)
@@ -29,7 +21,7 @@ static unsigned GetFlags(GenericContainer  *gen)
 		iError.RaiseError("iGneric.GetFlags",CONTAINER_ERROR_BADARG);
 		return 0;
 	}
-	return gen->Flags;
+	return gen->vTable->GetFlags(gen);
 }
 
 static unsigned SetFlags(GenericContainer *gen,unsigned newFlags)
@@ -39,8 +31,8 @@ static unsigned SetFlags(GenericContainer *gen,unsigned newFlags)
 		iError.RaiseError("iGeneric.SetFlags",CONTAINER_ERROR_BADARG);
 		return 0;
 	}
-	result = gen->Flags;
-	gen->Flags = newFlags;
+	result = gen->vTable->GetFlags(gen);
+	gen->vTable->SetFlags(gen,newFlags);
 	return result;
 }
 
@@ -109,71 +101,6 @@ static int Save(GenericContainer *gen, FILE *stream,SaveFunction saveFn,void *ar
 {
 	return gen->vTable->Save(gen,stream,saveFn,arg);
 }
-/*-----------------------------------------------------------------------------------*/
-/*                                                                                   */
-/*                             Sequential containers                                 */
-/*                                                                                   */
-/*-----------------------------------------------------------------------------------*/
-
-static int Add(SequentialContainer *sc, void *Element)
-{
-	return sc->vTable->Add(sc,Element);
-}
-
-static void *GetElement(SequentialContainer *sc,size_t idx)
-{
-	return sc->vTable->GetElement(sc,idx);
-}
-
-static int Push(SequentialContainer *gen,void *Element)
-{
-	return gen->vTable->Push(gen,Element);
-}
-
-static int Pop(SequentialContainer *g,void *Element)
-{
-	return g->vTable->Pop(g,Element);
-}
-
-static int InsertAt(SequentialContainer *gen,size_t idx,void *newval)
-{
-	return gen->vTable->InsertAt(gen,idx,newval);
-}
-
-static int EraseAt(SequentialContainer *g,size_t idx)
-{
-	return g->vTable->EraseAt(g,idx);
-}
-
-static int ReplaceAt(SequentialContainer *s,size_t idx,void *newelem)
-{
-	return s->vTable->ReplaceAt(s,idx,newelem);
-}
-
-static int IndexOf(SequentialContainer *g,void *elemToFind,void *args,size_t *result)
-{
-	return g->vTable->IndexOf(g,elemToFind,args,result);
-}
-
-
-static int Append(SequentialContainer *g1,SequentialContainer *g2)
-{
-	int r;
-	void *element;
-	Iterator *it1 = newIterator((GenericContainer *)
-		g2);
-	for (element = it1->GetFirst(it1);
-                   element != NULL;
-                   element = it1->GetNext(it1)) {
-		r = Add(g1,element);
-		if (r <=0) {
-			return r;
-		}
-		
-	}
-	return 1;
-}
-	
 
 GenericContainerInterface iGeneric = {
 Size,
@@ -193,31 +120,3 @@ deleteIterator,
 Save,
 };
 
-SequentialContainerInterface iSequentialContainer = {
-{
-Size,
-GetFlags,
-SetFlags,
-Clear,
-Contains,
-Erase,
-Finalize,
-Apply,
-Equal,
-Copy,
-SetErrorFunction,
-Sizeof,
-newIterator,
-deleteIterator,
-Save,	
-},
-Add,
-GetElement,
-Push,
-Pop,
-InsertAt,
-EraseAt,
-ReplaceAt,
-IndexOf,
-Append,
-};

@@ -38,6 +38,8 @@ OBJS=\
 	valarrayulonglong.obj \
 	valarrayshort.obj \
 	observer.obj \
+	memorymanager.obj \
+	sequential.obj \
 
 EXE=dotest.exe
 
@@ -265,6 +267,12 @@ valarraysize_t.obj:	valarraysize_t.c valarraygen.c valarraygen.h valarray.h cont
 
 valarrayulonglong.obj:     valarrayulonglong.c valarraygen.c valarraygen.h valarray.h containers.h
 	$(CC) -c $(CFLAGS) $(SRCDIR)\valarrayulonglong.c
+
+sequential.obj:	sequential.c containers.h
+	$(CC)$(CFLAGS) $(SRCDIR)\sequential.c
+
+memorymanager.obj:	memorymanager.c containers.h
+	$(CC) $(CFLAGS) $SRCDIR)\memorymanager.c
 
 # Build test.c
 TEST_C=\

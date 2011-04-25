@@ -5,24 +5,50 @@ typedef struct _tagObserver {
 	unsigned Flags;
 } Observer;
 
-static Vector *ObserverVector;
+static Observer *ObserverVector;
+static size_t vsize;
 
 static int initVector(void)
 {
-	ObserverVector = iVector.Create(sizeof(Observer),25);
+	ObserverVector = calloc(sizeof(Observer),25);
 	if (ObserverVector == NULL) {
 		iError.RaiseError("iObserver.Subscribe",CONTAINER_ERROR_NOMEMORY);
 		return 0;
 	}
+	vsize=25;
+	return 1;
+}
+
+static int  OAdd(Observer *ob)
+{
+	size_t i;
+	Observer *tmp;
+	
+
+	for (i=0; i<vsize;i++) {
+		if (ObserverVector[i].ObservedObject==NULL) {
+			memcpy(ObserverVector+i,ob,sizeof(Observer));
+			return 1;
+		}
+	}
+	tmp = realloc(ObserverVector,(vsize+25)*sizeof(Observer));
+	if (tmp == NULL) {
+		iError.RaiseError("iObserver.Subscribe",CONTAINER_ERROR_NOMEMORY);
+		return CONTAINER_ERROR_NOMEMORY;
+	}
+	ObserverVector = tmp;
+	memset(ObserverVector+vsize+1,0,(25-1)*sizeof(Observer));
+	memcpy(ObserverVector+vsize,ob,sizeof(Observer));
+	vsize+= 25;
 	return 1;
 }
 
 static int InitObserver(Observer *result,void *ObservedObject, ObserverFunction callback, unsigned flags)
 {
 	GenericContainer *gen = ObservedObject;
-	unsigned Subjectflags = iGeneric.GetFlags(gen);
+	unsigned Subjectflags = gen->vTable->GetFlags(gen);
 	Subjectflags |= CONTAINER_HAS_OBSERVER;
-	iGeneric.SetFlags(gen,Subjectflags);
+	gen->vTable->SetFlags(gen,Subjectflags);
 	memset(result,0,sizeof(Observer));
 	result->ObservedObject = ObservedObject;
 	result->Callback = callback;
@@ -39,84 +65,66 @@ static int Subscribe(void *ObservedObject, ObserverFunction callback, unsigned f
 	int r;
 	r = InitObserver(&result,ObservedObject,callback,flags);
 	if (r > 0)
-		r = iVector.Add(ObserverVector,&result);
+		r = OAdd(&result);
 	return r;
 }
 
+
 static int Notify(void *ObservedObject,unsigned operation,void *ExtraInfo1,void *ExtraInfo2)
 {
-	int r,count=0;
+	int count=0;
 	size_t idx = 0;
 	void *ExtraInfo[2];
-	Observer obs,*pObserver;
+	Observer obs;
 
 	memset(&obs,0,sizeof(obs));
 	obs.ObservedObject = ObservedObject;
 	ExtraInfo[0] = ExtraInfo1;
 	ExtraInfo[1] = ExtraInfo2;
-	r = iVector.SearchWithKey(ObserverVector,0,sizeof(void *),idx,&obs,&idx);
-	if (r <= 0)
-		return 0;
-	do {
-		pObserver = iVector.GetElement(ObserverVector,idx);
-		if (pObserver->Flags & operation) {
-			pObserver->Callback(ObservedObject,operation,ExtraInfo);
-			count++;
+	for (idx=0; idx < vsize;idx++) {
+		if (ObserverVector[idx].ObservedObject == ObservedObject) {
+			if (ObserverVector[idx].Flags & operation) {
+				ObserverVector[idx].Callback(ObservedObject,operation,ExtraInfo);
+				count++;
+			}
 		}
-		idx++;
-		r = iVector.SearchWithKey(ObserverVector,0,sizeof(void *),idx,&obs,&idx);
-	} while (r > 0);
+	}
 	return count;
 }
 
 static size_t Unsubscribe(void *ObservedObject,ObserverFunction callback)
 {
-	Observer *pObserver;
-	size_t idx=0,count=0;
-	int r;
+	size_t idx,count=0;
 
 	if (ObservedObject == NULL) {
 		/* Erase all observers that have the specified function. This means that the
 		  object receiving the callback goes out of scope */
 		if (callback == NULL) /* If both are NULL do nothing */
 			return 0;
-		/* Search for the callback */
-		r = iVector.SearchWithKey(ObserverVector,offsetof(Observer,Callback),sizeof(void *),idx,&callback,&idx);
-		if (r <= 0) /* If not found do nothing */
-			return r;
-		do {
-			/* Erase all observers with given callback */
-			pObserver = iVector.GetElement(ObserverVector,idx);
-			iVector.Erase(ObserverVector,pObserver);
-			count++;
-			r = iVector.SearchWithKey(ObserverVector,0,sizeof(void *),idx,&callback,&idx);
-		} while (r > 0);
+		for (idx=0; idx<vsize;idx++) {
+			if (ObserverVector[idx].Callback == callback) {
+				memset(ObserverVector+idx,0,sizeof(Observer));
+				count++;
+			}
+		}
 		return count;
 	}
 	if (callback == NULL) {
-		r = iVector.SearchWithKey(ObserverVector,offsetof(Observer,ObservedObject),sizeof(void *),idx,&callback,&idx);
-		if (r <= 0)
-			return r;
-		do {
-			pObserver = iVector.GetElement(ObserverVector,idx);
-			iVector.Erase(ObserverVector,pObserver);
-			r = iVector.SearchWithKey(ObserverVector,0,sizeof(void *),idx,&callback,&idx);
-			count++;
-		} while (r > 0);
+		for (idx=0;idx<vsize;idx++) {
+			if (ObserverVector[idx].ObservedObject == ObservedObject) {
+				memset(ObserverVector+idx,0,sizeof(Observer));
+				count++;
+			}
+		}
 		return count;
 	}
-	r = iVector.SearchWithKey(ObserverVector,offsetof(Observer,ObservedObject),sizeof(void *),idx,&callback,&idx);
-	if (r<=0)
-		return r;
-	do {
-	/* Erase all observers with given callback AND given observed object */
-		pObserver = iVector.GetElement(ObserverVector,idx);
-		if (pObserver->ObservedObject == ObservedObject) {
-			iVector.Erase(ObserverVector,pObserver);
+	for (idx=0; idx<vsize;idx++) {
+		if (ObserverVector[idx].ObservedObject == ObservedObject &&
+			ObserverVector[idx].Callback == callback) {
+			memset(ObserverVector+idx,0,sizeof(Observer));
 			count++;
 		}
-		r = iVector.SearchWithKey(ObserverVector,0,sizeof(void *),idx,&callback,&idx);
-	} while (r > 0);
+	}
 	return count;
 }
 

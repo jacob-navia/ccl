@@ -71,7 +71,6 @@ typedef struct tagError {
     void (*EmptyErrorFunction)(const char *fname,int errcode,...);
     char *(*StrError)(int errcode);
     ErrorFunction (*SetErrorFunction)(ErrorFunction);
-    int (*LibraryError)(const char *interfaceName,const char *functionName,int errorCode);
 } ErrorInterface;
 
 extern ErrorInterface iError;
@@ -174,7 +173,9 @@ extern PoolAllocatorDebugInterface iPoolDebug;
 /*                            Generic containers                            */
 /*                                                                          */
 /************************************************************************** */
-typedef struct GenericContainer GenericContainer;
+typedef struct GenericContainer {
+	struct tagGenericContainerInterface *vTable;
+} GenericContainer;
 typedef struct tagGenericContainerInterface {
     size_t (*Size)(GenericContainer *Gen);
     unsigned (*GetFlags)(GenericContainer *Gen);
@@ -201,7 +202,24 @@ extern GenericContainerInterface iGeneric;
 /************************************************************************** */
 typedef struct SequentialContainer SequentialContainer;
 typedef struct tagSequentialContainerInterface {
-    GenericContainerInterface Generic;
+
+    size_t (*Size)(SequentialContainer *Gen);
+    unsigned (*GetFlags)(SequentialContainer *Gen);
+    unsigned (*SetFlags)(SequentialContainer *Gen,unsigned flags);
+    int (*Clear)(SequentialContainer *Gen);
+    int (*Contains)(SequentialContainer *Gen,void *Value);
+    int (*Erase)(SequentialContainer *Gen,void *);
+    int (*Finalize)(SequentialContainer *Gen);
+    void (*Apply)(SequentialContainer *Gen,int (*Applyfn)(void *,void * arg),void *arg);
+    int (*Equal)(SequentialContainer *Gen1,SequentialContainer *Gen2);
+    SequentialContainer *(*Copy)(SequentialContainer *Gen);
+    ErrorFunction (*SetErrorFunction)(SequentialContainer *Gen,ErrorFunction fn);
+    size_t (*Sizeof)(SequentialContainer *Gen);
+    Iterator *(*newIterator)(SequentialContainer *Gen);
+    int (*deleteIterator)(Iterator *);
+    int (*Save)(SequentialContainer *Gen,FILE *stream, SaveFunction saveFn,void *arg);
+
+
     int (*Add)(SequentialContainer *SC,void *Element);
     void *(*GetElement)(SequentialContainer *SC,size_t idx);
     int (*Push)(SequentialContainer *Gen,void *Element);
@@ -1004,8 +1022,6 @@ typedef struct tagBloomFilterInterface {
 } BloomFilterInterface;
 extern BloomFilterInterface iBloomFilter;
 
-int decode_ule128(FILE *stream, size_t *val);
-int encode_ule128(FILE *stream, size_t val);
 /************************************************************************** */
 /*                                                                          */
 /*                          Observer interface                              */

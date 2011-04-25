@@ -15,17 +15,6 @@ struct tagHeapObject {
 	ContainerMemoryManager *Allocator;
 	size_t MemoryUsed;
 };	
-static ContainerMemoryManager DefaultMemoryManagerObject = { malloc,free,realloc,calloc};
-ContainerMemoryManager *CurrentMemoryManager = &DefaultMemoryManagerObject;
-ContainerMemoryManager *SetCurrentMemoryManager(ContainerMemoryManager *in)
-{
-	ContainerMemoryManager *c;
-	if (in == NULL) 
-		return CurrentMemoryManager;
-	c = CurrentMemoryManager;
-	CurrentMemoryManager = in;
-	return c;
-}
 #ifndef CHUNK_SIZE 
 #define CHUNK_SIZE 100
 #endif

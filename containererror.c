@@ -48,42 +48,15 @@ static ErrorFunction SetError(ErrorFunction n)
 	return old;
 }
 
-static int LibraryError(const char *interfaceName,const char *fnname, int errorCode)
-{
-	char buf[256];
-
-	if (strlen(fnname)+strlen(interfaceName)+10 < sizeof(buf))
-		sprintf(buf,"%s.%s",interfaceName,fnname);
-	else {
-		size_t nameLen = strlen(interfaceName);
-		size_t fnnameLen = strlen(fnname);
-
-		if (nameLen > sizeof(buf)/3) {
-			memcpy(buf,interfaceName,sizeof(buf)/3);
-			buf[sizeof(buf)/3] = 0;
-		}
-		else strcpy(buf,interfaceName);
-		strcat(buf,".");
-		nameLen = strlen(buf);
-		if (fnnameLen > sizeof(buf)/3) {
-			memcpy(&buf[nameLen],fnname,sizeof(buf)/3);
-			buf[fnnameLen+sizeof(buf)/3]=0;
-		}
-		else strcat(buf,fnname);
-	}
-	ContainerRaiseError(buf,errorCode);
-	return errorCode;
-}
 
 ErrorInterface iError = {
 	ContainerRaiseError,
 	EmptyErrorFunction,
 	StrError,
 	SetError,
-	LibraryError,
 };
 
-
+#if 0
 /* Decode ULE128 string */
 
 int decode_ule128(FILE *stream, size_t *val)
@@ -122,4 +95,5 @@ int encode_ule128(FILE *stream,size_t val)
 	}
 	return i;
 }
+#endif
 

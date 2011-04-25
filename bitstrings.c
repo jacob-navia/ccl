@@ -50,7 +50,11 @@ static int Add(BitString *b,int newval);
 
 static int NullPtrError(const char *fnName)
 {
-	return iError.LibraryError("iBitString",fnName,CONTAINER_ERROR_BADARG);
+	char buf[512];
+
+	snprintf(buf,sizeof(buf),"iBitString.%s",fnName);
+	iError.RaiseError(buf,CONTAINER_ERROR_BADARG);
+	return CONTAINER_ERROR_BADARG;
 }
 
 static int doerrorCall(const char *fnName,int code)

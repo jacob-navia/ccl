@@ -34,6 +34,8 @@ OBJS=\
 	valarraylonglong.obj \
 	valarrayshort.obj \
 	valarraysize_t.obj \
+	memorymanager.obj \
+	sequential.obj \
 	buffer.obj
 
 EXE=dotest.exe
@@ -390,6 +392,10 @@ STRCOLLECTION_C=\
 
 strcollection.obj: $(STRCOLLECTION_C) $(SRCDIR)\strcollection.c
 	$(CC) -c $(CFLAGS) $(SRCDIR)\strcollection.c
+memorymanager.obj:	memorymanager.c containers.h
+	$(CC) $(CFLAGS) $(SRCDIR)\memorymanager.c
+sequential.obj:	sequential.c containers.h
+	$(CC) $(CFLAGS) $(SRCDIR)\sequential.c
 
 queue.obj:	containers.h queue.c
 	$(CC) -c $(CFLAGS) queue.c

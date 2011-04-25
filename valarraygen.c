@@ -741,20 +741,18 @@ static int ReplaceAt(ValArray *AL,size_t idx,ElementType newval)
 static ValArray *IndexIn(const ValArray *SC, const ValArraySize_t *AL)
 {
 	ValArray *result = NULL;
-	size_t i,top,idx;
+	ValArray *al = (ValArray *)AL;
+	size_t i,top,idx,*contents= (size_t *)al->contents;
 	ElementType p;
-	int r;
 
-	top = iValArraySize_t.Size(AL);
+	top = Size(al);
 	result = Create(top);
+	if (result == NULL)
+		return NULL;
 	for (i=0; i<top;i++) {
-		idx = iValArraySize_t.GetElement(AL,i);
+		idx = contents[i];
 		p = GetElement(SC,idx);
-		r = Add(result,p);
-		if (r < 0) {
-			Finalize(result);
-			return NULL;
-		}
+		result->contents[result->count++]=p;
 	}
 	return result;
 }
@@ -807,8 +805,6 @@ static int Sort(ValArray *AL)
 	return 1;
 }
 
-/* Proposed by PWO 
-*/
 static int Append(ValArray *AL1, ValArray *AL2)
 {
 	size_t newCount;
@@ -828,8 +824,6 @@ static int Append(ValArray *AL1, ValArray *AL2)
     return 1;
 }
 
-/* Proposed by PWO 
-*/
 static int Reverse(ValArray *AL)
 {
 	size_t s;
@@ -909,6 +903,51 @@ static int RotateLeft(ValArray *AL, size_t n)
 	}
 	return 1;
 }
+
+
+static int RotateRight(ValArray *AL, size_t n)
+{
+	ElementType *p,*q,t;
+
+	n %= AL->count;
+	if (n == 0)
+		return 1;
+	/* Reverse the first partition */
+	if (n > 1) {
+		p = AL->contents+AL->count-n;
+		q = AL->contents+AL->count-1;
+		while (p < q) {
+			t =*p;
+			*p = *q;
+			*q = t;
+			p++;
+			q--;
+		}
+	}
+	/* Reverse the second partition */
+	p = AL->contents;
+	q = AL->contents+AL->count-n-1;
+	if (n < AL->count-1) {
+		while (p<q) {
+			t = *p;
+			*p = *q;
+			*q = t;
+			p++,q--;
+		}
+	}
+	/* Now reverse the whole */
+	p = AL->contents;
+	q = p+(AL->count-1);
+	while (p<q) {
+		t = *p;
+		*p = *q;
+		*q = t;
+		p++,q--;
+	}
+	return 1;
+}
+
+
 /* ------------------------------------------------------------------------------ */
 /*                                Iterators                                       */
 /* ------------------------------------------------------------------------------ */
@@ -1330,7 +1369,7 @@ static int DivideBy(ValArray *left,const ValArray *right)
 		return ErrorIncompatible("DivideBy");
         }
         for (i=0; i<left->count; i++)
-		if (right->contents[i])
+		if (right->contents[i] != 0)
 			left->contents[i] /= right->contents[i];
 		else
 			DivisionByZero("DivideBy");
@@ -1917,6 +1956,28 @@ static void RaiseError(const char *msg,int code,...)
 	iError.RaiseError(msg,code);
 }
 
+static int Fprintf(ValArray *src,FILE *out,const char *fmt)
+{
+	size_t start=0,length=src->count,incr=1,i;
+	int result=0,r;
+	if (src->Slice) {
+		start = src->Slice->start;
+		incr = src->Slice->increment;
+		length = src->Slice->length;
+	}
+	for (i=start; i<length; i += incr) {
+		r = fprintf(out,fmt,src->contents[i]);
+		if (r <= 0) {
+			result = r;
+			break;
+		}
+		result += r;
+	}
+	if (result > 0)
+		result +=fprintf(out,"\n");
+	return result;
+}
+
 ValArrayInterface iValArrayInterface = {
 	Size,
 	GetFlags, 
@@ -1990,6 +2051,7 @@ ValArrayInterface iValArrayInterface = {
 	Max,
 	Min,
 	RotateLeft,
+	RotateRight,
 #ifdef __IS_UNSIGNED__
 	Or,
 	And,
@@ -2013,4 +2075,5 @@ ValArrayInterface iValArrayInterface = {
 	ForEach,
 	Accumulate,
 	Product,
+	Fprintf,
 };
