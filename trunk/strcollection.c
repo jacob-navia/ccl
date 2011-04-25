@@ -44,9 +44,53 @@ extern int stricmp(const char *,const char *);
 #define DEFAULT_START_SIZE 20
 #endif
 
+/* Decode ULE128 string */
+
+static int decode_ule128(FILE *stream, size_t *val)
+{
+        size_t i = 0;
+        int c;
+
+        val[0] = 0;
+        do {
+                c = fgetc(stream);
+                if (c == EOF)
+                        return EOF;
+                val[0] += ((c & 0x7f) << (i * 7));
+                i++;
+        } while((0x80 & c) && (i < 2*sizeof(size_t)));
+        return (int)i;
+}
+
+static int encode_ule128(FILE *stream,size_t val)
+{
+        int i=0;
+
+        if (val == 0) {
+                if (fputc(0, stream) == EOF)
+                        return EOF;
+                i=1;
+        }
+        else while (val) {
+                size_t c = val&0x7f;
+                val >>= 7;
+                if (val)
+                        c |= 0x80;
+                if (fputc((int)c,stream) == EOF)
+                        return EOF;
+                i++;
+        }
+        return i;
+}
+
+
 static int NullPtrError(const char *fnName)
 {
-	return iError.LibraryError("iStringCollection",fnName,CONTAINER_ERROR_BADARG);
+	char buf[512];
+
+	snprintf(buf,sizeof(buf),"iStringCollection.%s",fnName);
+	iError.RaiseError(buf,CONTAINER_ERROR_BADARG);
+	return CONTAINER_ERROR_BADARG;
 }
 static int doerrorCall(ErrorFunction err,const char *fnName,int code)
 {

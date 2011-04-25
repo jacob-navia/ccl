@@ -10,11 +10,11 @@ CFLAGS=-g -Wno-pointer-sign -DUNIX -Wall
 SRC=	vector.c bloom.c containererror.c dlist.c qsortex.c heap.c \
 	deque.c hashtable.c malloc_debug.c containers.h \
 	stdint.h pool.c pooldebug.c redblacktree.c scapegoat.c smallpool.c ccl_internal.h \
-	bitstrings.c dictionary.c list.c strcollection.c searchtree.c \
+	bitstrings.c dictionary.c list.c memorymanager.c strcollection.c searchtree.c \
 	containers.h redblacktree.c fgetline.c generic.c queue.c buffer.c observer.c \
 	valarraydouble.c valarraysize_t.c valarrayint.c valarraylongdouble.c valarraygen.c \
 	valarrayshort.c valarrayfloat.c valarrayuint.c valarraylonglong.c \
-	valarrayulonglong.c
+	valarrayulonglong.c sequential.c
 DOCS=
 MAKEFILES=Makefile Makefile.lcc Makefile.msvc
 
@@ -23,7 +23,7 @@ OBJS=vector.o containererror.o dlist.o qsortex.o bitstrings.o generic.o \
     bloom.o fgetline.o pool.o pooldebug.o redblacktree.o scapegoat.o queue.o \
     buffer.o observer.o valarraydouble.o valarrayint.o valarraysize_t.o \
     valarraylongdouble.o valarrayshort.o valarrayfloat.o valarrayuint.o \
-    valarraylonglong.o valarrayulonglong.o
+    valarraylonglong.o valarrayulonglong.o memorymanager.o sequential.o
 
 dotest:	libccl.a test.o
 	gcc -o dotest $(CFLAGS) test.c libccl.a -lm
@@ -59,4 +59,5 @@ dictionary.o:	dictionary.c containers.h
 qsortex.o:	qsortex.c containers.h
 generic.o:	generic.c containers.h
 heap.o:	heap.c containers.h
-
+memorymanager.o:	memorymanager.c containers.h
+sequential.o:	sequential.c containers.h

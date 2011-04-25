@@ -16,7 +16,11 @@ typedef struct _Mask Mask;
 #define ElementType size_t
 #define ValArrayInterface ValArraySize_tInterface
 #define ValArray ValArraySize_t
+#define __IS_UNSIGNED__
+#define __IS_INTEGER__
 #include "valarraygen.h"
+#undef __IS_UNSIGNED__
+#undef __IS_INTEGER__
 extern ValArraySize_tInterface iValArraySize_t;
 
 /****************************************************************************
@@ -33,7 +37,9 @@ extern ValArraySize_tInterface iValArraySize_t;
 #define ElementType short
 #define ValArrayInterface ValArrayShortInterface
 #define ValArray ValArrayShort
+#define __IS_INTEGER__
 #include "valarraygen.h"
+#undef __IS_INTEGER__
 extern ValArrayInterface iValArrayShort;
 
 /****************************************************************************

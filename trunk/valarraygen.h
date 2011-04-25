@@ -83,6 +83,7 @@ typedef struct tagValArray {
     ElementType (*Max)(const ValArray *src);
     ElementType (*Min)(const ValArray *src);
     int (*RotateLeft)(ValArray *AL, size_t n);
+    int (*RotateRight)(ValArray *AL,size_t n);
 #ifdef __IS_UNSIGNED__
     int (*Or)(ValArray *left, const ValArray *right);
     int (*And)(ValArray *left, const ValArray *right);
@@ -106,6 +107,7 @@ typedef struct tagValArray {
     int (*ForEach)(ValArray *src,ElementType (*ApplyFn)(ElementType));
     ElementType (*Accumulate)(ValArray *src);
     ElementType (*Product)(ValArray *src);
+    int (*Fprintf)(ValArray *src,FILE *out,const char *fmt);
 } ValArrayInterface;
 
 
