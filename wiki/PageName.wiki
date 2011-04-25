@@ -8,8 +8,7 @@ The C Containers library is a project that specifies a general containers librar
 The objective is to standardize the usage of common containers in C to
 
 
-o Save work from C developers: you do not need to reimplement
-  the same hash table again
+o Save work from C developers: you do not need to reimplement the same hash table or list again
 
 o Make different projects and sources compatible.
 
