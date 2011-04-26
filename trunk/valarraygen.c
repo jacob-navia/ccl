@@ -600,10 +600,11 @@ static int PopBack(ValArray *AL,ElementType *result)
 ------------------------------------------------------------------------*/
 static int Finalize(ValArray *AL)
 {
+	unsigned Flags = AL->Flags;
 	int result = Clear(AL);
 	if (result < 0)
 		return result;
-	if (AL->Flags & CONTAINER_HAS_OBSERVER)
+	if (Flags & CONTAINER_HAS_OBSERVER)
 		iObserver.Notify(AL,CCL_FINALIZE,NULL,NULL);
 	AL->Allocator->free(AL->contents);
 	AL->Allocator->free(AL);

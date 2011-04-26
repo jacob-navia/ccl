@@ -673,10 +673,16 @@ static int PopBack(Vector *AL,void *result)
 ------------------------------------------------------------------------*/
 static int Finalize(Vector *AL)
 {
-	int result = Clear(AL);
+	unsigned Flags;
+	int result;
+
+	if (AL == NULL)
+		return NullPtrError("Clear");
+	Flags = AL->Flags;
+	result = Clear(AL);
 	if (result < 0)
 		return result;
-	if (AL->Flags & CONTAINER_HAS_OBSERVER)
+	if (Flags & CONTAINER_HAS_OBSERVER)
 		iObserver.Notify(AL,CCL_FINALIZE,NULL,NULL);
 	AL->Allocator->free(AL->contents);
 	AL->Allocator->free(AL);

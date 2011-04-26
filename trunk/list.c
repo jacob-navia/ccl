@@ -419,9 +419,11 @@ static List *Copy(List *l)
 static int Finalize(List *l)
 {
     int t=0;
+    unsigned Flags=0;
 
+    if (l) Flags = l->Flags;
     t = Clear(l);
-    if (l->Flags & CONTAINER_HAS_OBSERVER)
+    if (Flags & CONTAINER_HAS_OBSERVER)
         iObserver.Notify(l,CCL_FINALIZE,NULL,NULL);
     if (t < 0)
         return t;
