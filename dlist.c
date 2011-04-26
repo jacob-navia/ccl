@@ -447,13 +447,15 @@ static Dlist *Copy(Dlist *l)
 static int Finalize(Dlist *l)
 {
 	int t;
+	unsigned Flags;
 
 	if (l == NULL) {
 		iError.RaiseError("iDlist.Finalize",CONTAINER_ERROR_BADARG);
 		return CONTAINER_ERROR_BADARG;
 	}
-	t = l->VTable->Clear(l);
-    if (l->Flags & CONTAINER_HAS_OBSERVER)
+	Flags = l->Flags;
+	t = Clear(l);
+    if (Flags & CONTAINER_HAS_OBSERVER)
         iObserver.Notify(l,CCL_FINALIZE,NULL,NULL);
 	if (t < 0)
 		return t;
