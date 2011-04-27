@@ -29,6 +29,7 @@ struct deque_t {
     ErrorFunction RaiseError;   /* Error function */
 	ContainerMemoryManager *Allocator;
 	unsigned timestamp;
+	DestructorFunction DestructorFn;
 };
 
 typedef struct deque_node_t *DequeNode;
@@ -143,6 +144,8 @@ static int Clear(Deque * d) {
     while (d->head != NULL) {
         tmp = d->head;
         d->head = tmp->next;
+		if (d->DestructorFn)
+			d->DestructorFn(tmp);
 		d->Allocator->free(tmp);
     }
     d->head = NULL;
@@ -173,6 +176,8 @@ static int PopFront(Deque * d,void *outbuf)
         d->head = prevHead->prev;
         d->count--;
         value = prevHead->value;
+		if (d->DestructorFn)
+			d->DestructorFn(prevHead);
 		d->Allocator->free(prevHead);
         memcpy(outbuf,value,d->ElementSize);
 		return 1;
@@ -221,6 +226,8 @@ static int PopBack(Deque * d,void *outbuf)
         }
         d->count--;
         value = prevTail->value;
+		if (d->DestructorFn)
+			d->DestructorFn(prevTail);
 		d->Allocator->free(prevTail);
         memcpy(outbuf,value,d->ElementSize);
 		return 1;
@@ -268,6 +275,8 @@ static int Remove(Deque * d, void* item)
             if (tmp->next != NULL) {
                 tmp->next->prev = tmp->prev;
             }
+			if (d->DestructorFn)
+				d->DestructorFn(tmp);
 			d->Allocator->free(tmp);
             d->count--;
             return 1;
@@ -564,6 +573,18 @@ static int deleteIterator(Iterator *it)
 	return 1;
 }
 
+static DestructorFunction SetDestructor(Deque *cb,DestructorFunction fn)
+{
+	DestructorFunction oldfn;
+	if (cb == NULL)
+		return NULL;
+	oldfn = cb->DestructorFn;
+	if (fn)
+		cb->DestructorFn = fn;
+	return oldfn;
+}
+
+
 DequeInterface iDeque = {
     GetCount,
     GetFlags,
@@ -590,5 +611,6 @@ DequeInterface iDeque = {
     PeekFront,
 	Create,
 	Init,
+	SetDestructor,
 };
 

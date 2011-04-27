@@ -79,6 +79,45 @@ static HashEntry **alloc_array(HashTable *ht, size_t max)
    return iPool.Calloc(ht->pool, (max+1),(sizeof(*ht->array) + ht->ElementSize ));
 }
 
+/* Decode ULE128 string */
+
+static int decode_ule128(FILE *stream, size_t *val)
+{
+        size_t i = 0;
+        int c;
+
+        val[0] = 0;
+        do {
+                c = fgetc(stream);
+                if (c == EOF)
+                        return EOF;
+                val[0] += ((c & 0x7f) << (i * 7));
+                i++;
+        } while((0x80 & c) && (i < 2*sizeof(size_t)));
+        return (int)i;
+}
+
+static int encode_ule128(FILE *stream,size_t val)
+{
+        int i=0;
+
+        if (val == 0) {
+                if (fputc(0, stream) == EOF)
+                        return EOF;
+                i=1;
+        }
+        else while (val) {
+                size_t c = val&0x7f;
+                val >>= 7;
+                if (val)
+                        c |= 0x80;
+                if (fputc((int)c,stream) == EOF)
+                        return EOF;
+                i++;
+        }
+        return i;
+}
+
 static HashTable * Create(size_t ElementSize)
 {
     HashTable *ht;
