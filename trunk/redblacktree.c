@@ -23,6 +23,7 @@ struct tagRedBlackTree {
 	RedBlackTreeNode    *CurrentBlock;
 	RedBlackTreeNode    *FreeList;
 	ContainerMemoryManager *Allocator;
+	DestructorFunction DestructorFn;
 } ;
 
 #define BLOCKSIZE 256
@@ -309,6 +310,8 @@ static int Remove(RedBlackTree *Tree, const void *delete_key, void *ExtraArgs)
 		   deleted_object = (void *) treenode->left;
 		   treenode->left = NULL;
 		   treenode->flags &= ~NODE_HAS_DATA;
+		   if (Tree->DestructorFn)
+			   Tree->DestructorFn(deleted_object);
 		   Tree->Allocator->free(deleted_object);
 		   return 1;
       }
@@ -610,6 +613,8 @@ static int Remove(RedBlackTree *Tree, const void *delete_key, void *ExtraArgs)
 	   else { /* want to delete node current */
 		   RedBlackTreeNode *tmp_node;
 		   deleted_object = (void *) current->left;
+		   if (Tree->DestructorFn)
+			   Tree->DestructorFn(deleted_object);
 		   Tree->Allocator->free(deleted_object);
 		   current->flags &= ~NODE_HAS_DATA;
 		   if (Tree->KeyCompareFn(current->Key , upper->Key,&ci ) < 0) {
@@ -684,6 +689,16 @@ static CompareFunction SetCompareFunction(RedBlackTree *l,CompareFunction fn)
 }
 
 static size_t GetElementSize(RedBlackTree *d) { return d->ElementSize;}
+static DestructorFunction SetDestructor(RedBlackTree *cb,DestructorFunction fn)
+{
+	DestructorFunction oldfn;
+	if (cb == NULL)
+		return NULL;
+	oldfn = cb->DestructorFn;
+	if (fn)
+		cb->DestructorFn = fn;
+	return oldfn;
+}
 
 RedBlackTreeInterface iRedBlackTree = {
 	Create,
@@ -704,6 +719,7 @@ RedBlackTreeInterface iRedBlackTree = {
 	DefaultCompareFunction,
 	newIterator,
 	deleteIterator,
+	SetDestructor,
 };
 
 
