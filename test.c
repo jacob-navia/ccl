@@ -241,8 +241,8 @@ static void TestBitstring(void){
 	iBitString.Finalize(b);
 	iBitString.Finalize(c);
 	iBitString.Finalize(d);
-	b = iBitString.StringToBitString("011");
-	c = iBitString.StringToBitString("1101101");
+	b = iBitString.StringToBitString((unsigned char *)"011");
+	c = iBitString.StringToBitString((unsigned char *)"1101101");
 	d = iBitString.And(c,b);
 	PrintBitstring(d,"011 AND 1101101");
 	i = iBitString.BitBlockCount(c);
@@ -266,39 +266,39 @@ static void PrintStringCollection(StringCollection *SC){
 static void testStringCollection(void)
 {
     StringCollection *SC = iStringCollection.Create(10);
-    char *p,buf[40];
+    unsigned char *p,buf[40];
 	size_t idx;
-    iStringCollection.Add(SC,"Martin");
-    iStringCollection.Insert(SC,"Jakob");
-    if (!iStringCollection.Contains(SC,"Martin")) {
+    iStringCollection.Add(SC,(unsigned char *)"Martin");
+    iStringCollection.Insert(SC,(unsigned char *)"Jakob");
+    if (!iStringCollection.Contains(SC,(unsigned char *)"Martin")) {
         Abort();
     }
     if (2 != iStringCollection.Size(SC))
 		Abort();
-    iStringCollection.InsertAt(SC,1,"Position 1");
-    iStringCollection.InsertAt(SC,2,"Position 2");
-	if (0 == iStringCollection.Contains(SC,"Position 1"))
+    iStringCollection.InsertAt(SC,1,(unsigned char *)"Position 1");
+    iStringCollection.InsertAt(SC,2,(unsigned char *)"Position 2");
+	if (0 == iStringCollection.Contains(SC,(unsigned char *)"Position 1"))
 		Abort();
-	iStringCollection.IndexOf(SC,"Position 2",&idx);
+	iStringCollection.IndexOf(SC,(unsigned char *)"Position 2",&idx);
 	if (idx != 2)
 		Abort();
 	if (4 != iStringCollection.Size(SC))
 		Abort();
-    iStringCollection.Erase(SC,"Jakob");
-    if (iStringCollection.Contains(SC,"Jakob"))
+    iStringCollection.Erase(SC,(unsigned char *)"Jakob");
+    if (iStringCollection.Contains(SC,(unsigned char *)"Jakob"))
 		Abort();
 	if (3 != iStringCollection.Size(SC))
 		Abort();
-    iStringCollection.PushFront(SC,"pushed");
+    iStringCollection.PushFront(SC,(unsigned char *)"pushed");
 	if (4 != iStringCollection.Size(SC))
 		Abort();
-	iStringCollection.IndexOf(SC,"pushed",&idx);
+	iStringCollection.IndexOf(SC,(unsigned char *)"pushed",&idx);
 	if (0 != idx)
 		Abort();
-    iStringCollection.PopFront(SC,buf,sizeof(buf));
+    iStringCollection.PopFront(SC,(unsigned char *)buf,sizeof(buf));
 	if (3 != iStringCollection.Size(SC))
 		Abort();
-	if (strcmp(buf,"pushed"))
+	if (strcmp((char *)buf,"pushed"))
 		Abort();
     PrintStringCollection(SC);
     p = iStringCollection.GetElement(SC,1);
@@ -335,7 +335,7 @@ static int TestDictionary(void)
 	if (count != 2)
 		Abort();
 	count=iDictionary.Erase(d,(const unsigned char *)"long data");
-	if (count != CONTAINER_ERROR_NOTFOUND)
+	if (count != (unsigned)CONTAINER_ERROR_NOTFOUND)
 		Abort();
 	count = iDictionary.Size(d);
 	if (count != 2)
