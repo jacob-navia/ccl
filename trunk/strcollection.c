@@ -22,6 +22,7 @@ struct StringCollection {
 	StringCompareFn strcompare;
 	CompareInfo *StringCompareContext;
     ContainerMemoryManager *Allocator;
+	DestructorFunction DestructorFn;
 };
 
 static const guid StringCollectionGuid = {0x64bea19b, 0x243b, 0x487a,
@@ -273,6 +274,8 @@ static int ResizeTo(StringCollection *SC,size_t newcapacity)
     memset(SC->contents,0,sizeof(char *)*newcapacity);
     memcpy(SC->contents,oldcontents,SC->count*sizeof(char *));
     SC->capacity = newcapacity;
+	if (SC->DestructorFn)
+		SC->DestructorFn(oldcontents);
 	SC->Allocator->free(oldcontents);
 	SC->timestamp++;
     return 1;
@@ -383,6 +386,8 @@ static int Clear(StringCollection *SC)
     if (SC->Flags & CONTAINER_READONLY)
         return ReadOnlyError(SC,"Clear");
     for (i=0; i<SC->count;i++) {
+		if (SC->DestructorFn)
+			SC->DestructorFn(SC->contents[i]);
 		SC->Allocator->free(SC->contents[i]);
         SC->contents[i] = NULL;
     }
@@ -430,7 +435,8 @@ static unsigned char **CopyTo(StringCollection *SC)
         result[i] = DuplicateString(SC,SC->contents[i],"CopyTo");
 		if (result[i] == NULL) {
 			while (i > 0) {
-				SC->Allocator->free(result[--i]);
+				--i;
+				SC->Allocator->free(result[i]);
 			}
 			SC->Allocator->free(result);
 			return NULL;
@@ -470,6 +476,8 @@ static int Finalize(StringCollection *SC)
 	}
 
 	for (i=0; i<SC->count;i++) {
+		if (SC->DestructorFn)
+			SC->DestructorFn(SC->contents[i]);
         SC->Allocator->free(SC->contents[i]);
     }
     SC->Allocator->free(SC->contents);
@@ -635,6 +643,8 @@ static int RemoveAt(StringCollection *SC,size_t idx)
 	/* Test for remove of an empty collection */
     if (SC->count == 0)
         return 0;
+    if (SC->DestructorFn)
+        SC->DestructorFn(SC->contents[idx]);
     SC->Allocator->free(SC->contents[idx]);
     if (idx < (SC->count-1)) {
         memmove(SC->contents+idx,SC->contents+idx+1,(SC->count-idx)*sizeof(char *));
@@ -663,6 +673,8 @@ static int Erase(StringCollection *SC,unsigned char *str)
     }
 	if (i == SC->count)
 		return CONTAINER_ERROR_NOTFOUND;
+    if (SC->DestructorFn)
+	SC->DestructorFn(SC->contents[i]);
     SC->Allocator->free(SC->contents[i]);
     if (i < (SC->count-1)) {
         memmove(SC->contents+i,SC->contents+i+1,(SC->count-i)*sizeof(char *));
@@ -1488,6 +1500,18 @@ static int Reverse(StringCollection *SC)
 	return 1;
 }
 
+static DestructorFunction SetDestructor(StringCollection *cb,DestructorFunction fn)
+{
+	DestructorFunction oldfn;
+	if (cb == NULL)
+		return NULL;
+	oldfn = cb->DestructorFn;
+	if (fn)
+		cb->DestructorFn = fn;
+	return oldfn;
+}
+
+
 
 StringCollectionInterface iStringCollection = {
     GetCount, GetFlags, SetFlags,  Clear,
@@ -1540,4 +1564,5 @@ StringCollectionInterface iStringCollection = {
 	Mismatch,
 	InitWithAllocator,
 	Init,
+	SetDestructor,
 };
