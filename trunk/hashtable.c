@@ -45,6 +45,7 @@ struct _HashTable {
 	unsigned       timestamp;
 	size_t         ElementSize;
 	ContainerMemoryManager *Allocator;
+	DestructorFunction DestructorFn;
 };
 
 static const guid HashTableGuid = {0x3a3d3aab, 0xb14a, 0x4249,
@@ -369,6 +370,8 @@ static HashEntry **HashSet(HashTable *ht, const void *key, size_t klen, const vo
         if (!val) {
             /* delete entry */
             HashEntry *old = *hep;
+			if (ht->DestructorFn)
+				ht->DestructorFn(old);
             *hep = (*hep)->next;
             old->next = ht->free;
             ht->free = old;
@@ -673,14 +676,14 @@ static HashTable *Load(FILE *stream, ReadFunction readFn,void *arg)
 	for (i=0; i< HT.count; i++) {
 		if (decode_ule128(stream, &len) <= 0) {
 		err:
-			iError.RaiseError("StringCollection.Load",CONTAINER_ERROR_FILE_READ);
+			iError.RaiseError("iHashTable.Load",CONTAINER_ERROR_FILE_READ);
 			free(keybuf);
 			return NULL;
 		}
 		if (keybuflen < len) {
 			void *tmp = realloc(keybuf,len);
 			if (tmp == NULL) {
-				iError.RaiseError("HashTable.Load",CONTAINER_ERROR_NOMEMORY);
+				iError.RaiseError("iHashTable.Load",CONTAINER_ERROR_NOMEMORY);
 				free(keybuf);
 				return NULL;
 			}
@@ -784,6 +787,18 @@ static int deleteIterator(Iterator *it)
 	return 1;
 }
 
+static DestructorFunction SetDestructor(HashTable *cb,DestructorFunction fn)
+{
+	DestructorFunction oldfn;
+	if (cb == NULL)
+		return NULL;
+	oldfn = cb->DestructorFn;
+	if (fn)
+		cb->DestructorFn = fn;
+	return oldfn;
+}
+
+
 HashTableInterface iHashTable = {
 Create,
 Init,
@@ -809,5 +824,5 @@ newIterator,
 deleteIterator,
 Save,
 Load,
-
+SetDestructor,
 };
