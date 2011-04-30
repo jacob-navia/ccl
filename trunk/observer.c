@@ -1,21 +1,23 @@
 #include "containers.h"
+#include "ccl_internal.h"
 typedef struct _tagObserver {
-	void *ObservedObject;
-	ObserverFunction Callback;
-	unsigned Flags;
+	void *ObservedObject; /* The object being observed */
+	ObserverFunction Callback; /* The function to call */
+	unsigned Flags; /* The events the observer wishes to be informed about */
 } Observer;
 
 static Observer *ObserverVector;
 static size_t vsize;
+#define CHUNK_SIZE	25
 
 static int initVector(void)
 {
-	ObserverVector = calloc(sizeof(Observer),25);
+	ObserverVector = calloc(sizeof(Observer),CHUNK_SIZE);
 	if (ObserverVector == NULL) {
 		iError.RaiseError("iObserver.Subscribe",CONTAINER_ERROR_NOMEMORY);
 		return 0;
 	}
-	vsize=25;
+	vsize=CHUNK_SIZE;
 	return 1;
 }
 
@@ -31,24 +33,24 @@ static int  OAdd(Observer *ob)
 			return 1;
 		}
 	}
-	tmp = realloc(ObserverVector,(vsize+25)*sizeof(Observer));
+	tmp = realloc(ObserverVector,(vsize+CHUNK_SIZE)*sizeof(Observer));
 	if (tmp == NULL) {
 		iError.RaiseError("iObserver.Subscribe",CONTAINER_ERROR_NOMEMORY);
 		return CONTAINER_ERROR_NOMEMORY;
 	}
 	ObserverVector = tmp;
-	memset(ObserverVector+vsize+1,0,(25-1)*sizeof(Observer));
+	memset(ObserverVector+vsize+1,0,(CHUNK_SIZE-1)*sizeof(Observer));
 	memcpy(ObserverVector+vsize,ob,sizeof(Observer));
-	vsize+= 25;
+	vsize+= CHUNK_SIZE;
 	return 1;
 }
 
 static int InitObserver(Observer *result,void *ObservedObject, ObserverFunction callback, unsigned flags)
 {
 	GenericContainer *gen = ObservedObject;
-	unsigned Subjectflags = gen->vTable->GetFlags(gen);
+	unsigned Subjectflags = gen->Flags;
 	Subjectflags |= CONTAINER_HAS_OBSERVER;
-	gen->vTable->SetFlags(gen,Subjectflags);
+	gen->Flags=Subjectflags;
 	memset(result,0,sizeof(Observer));
 	result->ObservedObject = ObservedObject;
 	result->Callback = callback;
