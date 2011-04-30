@@ -1,10 +1,5 @@
 #include "containers.h"
 #include "ccl_internal.h"
-#if 0
-struct GenericContainer {
-	GenericContainerInterface *vTable;
-};
-#endif
 
 static size_t Size(GenericContainer *gen)
 {
