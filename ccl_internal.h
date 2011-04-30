@@ -11,3 +11,17 @@ typedef struct {
         uint16_t Data3;
         unsigned char Data4[8];
 } guid;
+
+struct _Mask {
+        size_t length;
+        ContainerMemoryManager *Allocator;
+        char data[MINIMUM_ARRAY_INDEX];
+};
+
+struct _GenericContainer {
+    struct tagGenericContainerInterface *vTable;
+    size_t count;             /* number of elements in the container */
+    unsigned int Flags;       /* Read-only or other flags */
+};
+
+
