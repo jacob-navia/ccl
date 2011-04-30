@@ -36,7 +36,6 @@ struct _List {
 };
 static int IndexOf(List *AL,void *SearchedElement,void *ExtraArgs,size_t *result);
 static int RemoveAt(List *AL,size_t idx);
-#define CONTAINER_LIST_READONLY    1
 #define CONTAINER_LIST_SMALL    2
 #define CHUNK_SIZE    1000
 /* The function Push is identical to Insert */
@@ -167,7 +166,7 @@ static int Clear(List *l)
     if (l == NULL) {
         return NullPtrError("Clear");
     }
-    if (l->Flags & CONTAINER_LIST_READONLY) {
+    if (l->Flags & CONTAINER_READONLY) {
         l->RaiseError("iList.Clear",CONTAINER_ERROR_READONLY);
         return CONTAINER_ERROR_READONLY;
     }
@@ -208,7 +207,7 @@ static int Add(List *l,void *elem)
     int r;
     if (l == NULL) return NullPtrError("Add");
     if (elem == NULL) return NullPtrError("Add");
-    if (l->Flags &CONTAINER_LIST_READONLY) return ErrorReadOnly(l,"Add");
+    if (l->Flags &CONTAINER_READONLY) return ErrorReadOnly(l,"Add");
     r = Add_nd(l,elem);
     if (r && (l->Flags & CONTAINER_HAS_OBSERVER))
         iObserver.Notify(l,CCL_ADD,elem,NULL);
@@ -228,7 +227,7 @@ static int Memset(List *l, void *elem, size_t repeat)
         l->RaiseError("iList.Add",CONTAINER_ERROR_BADARG);
         return CONTAINER_ERROR_BADARG;
     }
-    if (l->Flags &CONTAINER_LIST_READONLY) {
+    if (l->Flags &CONTAINER_READONLY) {
         return CONTAINER_ERROR_READONLY;
     }
     l->timestamp++;
@@ -312,8 +311,8 @@ static List *SetAllocator(List *l,ContainerMemoryManager  *allocator)
         return NULL;
     if (allocator != NULL) {
         List *newList;
-        if (l->Flags&CONTAINER_LIST_READONLY) {
-            l->RaiseError("iList.SetAllocator",CONTAINER_LIST_READONLY);
+        if (l->Flags&CONTAINER_READONLY) {
+            l->RaiseError("iList.SetAllocator",CONTAINER_READONLY);
             return NULL;
         }
         newList = allocator->malloc(sizeof(List));
@@ -348,8 +347,8 @@ static CompareFunction SetCompareFunction(List *l,CompareFunction fn)
         return NULL;
     }
     if (fn != NULL) { /* Treat NULL as an enquiry to get the compare function */
-        if (l->Flags&CONTAINER_LIST_READONLY) {
-            l->RaiseError("iList.SetCompareFunction",CONTAINER_LIST_READONLY);
+        if (l->Flags&CONTAINER_READONLY) {
+            l->RaiseError("iList.SetCompareFunction",CONTAINER_READONLY);
         }
         else l->Compare = fn;
     }
@@ -450,7 +449,7 @@ static void * GetElement(List *l,size_t position)
         l->RaiseError("GetElement",CONTAINER_ERROR_INDEX);
         return NULL;
     }
-    if (l->Flags & CONTAINER_LIST_READONLY) {
+    if (l->Flags & CONTAINER_READONLY) {
         l->RaiseError("iList.GetElement",CONTAINER_ERROR_READONLY);
         return NULL;
     }
@@ -509,7 +508,7 @@ static int ReplaceAt(List *l,size_t position,void *data)
         l->RaiseError("iList.ReplaceAt",CONTAINER_ERROR_INDEX);
         return CONTAINER_ERROR_INDEX;
     }
-    if (l->Flags & CONTAINER_LIST_READONLY) {
+    if (l->Flags & CONTAINER_READONLY) {
         l->RaiseError("iList.ReplaceAt",CONTAINER_ERROR_READONLY);
         return CONTAINER_ERROR_READONLY;
     }
@@ -649,7 +648,7 @@ static int PushFront(List *l,void *pdata)
             NullPtrError("PushFront");
         return CONTAINER_ERROR_BADARG;
     }
-    if (l->Flags & CONTAINER_LIST_READONLY) {
+    if (l->Flags & CONTAINER_READONLY) {
         return ErrorReadOnly(l,"PushFront");
     }
     rvp = new_link(l,pdata,"Insert");
@@ -684,7 +683,7 @@ static int PopFront(List *l,void *result)
         iError.RaiseError("iList.PopFront",CONTAINER_ERROR_BADARG);
         return CONTAINER_ERROR_BADARG;
     }
-    if (l->Flags & CONTAINER_LIST_READONLY) {
+    if (l->Flags & CONTAINER_READONLY) {
         return ErrorReadOnly(l,"PopFront");
     }
     if (l->count == 0)
@@ -721,7 +720,7 @@ static int InsertIn(List *l, size_t idx,List *newData)
             iError.RaiseError("iList.InsertIn",CONTAINER_ERROR_BADARG);
         return CONTAINER_ERROR_BADARG;
     }
-    if (l->Flags & CONTAINER_LIST_READONLY) {
+    if (l->Flags & CONTAINER_READONLY) {
         return ErrorReadOnly(l,"InsertIn");
     }
     if (idx > l->count) {
@@ -777,7 +776,7 @@ static int InsertAt(List *l,size_t pos,void *pdata)
         l->RaiseError("iList.InsertAt",CONTAINER_ERROR_INDEX);
         return CONTAINER_ERROR_INDEX;
     }
-    if (l->Flags & CONTAINER_LIST_READONLY) {
+    if (l->Flags & CONTAINER_READONLY) {
         return ErrorReadOnly(l,"InsertAt");
     }
     if (pos == l->count) {
@@ -884,7 +883,7 @@ static int RemoveAt(List *l,size_t position)
         l->RaiseError("iListRemoveAt",CONTAINER_ERROR_INDEX);
         return CONTAINER_ERROR_INDEX;
     }
-    if (l->Flags & CONTAINER_LIST_READONLY) {
+    if (l->Flags & CONTAINER_READONLY) {
         return ErrorReadOnly(l,"RemoveAt");
     }
     rvp = l->First;
@@ -939,7 +938,7 @@ static int Append(List *l1,List *l2)
             iError.RaiseError("iList.Append",CONTAINER_ERROR_BADARG);
         return CONTAINER_ERROR_BADARG;
     }
-    if ((l1->Flags & CONTAINER_LIST_READONLY) || (l2->Flags & CONTAINER_LIST_READONLY)) {
+    if ((l1->Flags & CONTAINER_READONLY) || (l2->Flags & CONTAINER_READONLY)) {
         l1->RaiseError("iList.Append",CONTAINER_ERROR_READONLY);
         return CONTAINER_ERROR_READONLY;
     }
@@ -977,7 +976,7 @@ static int Reverse(List *l)
         iError.RaiseError("Reverse",CONTAINER_ERROR_BADARG);
         return CONTAINER_ERROR_BADARG;
     }
-    if (l->Flags & CONTAINER_LIST_READONLY) {
+    if (l->Flags & CONTAINER_READONLY) {
         l->RaiseError("iList.Reverse",CONTAINER_ERROR_READONLY);
         return CONTAINER_ERROR_READONLY;
     }
@@ -1094,7 +1093,7 @@ static int Sort(List *l)
     }
     if (l->count < 2)
         return 1;
-    if (l->Flags&CONTAINER_LIST_READONLY) {
+    if (l->Flags&CONTAINER_READONLY) {
         l->RaiseError("iList.Sort",CONTAINER_ERROR_READONLY);
         return CONTAINER_ERROR_READONLY;
     }
@@ -1134,7 +1133,7 @@ static int Apply(List *L,int (Applyfn)(void *,void *),void *arg)
         return CONTAINER_ERROR_BADARG;
     }
     le = L->First;
-    if (L->Flags&CONTAINER_LIST_READONLY) {
+    if (L->Flags&CONTAINER_READONLY) {
         pElem = malloc(L->ElementSize);
         if (pElem == NULL) {
             L->RaiseError("iList.Apply",CONTAINER_ERROR_NOMEMORY);
@@ -1268,7 +1267,7 @@ static void *GetNext(Iterator *it)
     }
     li->Current = li->Current->Next;
     li->index++;
-	if (L->Flags & CONTAINER_LIST_READONLY) {
+	if (L->Flags & CONTAINER_READONLY) {
 		memcpy(li->ElementBuffer,li->Current->Data,L->ElementSize);
 		return li->ElementBuffer;
 	}
@@ -1306,7 +1305,7 @@ static void *GetPrevious(Iterator *it)
         }
     }
     li->Current = rvp;
-	if (L->Flags & CONTAINER_LIST_READONLY) {
+	if (L->Flags & CONTAINER_READONLY) {
 		memcpy(li->ElementBuffer,rvp->Data,L->ElementSize);
 		return li->ElementBuffer;
 	}
@@ -1327,7 +1326,7 @@ static void *GetCurrent(Iterator *it)
 		li->L->RaiseError("GetCurrent",CONTAINER_ERROR_BADARG);
 		return NULL;
 	}
-	if (li->L->Flags & CONTAINER_LIST_READONLY) {
+	if (li->L->Flags & CONTAINER_READONLY) {
 		return li->ElementBuffer;
 	}
 	return li->Current->Data;
@@ -1351,7 +1350,7 @@ static void *GetFirst(Iterator *it)
     }
     li->index = 0;
     li->Current = L->First;
-	if (L->Flags & CONTAINER_LIST_READONLY) {
+	if (L->Flags & CONTAINER_READONLY) {
 		memcpy(li->ElementBuffer,L->First->Data,L->ElementSize);
 		return li->ElementBuffer;
 	}
