@@ -18,11 +18,6 @@ struct _ValArray {
     ElementType *contents;        /* The contents of the collection */
 };
 
-struct _Mask {
-	size_t length;
-	char data[MINIMUM_ARRAY_INDEX];
-};
-
 static ElementType GetElement(const ValArray *AL,size_t idx);
 static int Finalize(ValArray *AL);
 
@@ -186,14 +181,20 @@ static int AddRange(ValArray * AL,size_t n,const ElementType *data)
 		AL->contents = newcontents;
 	}
 	if (sliceIncrement == 1) {
-		memcpy(AL->contents+AL->count,data,n*sizeof(ElementType));
+		if (data)
+			memcpy(AL->contents+AL->count,data,n*sizeof(ElementType));
+		else
+			memset(AL->contents+AL->count,0,n*sizeof(ElementType));
 		AL->count += n;
 	}
 	else {
 		size_t start = AL->count;
 		memset(AL->contents+AL->count,0,sizeof(ElementType)*n*sliceIncrement);
 		for (i=0; i<n;i++) {
-			AL->contents[start] = *data++;
+			if (data)
+				AL->contents[start] = *data++;
+			else
+				AL->contents[start] = 0;
 			start += sliceIncrement;
 		}
 	}
@@ -1453,7 +1454,7 @@ static Mask *CompareEqual(const ValArray *left,const ValArray *right,Mask *bytea
         }
 	siz = left_len;
         if (bytearray == NULL)
-		bytearray = left->Allocator->malloc(left_len+sizeof(Mask));
+		bytearray = CurrentMemoryManager->malloc(left_len+sizeof(Mask));
         if (bytearray == NULL) {
 		NoMemory("Compare");
 		return NULL;
@@ -1979,6 +1980,26 @@ static int Fprintf(ValArray *src,FILE *out,const char *fmt)
 	return result;
 }
 
+int Select(ValArray *src,Mask *m)
+{
+	size_t i,offset=0;
+	if (m->length != src->count) {
+		return ErrorIncompatible("Select");
+	}
+	for (i=0; i<m->length;i++) {
+		if (m->data[i]) {
+			if (i != offset)
+				src->contents[offset] = src->contents[i];
+			offset++;
+		}
+	}
+	if (offset < i) {
+		memset(src->contents+offset,0,sizeof(ElementType)*(i-offset));
+	}
+	src->count = offset;
+	return 1;
+}
+
 ValArrayInterface iValArrayInterface = {
 	Size,
 	GetFlags, 
@@ -2077,4 +2098,5 @@ ValArrayInterface iValArrayInterface = {
 	Accumulate,
 	Product,
 	Fprintf,
+	Select,
 };
