@@ -14,7 +14,7 @@ SRC=	vector.c bloom.c containererror.c dlist.c qsortex.c heap.c \
 	containers.h redblacktree.c fgetline.c generic.c queue.c buffer.c observer.c \
 	valarraydouble.c valarraysize_t.c valarrayint.c valarraylongdouble.c valarraygen.c \
 	valarrayshort.c valarrayfloat.c valarrayuint.c valarraylonglong.c \
-	valarrayulonglong.c sequential.c
+	valarrayulonglong.c sequential.c iMask.c
 DOCS=
 MAKEFILES=Makefile Makefile.lcc Makefile.msvc
 
@@ -23,7 +23,8 @@ OBJS=vector.o containererror.o dlist.o qsortex.o bitstrings.o generic.o \
     bloom.o fgetline.o pool.o pooldebug.o redblacktree.o scapegoat.o queue.o \
     buffer.o observer.o valarraydouble.o valarrayint.o valarraysize_t.o \
     valarraylongdouble.o valarrayshort.o valarrayfloat.o valarrayuint.o \
-    valarraylonglong.o valarrayulonglong.o memorymanager.o sequential.o
+    valarraylonglong.o valarrayulonglong.o memorymanager.o sequential.o \
+    iMask.o
 
 dotest:	libccl.a test.o
 	gcc -o dotest $(CFLAGS) test.c libccl.a -lm
@@ -61,3 +62,4 @@ generic.o:	generic.c containers.h
 heap.o:	heap.c containers.h
 memorymanager.o:	memorymanager.c containers.h
 sequential.o:	sequential.c containers.h
+iMask.o:	iMask.c containers.h
