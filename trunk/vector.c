@@ -22,16 +22,7 @@ static const guid VectorGuid = {0xba53f11e, 0x5879, 0x49e5,
 {0x9e,0x3a,0xea,0x7d,0xd8,0xcb,0xd9,0xd6}
 };
 
-static int ErrorReadOnly(const Vector *AL,char *fnName)
-{
-	char buf[512];
-
-	sprintf(buf,"iVector.%s",fnName);
-	AL->RaiseError(buf,CONTAINER_ERROR_READONLY);
-	return CONTAINER_ERROR_READONLY;
-}
-
-static int NullPtrError(char *fnName)
+static int NullPtrError(const char *fnName)
 {
 	char buf[512];
 
@@ -40,6 +31,29 @@ static int NullPtrError(char *fnName)
 	return CONTAINER_ERROR_BADARG;
 }
 
+static int doerror(const Vector *AL,const char *fnName,int code)
+{
+        char buf[512];
+
+        (void)snprintf(buf,sizeof(buf),"iVector.%s",fnName);
+        AL->RaiseError(buf,code);
+        return code;
+}
+
+static int ErrorReadOnly(const Vector *AL,const char *fnName)
+{
+	return doerror(AL,fnName,CONTAINER_ERROR_READONLY);
+}
+
+static int ErrorIncompatible(const Vector *AL,const char *fnName)
+{
+    return doerror(AL,fnName,CONTAINER_ERROR_INCOMPATIBLE);
+}
+
+static int NoMemory(const Vector *AL,const char *fnName)
+{
+    return doerror(AL,fnName,CONTAINER_ERROR_NOMEMORY);
+}
 
 static Vector *Create(size_t elementsize,size_t startsize);
 
@@ -49,12 +63,12 @@ static void *DuplicateElement(Vector *AL,void *str,size_t size,const char *funct
 	if (size == 0)
 		return str;
 	if (str == NULL) {
-		iError.RaiseError(functionName,CONTAINER_ERROR_BADARG);
+		NullPtrError((char *)functionName);
 		return NULL;
 	}
 	result = MALLOC(AL,size);
 	if (result == NULL) {
-		iError.RaiseError(functionName,CONTAINER_ERROR_NOMEMORY);
+		NoMemory(AL,(char *)functionName);
 	}
 	else memcpy(result,str,size);
 	return result;
@@ -110,7 +124,7 @@ static int Resize(Vector *AL)
 		oldcontents = AL->contents;
 		AL->contents = AL->Allocator->realloc(AL->contents,newcapacity*AL->ElementSize);
 		if (AL->contents == NULL) {
-			AL->RaiseError("iVector.Resize",CONTAINER_ERROR_NOMEMORY);
+			NoMemory(AL,"Resize");
 			AL->contents = oldcontents;
 			r = CONTAINER_ERROR_NOMEMORY;
 		}
@@ -132,9 +146,8 @@ static int ResizeTo(Vector *AL,size_t newcapacity)
 	oldcontents = AL->contents;
 	AL->contents = AL->Allocator->realloc(AL->contents,newcapacity*AL->ElementSize);
 	if (AL->contents == NULL) {
-		AL->RaiseError("iVector.ResizeTo",CONTAINER_ERROR_NOMEMORY);
 		AL->contents = oldcontents;
-		return CONTAINER_ERROR_NOMEMORY;
+		return NoMemory(AL,"ResizeTo");
 	}
 	AL->capacity = newcapacity;
 	AL->timestamp++;
@@ -210,8 +223,7 @@ static int AddRange(Vector * AL,size_t n,void *data)
 		newcapacity += AL->count/4;
 		newcontents = AL->Allocator->realloc(AL->contents,newcapacity*AL->ElementSize);
 		if (newcontents == NULL) {
-			AL->RaiseError("iVector.AddRange",CONTAINER_ERROR_NOMEMORY);
-			return CONTAINER_ERROR_NOMEMORY;
+			return NoMemory(AL,"AddRange");
 		}
 		AL->capacity = newcapacity;
 		AL->contents = newcontents;
@@ -246,7 +258,7 @@ static Vector *GetRange(const Vector *AL, size_t start,size_t end)
 	top = end-start;
 	result = AL->VTable->Create(AL->ElementSize,top);
 	if (result == NULL) {
-		iError.RaiseError("iVector.GetRange",CONTAINER_ERROR_NOMEMORY);
+		NoMemory(AL,"GetRange");
 		return NULL;
 	}
 	p = AL->contents;
@@ -348,7 +360,7 @@ static Vector *Copy(Vector *AL)
 
 	result = AL->Allocator->malloc(sizeof(*result));
 	if (result == NULL) {
-		iError.RaiseError("iVector.Copy",CONTAINER_ERROR_NOMEMORY);
+		NoMemory(AL,"Copy");
 		return NULL;
 	}
 	memset(result,0,sizeof(*result));
@@ -358,7 +370,7 @@ static Vector *Copy(Vector *AL)
 	es = startsize * AL->ElementSize;
 	result->contents = AL->Allocator->malloc(es);
 	if (result->contents == NULL) {
-		AL->RaiseError("iVector.Copy",CONTAINER_ERROR_NOMEMORY);
+		NoMemory(AL,"Copy");
 		AL->Allocator->free(result);
 		return NULL;
 	}
@@ -415,7 +427,7 @@ static void **CopyTo(Vector *AL)
 	}
 	result = AL->Allocator->malloc((1+AL->count)*sizeof(void *));
 	if (result == NULL) {
-		AL->RaiseError("iVector.CopyTo",CONTAINER_ERROR_NOMEMORY);
+		NoMemory(AL,"CopyTo");
 		return NULL;
 	}
 	p = AL->contents;
@@ -559,8 +571,7 @@ static int InsertIn(Vector *AL, size_t idx, Vector *newData)
 		return CONTAINER_ERROR_INDEX;
 	}
 	if (AL->ElementSize != newData->ElementSize) {
-		AL->RaiseError("iVector.InsertIn",CONTAINER_ERROR_INCOMPATIBLE);
-		return CONTAINER_ERROR_INCOMPATIBLE;
+		return ErrorIncompatible(AL,"InsertIn");
 	}
 	newCount = AL->count + newData->count;
 	if (newCount >= (AL->capacity-1)) {
@@ -755,8 +766,7 @@ static int SetCapacity(Vector *AL,size_t newCapacity)
 	}
 	newContents = AL->Allocator->malloc(newCapacity*AL->ElementSize);
 	if (newContents == NULL) {
-		AL->RaiseError("iVector.SetCapacity",CONTAINER_ERROR_NOMEMORY);
-		return CONTAINER_ERROR_NOMEMORY;
+		return NoMemory(AL,"SetCapacity");
 	}
 	memset(AL->contents,0,AL->ElementSize*newCapacity);
 	AL->capacity = newCapacity;
@@ -778,18 +788,13 @@ static int Apply(Vector *AL,int (*Applyfn)(void *,void *),void *arg)
 	size_t i;
 	unsigned char *p,*pElem=NULL;
 
-	if (AL == NULL) {
-			return NullPtrError("Apply");
-	}
-	if (Applyfn == NULL) {
-		AL->RaiseError("iVector.Apply",CONTAINER_ERROR_BADARG);
-		return CONTAINER_ERROR_BADARG;
+	if (AL == NULL || Applyfn == NULL) {
+		return NullPtrError("Apply");
 	}
 	if (AL->Flags&CONTAINER_READONLY) {
 		pElem = AL->Allocator->malloc(AL->ElementSize);
 		if (pElem == NULL) {
-			AL->RaiseError("iVector.Apply",CONTAINER_ERROR_NOMEMORY);
-			return CONTAINER_ERROR_NOMEMORY;
+			return NoMemory(AL,"Apply");
 		}
 	}
 	p=AL->contents;
@@ -857,11 +862,11 @@ static Vector *IndexIn(Vector *SC,Vector *AL)
 		return NULL;
 	}
 	if (AL == NULL) {
-		SC->RaiseError("iVector.IndexIn",CONTAINER_ERROR_BADARG);
+		NullPtrError("IndexIn");
 		return NULL;
 	}
 	if (iVector.GetElementSize(AL) != sizeof(size_t)) {
-		SC->RaiseError("iVector.IndexIn",CONTAINER_ERROR_INCOMPATIBLE);
+		ErrorIncompatible(SC,"IndexIn");
 		return NULL;
 	}
 	top = iVector.Size(AL);
@@ -954,8 +959,7 @@ static int Append(Vector *AL1, Vector *AL2)
 		return ErrorReadOnly(AL1,"Append");
 	}
 	if (AL2->ElementSize != AL1->ElementSize) {
-		AL1->RaiseError("iVector.Append",CONTAINER_ERROR_INCOMPATIBLE);
-		return CONTAINER_ERROR_INCOMPATIBLE;
+		return ErrorIncompatible(AL1,"Append");
 	}
 	newCount = AL1->count + AL2->count;
 	if (newCount >= (AL1->capacity-1)) {
@@ -995,8 +999,7 @@ static int Reverse(Vector *AL)
 	q = p + s*(AL->count-1);
 	t = malloc(s);
 	if (t == NULL) {
-		AL->RaiseError("iVector.Reverse",CONTAINER_ERROR_NOMEMORY);
-		return CONTAINER_ERROR_NOMEMORY;
+		return NoMemory(AL,"Reverse");
 	}
 	while ( p < q ) {
 		memcpy(t, p, s);
@@ -1150,7 +1153,7 @@ static Iterator *newIterator(Vector *AL)
 	}
 	result = AL->Allocator->malloc(sizeof(struct VectorIterator)+AL->ElementSize);
 	if (result == NULL) {
-		AL->RaiseError("iVector.newIterator",CONTAINER_ERROR_NOMEMORY);
+		NoMemory(AL,"newIterator");
 		return NULL;
 	}
 	result->it.GetNext = GetNext;
@@ -1427,6 +1430,64 @@ static DestructorFunction SetDestructor(Vector *cb,DestructorFunction fn)
 	return oldfn;
 }
 
+int Select(Vector *src,Mask *m)
+{
+    size_t i,offset=0,siz;
+
+    if (src == NULL || m == NULL) {
+        return NullPtrError("Select");
+    }
+    if (m->length != src->count) {
+        return ErrorIncompatible(src,"Select");
+    }
+    siz = src->ElementSize;
+    for (i=0; i<m->length;i++) {
+        if (m->data[i]) {
+            if (i != offset)
+               memcpy(src->contents+offset*siz , 
+                      src->contents+i*siz,siz);
+            offset++;
+        }
+    }
+    if (offset < i) {
+        memset(src->contents+offset*siz,0,
+               siz*(i-offset));
+    }
+    src->count = offset;
+    return 1;
+}
+
+Vector * SelectCopy(Vector *src,Mask *m)
+{
+    size_t i,offset=0,siz;
+    Vector *result;
+
+    if (src == NULL || m == NULL) {
+        NullPtrError("SelectCopy");
+        return NULL;
+    }
+    if (m->length != src->count) {
+        ErrorIncompatible(src,"SelectCopy");
+        return NULL;
+    }
+    siz = src->ElementSize;
+    result = Create(siz,src->count);
+    if (result == NULL) {
+        NoMemory(src,"SelectCopy");
+        return NULL;
+    }
+    for (i=0; i<m->length;i++) {
+        if (m->data[i]) {
+            if (i != offset)
+               memcpy(result->contents+offset*siz ,
+                      src->contents+i*siz,siz);
+            offset++;
+        }
+    }
+    result->count = offset;
+    return result;
+}
+
 
 VectorInterface iVector = {
 	Size,
@@ -1476,4 +1537,5 @@ VectorInterface iVector = {
 	GetAllocator,
 	SetDestructor,
 	SearchWithKey,
+	Select,
 };
