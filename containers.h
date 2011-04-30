@@ -91,7 +91,24 @@ ContainerMemoryManager *SetCurrentMemoryManager(ContainerMemoryManager *in);
 extern ContainerMemoryManager iDebugMalloc;
 #define MALLOC(container,siz) 	(container->Allocator->malloc(siz)) 
 
+/****************************************************************************
+ *                   Masks interface                                        *
+ ****************************************************************************/
+typedef struct _Mask Mask;
+typedef struct tagMaskInterface {
+    int (*And)(Mask *src1,Mask *src2);
+    int (*Or)(Mask *src1,Mask *src2);
+    int (*Not)(Mask *src);
+    Mask *(*CreateFromMask)(size_t n,char *data);
+    Mask *(*Create)(size_t n);
+    Mask *(*Copy)(Mask *src);
+    size_t (*Size)(Mask *);
+    int (*Set)(Mask *m,size_t idx,int val);
+    int (*Clear)(Mask *m);
+    int (*Finalize)(Mask *m);
+} MaskInterface;
 
+extern MaskInterface iMask;
 /************************************************************************** */
 /*                         Iterator objects                                 */
 /************************************************************************** */
@@ -173,9 +190,7 @@ extern PoolAllocatorDebugInterface iPoolDebug;
 /*                            Generic containers                            */
 /*                                                                          */
 /************************************************************************** */
-typedef struct GenericContainer {
-	struct tagGenericContainerInterface *vTable;
-} GenericContainer;
+typedef struct _GenericContainer GenericContainer;
 typedef struct tagGenericContainerInterface {
     size_t (*Size)(GenericContainer *Gen);
     unsigned (*GetFlags)(GenericContainer *Gen);
@@ -664,6 +679,9 @@ typedef struct tagVector {
 	ContainerMemoryManager *(*GetAllocator)(Vector *AL);
 	DestructorFunction (*SetDestructor)(Vector *v,DestructorFunction fn);
 	int (*SearchWithKey)(Vector *vec,size_t startByte,size_t sizeKey,size_t startIndex,void *item,size_t *result);
+	int (*Select)(Vector *src,Mask *m);
+	Vector *(*SelectCopy)(Vector *src,Mask *m);
+
 } VectorInterface;
 
 extern VectorInterface iVector;
