@@ -17,6 +17,7 @@ OBJS=\
 	generic.obj \
 	hashtable.obj \
 	heap.obj \
+	iMask.obj \
 	list.obj \
 	malloc_debug.obj \
 	pool.obj \
@@ -290,6 +291,9 @@ TEST_C=\
 
 intarray.obj:	containers.h intarray.c
 	$(CC) $(CFLAGS) $(SRCDIR)\intarray.c
+
+iMask.obj:	iMask.c containers.h
+	$(CC) $(CFLAGS) iMask.c
 
 test.obj: $(TEST_C) $(SRCDIR)\test.c
 	$(CC) -c $(CFLAGS) $(SRCDIR)\test.c

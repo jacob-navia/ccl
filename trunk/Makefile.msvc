@@ -15,6 +15,7 @@ OBJS=\
 	generic.obj \
 	hashtable.obj \
 	heap.obj \
+	iMask.obj \
 	list.obj \
 	malloc_debug.obj \
 	pool.obj \
@@ -404,6 +405,8 @@ buffer.obj:	buffer.c containers.h
 	$(CC) -c $(CFLAGS) buffer.c
 observer.obj:	observer.c containers.h
 	$(CC) $(CFLAGS) observer.c
+iMask.obj:	iMask.c containers.h
+	$(CC) $(CFLAGS) iMask.c
 
 # Build test.c
 TEST_C=\
@@ -421,6 +424,7 @@ TEST_C=\
 
 tlist.obj: $(TEST_C) $(SRCDIR)\tlist.c
 	$(CC) -c $(CFLAGS) $(SRCDIR)\tlist.c
+
 
 link:
 	$(LINKER)  /out:test.exe $(OBJS) $(LIBS)
