@@ -1080,7 +1080,7 @@ static int CopyElement(Dlist *l,size_t position,void *outBuffer)
 }
 
 
-static bool dlcompar (const void *elem1, const void *elem2,CompareInfo *ExtraArgs)
+static int dlcompar (const void *elem1, const void *elem2,CompareInfo *ExtraArgs)
 {
 	dlist_element *Elem1 = *(dlist_element **)elem1;
 	dlist_element *Elem2 = *(dlist_element **)elem2;
