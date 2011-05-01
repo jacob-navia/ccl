@@ -2000,6 +2000,32 @@ int Select(ValArray *src,Mask *m)
 	return 1;
 }
 
+ValArray  *SelectCopy(ValArray *src,Mask *m)
+{
+        size_t i,offset=0;
+	ValArray *result;
+
+        if (m->length != src->count) {
+                ErrorIncompatible("SelectCopy");
+		return NULL;
+        }
+	result = Create(src->count);
+	if (result == NULL) {
+		NoMemory("SelectCopy");
+		return NULL;
+	}
+        for (i=0; i<m->length;i++) {
+                if (m->data[i]) {
+                        if (i != offset)
+                                result->contents[offset] = src->contents[i];
+                        offset++;
+                }
+        }
+        result->count = offset;
+        return result;
+}
+
+
 ValArrayInterface iValArrayInterface = {
 	Size,
 	GetFlags, 
