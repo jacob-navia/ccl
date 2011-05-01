@@ -421,11 +421,12 @@ static int Finalize(List *l)
     unsigned Flags=0;
 
     if (l) Flags = l->Flags;
+	else return CONTAINER_ERROR_BADARG;
     t = Clear(l);
-    if (Flags & CONTAINER_HAS_OBSERVER)
-        iObserver.Notify(l,CCL_FINALIZE,NULL,NULL);
     if (t < 0)
         return t;
+    if (Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(l,CCL_FINALIZE,NULL,NULL);
 	l->Allocator->free(l);
     return 1;
 }

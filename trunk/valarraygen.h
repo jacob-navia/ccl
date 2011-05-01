@@ -108,5 +108,6 @@ typedef struct tagValArray {
     ElementType (*Accumulate)(ValArray *src);
     ElementType (*Product)(ValArray *src);
     int (*Fprintf)(ValArray *src,FILE *out,const char *fmt);
-    int (*Select)(ValArray *src,Mask *m);
+    int (*Select)(ValArray *src,const Mask *m);
+    ValArray *(*SelectCopy)(const ValArray *src,const Mask *m);
 } ValArrayInterface;
