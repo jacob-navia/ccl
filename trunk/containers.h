@@ -25,7 +25,7 @@
 
 #ifdef NO_C99
 /* No stdbool */
-typedef int bool;
+typedef enum { FALSE,TRUE}  bool;
 /* No flexible arrays */
 #define MINIMUM_ARRAY_INDEX	1
 #else

@@ -36,7 +36,7 @@ static int Insert(RedBlackTree * ST, const void *Key, const void *Data, void *Ex
 static int Clear(RedBlackTree *ST);
 static int Remove(RedBlackTree *ST, const void *,void *);
 static int Finalize(RedBlackTree *ST);
-static bool Apply(RedBlackTree *ST,int (*Applyfn)(const void *data,void *arg),void *arg);
+static int Apply(RedBlackTree *ST,int (*Applyfn)(const void *data,void *arg),void *arg);
 static void *Find(RedBlackTree *ST,void *key_data,void *ExtraArgs);
 static ErrorFunction SetErrorFunction(RedBlackTree *ST, ErrorFunction fn);
 static CompareFunction SetCompareFunction(RedBlackTree *ST,CompareFunction fn);
@@ -664,7 +664,7 @@ static int Remove(RedBlackTree *Tree, const void *delete_key, void *ExtraArgs)
 static Iterator *newIterator(RedBlackTree *p) { return NULL;}
 static int deleteIterator(Iterator * it) {return 1;}
 
-static bool Apply(RedBlackTree *ST,int (*Applyfn)(const void *data,void *arg),void *arg)
+static int Apply(RedBlackTree *ST,int (*Applyfn)(const void *data,void *arg),void *arg)
 { return 0; }
 static int Finalize(RedBlackTree *t) { return 0; }
 static int Clear(RedBlackTree *t) { return 0; }

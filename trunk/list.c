@@ -1071,7 +1071,7 @@ static int IndexOf(List *l,void *ElementToFind,void *ExtraArgs,size_t *result)
     return CONTAINER_ERROR_NOTFOUND;
 }
 
-static bool lcompar (const void *elem1, const void *elem2,CompareInfo *ExtraArgs)
+static int lcompar (const void *elem1, const void *elem2,CompareInfo *ExtraArgs)
 {
     list_element *Elem1 = *(list_element **)elem1;
     list_element *Elem2 = *(list_element **)elem2;
