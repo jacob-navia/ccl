@@ -9,6 +9,7 @@ Mask *CreateFromMask(size_t n,char *data)
 		return NULL;
 	}
 	memcpy(result->data,data,n);
+	result->Allocator = CurrentMemoryManager;
 	result->length = n;
 	return result;
 }
@@ -22,6 +23,7 @@ Mask *Copy(Mask *src)
 		return NULL;
 	}
 	memcpy(result,src,src->length+sizeof(Mask));
+	result->Allocator = src->Allocator;
 	return result;
 }
 
@@ -32,6 +34,7 @@ Mask *Create(size_t n)
 		iError.RaiseError("iMask.Copy",CONTAINER_ERROR_NOMEMORY);
 		return NULL;
 	}
+	result->Allocator = CurrentMemoryManager;
 	memset(result->data,0,n);
 	result->length = n;
 	return result;
