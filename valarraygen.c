@@ -1547,6 +1547,7 @@ static char *FCompare(const ValArray *left,const ValArray *right, char *bytearra
         size_t left_len = left->count,left_incr = 1,left_start=0;
         size_t right_len = right->count,right_incr=1,right_start = 0;
         size_t siz,i,j,k;
+        ElementType delta,difference,x1,x2;
 
         if (left->Slice) {
                 left_start = left->Slice->start;
@@ -1574,11 +1575,10 @@ static char *FCompare(const ValArray *left,const ValArray *right, char *bytearra
         i = left_start;
         for (k=0;k<left_len;k++) {
 		int exponent;
-		ElementType delta,difference,x1,x2;
 		x1 = left->contents[i];
 		x2 = right->contents[j];
 		frexp(fabs(x1) > fabs(x2) ? x1 : x2,&exponent);
-		delta = ldexp(tolerance,exponent);
+		delta = (ElementType)ldexp(tolerance,exponent);
 		difference = x1-x2;
 		if (difference > delta)
 			bytearray[k] = 1; /* x1 > x2 */
@@ -1980,7 +1980,7 @@ static int Fprintf(ValArray *src,FILE *out,const char *fmt)
 	return result;
 }
 
-int Select(ValArray *src,Mask *m)
+static int Select(ValArray *src,const Mask *m)
 {
 	size_t i,offset=0;
 	if (m->length != src->count) {
@@ -2000,7 +2000,7 @@ int Select(ValArray *src,Mask *m)
 	return 1;
 }
 
-ValArray  *SelectCopy(ValArray *src,Mask *m)
+static ValArray  *SelectCopy(const ValArray *src,const Mask *m)
 {
         size_t i,offset=0;
 	ValArray *result;
@@ -2125,4 +2125,5 @@ ValArrayInterface iValArrayInterface = {
 	Product,
 	Fprintf,
 	Select,
+	SelectCopy,
 };

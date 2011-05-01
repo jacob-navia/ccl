@@ -1430,9 +1430,10 @@ static DestructorFunction SetDestructor(Vector *cb,DestructorFunction fn)
 	return oldfn;
 }
 
-int Select(Vector *src,Mask *m)
+static int Select(Vector *src,Mask *m)
 {
     size_t i,offset=0,siz;
+	char *p;
 
     if (src == NULL || m == NULL) {
         return NullPtrError("Select");
@@ -1441,26 +1442,28 @@ int Select(Vector *src,Mask *m)
         return ErrorIncompatible(src,"Select");
     }
     siz = src->ElementSize;
+	p = src->contents;
     for (i=0; i<m->length;i++) {
         if (m->data[i]) {
             if (i != offset)
-               memcpy(src->contents+offset*siz , 
-                      src->contents+i*siz,siz);
+               memcpy(p+offset*siz , 
+                      p+i*siz,siz);
             offset++;
         }
     }
     if (offset < i) {
-        memset(src->contents+offset*siz,0,
+        memset(p+offset*siz,0,
                siz*(i-offset));
     }
     src->count = offset;
     return 1;
 }
 
-Vector * SelectCopy(Vector *src,Mask *m)
+static Vector * SelectCopy(Vector *src,Mask *m)
 {
     size_t i,offset=0,siz;
     Vector *result;
+	char *dst,*s;
 
     if (src == NULL || m == NULL) {
         NullPtrError("SelectCopy");
@@ -1472,6 +1475,8 @@ Vector * SelectCopy(Vector *src,Mask *m)
     }
     siz = src->ElementSize;
     result = Create(siz,src->count);
+	dst = result->contents;
+	s = src->contents;
     if (result == NULL) {
         NoMemory(src,"SelectCopy");
         return NULL;
@@ -1479,8 +1484,8 @@ Vector * SelectCopy(Vector *src,Mask *m)
     for (i=0; i<m->length;i++) {
         if (m->data[i]) {
             if (i != offset)
-               memcpy(result->contents+offset*siz ,
-                      src->contents+i*siz,siz);
+               memcpy(dst+offset*siz ,
+                      s+i*siz,siz);
             offset++;
         }
     }
@@ -1538,4 +1543,5 @@ VectorInterface iVector = {
 	SetDestructor,
 	SearchWithKey,
 	Select,
+	SelectCopy,
 };
