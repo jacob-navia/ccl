@@ -21,7 +21,7 @@ static int initVector(void)
 	return 1;
 }
 
-static int  OAdd(Observer *ob)
+static int  AddObject(Observer *ob)
 {
 	size_t i;
 	Observer *tmp;
@@ -67,7 +67,7 @@ static int Subscribe(void *ObservedObject, ObserverFunction callback, unsigned f
 	int r;
 	r = InitObserver(&result,ObservedObject,callback,flags);
 	if (r > 0)
-		r = OAdd(&result);
+		r = AddObject(&result);
 	return r;
 }
 
@@ -77,10 +77,7 @@ static int Notify(void *ObservedObject,unsigned operation,void *ExtraInfo1,void 
 	int count=0;
 	size_t idx = 0;
 	void *ExtraInfo[2];
-	Observer obs;
 
-	memset(&obs,0,sizeof(obs));
-	obs.ObservedObject = ObservedObject;
 	ExtraInfo[0] = ExtraInfo1;
 	ExtraInfo[1] = ExtraInfo2;
 	for (idx=0; idx < vsize;idx++) {
