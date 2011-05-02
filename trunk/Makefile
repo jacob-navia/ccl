@@ -4,9 +4,9 @@
 # 
 #---------------------------------------------------
 # Optimized CFLAGS setting
-#CFLAGS=-O2 -Wno-pointer-sign -DUNIX -Wall
+CFLAGS=-O2 -Wno-pointer-sign -DUNIX -Wall
 # Debug CFLAGS setting
-CFLAGS=-g -Wno-pointer-sign -DUNIX -Wall 
+#CFLAGS=-g -Wno-pointer-sign -DUNIX -Wall 
 SRC=	vector.c bloom.c containererror.c dlist.c qsortex.c heap.c \
 	deque.c hashtable.c malloc_debug.c containers.h \
 	stdint.h pool.c pooldebug.c redblacktree.c scapegoat.c smallpool.c ccl_internal.h \
