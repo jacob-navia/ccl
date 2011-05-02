@@ -270,10 +270,10 @@ valarrayulonglong.obj:     valarrayulonglong.c valarraygen.c valarraygen.h valar
 	$(CC) -c $(CFLAGS) $(SRCDIR)\valarrayulonglong.c
 
 sequential.obj:	sequential.c containers.h
-	$(CC)$(CFLAGS) $(SRCDIR)\sequential.c
+	$(CC) $(CFLAGS) $(SRCDIR)\sequential.c
 
 memorymanager.obj:	memorymanager.c containers.h
-	$(CC) $(CFLAGS) $SRCDIR)\memorymanager.c
+	$(CC) $(CFLAGS) $(SRCDIR)\memorymanager.c
 
 # Build test.c
 TEST_C=\
