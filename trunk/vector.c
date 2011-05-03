@@ -3,20 +3,6 @@
 #ifndef DEFAULT_START_SIZE
 #define DEFAULT_START_SIZE 20
 #endif
-/* Definition of the vector type */
-struct _Vector {
-    VectorInterface *VTable; /* The table of functions */
-    size_t count;                  /* number of elements in the array */
-    unsigned int Flags;            /* Read-only or other flags */
-    size_t ElementSize;	           /* Size of the elements stored in this array. */
-    void *contents;                /* The contents of the collection */
-    size_t capacity;               /* allocated space in the contents vector */
-    unsigned timestamp;            /* Incremented at each change */
-    CompareFunction CompareFn;     /* Element comparison function */
-    ErrorFunction RaiseError;      /* Error function */
-    ContainerMemoryManager *Allocator;
-    DestructorFunction DestructorFn;
-} ;
 
 static const guid VectorGuid = {0xba53f11e, 0x5879, 0x49e5,
 {0x9e,0x3a,0xea,0x7d,0xd8,0xcb,0xd9,0xd6}
@@ -66,7 +52,7 @@ static void *DuplicateElement(Vector *AL,void *str,size_t size,const char *funct
 		NullPtrError((char *)functionName);
 		return NULL;
 	}
-	result = MALLOC(AL,size);
+	result = AL->Allocator->malloc(size);
 	if (result == NULL) {
 		NoMemory(AL,(char *)functionName);
 	}

@@ -110,7 +110,7 @@ static size_t GetCount(BinarySearchTree *l)
 
 static BinarySearchTreeNode *newTreeNode(BinarySearchTree *tree,const void *data)
 {
-	BinarySearchTreeNode *new_node = MALLOC(tree,sizeof(BinarySearchTreeNode)+tree->ElementSize);
+	BinarySearchTreeNode *new_node = tree->Allocator->malloc(sizeof(BinarySearchTreeNode)+tree->ElementSize);
 	if (new_node) {
 		memset(new_node,0,sizeof(*new_node));
 		memcpy(new_node->data, data, tree->ElementSize);

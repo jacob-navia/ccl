@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "containers.h"
+#include "ccl_internal.h"
 /*  The tree nodes. */
 typedef struct tagRedBlackTreeNode {
 	char                        color;
@@ -96,7 +97,7 @@ static RedBlackTreeNode *get_node(RedBlackTree *Tree)
 	}
 	else {
 	  if( Tree->CurrentBlock == NULL || Tree->Available == 0) {
-		  Tree->CurrentBlock = MALLOC(Tree, BLOCKSIZE * sizeof(RedBlackTreeNode) );
+		  Tree->CurrentBlock = Tree->Allocator->malloc(BLOCKSIZE * sizeof(RedBlackTreeNode) );
         Tree->Available = BLOCKSIZE;
      }
      tmp = Tree->CurrentBlock++;
@@ -163,7 +164,7 @@ static void *Find(RedBlackTree *Tree, void *query_key, void *ExtraArgs)
 
 static void *CopyObject(RedBlackTree *Tree,const void *newObject)
 {
-	void *tmp = MALLOC(Tree,Tree->ElementSize);
+	void *tmp = Tree->Allocator->malloc(Tree->ElementSize);
 	if (tmp == NULL) {
 		Tree->RaiseError("Red/Black tree: Add",CONTAINER_ERROR_NOMEMORY);
 		return NULL;

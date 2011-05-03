@@ -665,7 +665,7 @@ static void *GetFirst(Iterator *itrav)
 
 static Iterator *newIterator(TreeMap *tree)
 {
-    struct TreeMapIterator *result = MALLOC(tree,sizeof(struct TreeMapIterator));
+    struct TreeMapIterator *result = tree->Allocator->malloc(sizeof(struct TreeMapIterator));
     if (result == NULL)
     	return NULL;
     memset(result,0,sizeof(struct TreeMapIterator));
