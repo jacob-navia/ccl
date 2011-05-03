@@ -7,18 +7,6 @@
 #include "containers.h"
 #include "ccl_internal.h"
 
-/* Definition of the String Collection type */
-struct _BitString {
-    BitStringInterface *VTable; /* The table of functions */
-    size_t count;                  /* number of elements in the array */
-    BIT_TYPE *contents;               /* The contents of the collection */
-    size_t capacity;                /* allocated space in the contents vector */
-    unsigned long timestamp;
-    unsigned int Flags;             /* Read-only or other flags */
-	ContainerMemoryManager *Allocator;
-} ;
-
-
 #ifndef CHUNK_SIZE
 #define CHUNK_SIZE 256
 #endif

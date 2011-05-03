@@ -58,7 +58,7 @@ static dlist_element *new_dlink(Dlist *l,void *data,const char *fname)
 	dlist_element *result;
 
 	if (l->Heap == NULL) {
-		result = MALLOC(l,sizeof(*result)+l->ElementSize);
+		result = l->Allocator->malloc(sizeof(*result)+l->ElementSize);
 	}
 	else result = iHeap.newObject(l->Heap);
 	if (result == NULL) {
@@ -1106,7 +1106,7 @@ static int Sort(Dlist *l)
 	}
 	if (l->count < 2)
 		return 1;
-	tab = MALLOC(l,l->count * sizeof(dlist_element *));
+	tab = l->Allocator->malloc(l->count * sizeof(dlist_element *));
 	if (tab == NULL) {
 		l->RaiseError("iDlist.Sort",CONTAINER_ERROR_NOMEMORY);
 		return 0;

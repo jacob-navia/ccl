@@ -3,7 +3,7 @@ SRCDIR=.
 CFLAGS=-I. -O -A  -p6 -ansic  -g2
 CC=lcc.exe
 LINKER=lcclnk.exe
-HEADERS=containers.h
+HEADERS=containers.h ccl_internal.h valarray.h valarraygen.h
 OBJS=\
 	buffer.obj \
 	vector.obj \
@@ -90,212 +90,93 @@ heap.obj: $(HEADERS) $(SRCDIR)\heap.c
 	$(CC) -c $(CFLAGS) $(SRCDIR)\heap.c
 
 # Build list.c
-LIST_C=\
-	$(SRCDIR)\containers.h\
-	C:\lcc\include\string.h\
-	C:\lcc\include\stddef.h\
-	C:\lcc\include\stdlib.h\
-	C:\lcc\include\stddef.h\
-	C:\lcc\include\stdio.h\
-	C:\lcc\include\safelib.h\
-	C:\lcc\include\stdint.h\
-	C:\lcc\include\limits.h\
+LIST_C= $(HEADERS)
 
 list.obj: $(LIST_C) $(SRCDIR)\list.c
 	$(CC) -c $(CFLAGS) $(SRCDIR)\list.c
 
 # Build malloc_debug.c
-MALLOC_DEBUG_C=\
-	$(SRCDIR)\containers.h\
-	C:\lcc\include\string.h\
-	C:\lcc\include\stddef.h\
-	C:\lcc\include\stdlib.h\
-	C:\lcc\include\stddef.h\
-	C:\lcc\include\stdio.h\
-	C:\lcc\include\safelib.h\
-	C:\lcc\include\stdint.h\
-	C:\lcc\include\limits.h\
+MALLOC_DEBUG_C= $(HEADERS)
 
-malloc_debug.obj: $(MALLOC_DEBUG_C) $(SRCDIR)\malloc_debug.c
+malloc_debug.obj: $(SRCDIR)\malloc_debug.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\malloc_debug.c
 
 # Build pool.c
-POOL_C=\
-	C:\lcc\include\inttypes.h\
-	C:\lcc\include\stdint.h\
-	$(SRCDIR)\containers.h\
-	C:\lcc\include\string.h\
-	C:\lcc\include\stddef.h\
-	C:\lcc\include\stdlib.h\
-	C:\lcc\include\stddef.h\
-	C:\lcc\include\stdio.h\
-	C:\lcc\include\safelib.h\
-	C:\lcc\include\stdint.h\
-	C:\lcc\include\limits.h\
 
-pool.obj: $(POOL_C) $(SRCDIR)\pool.c
+pool.obj: $(SRCDIR)\pool.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\pool.c
 
 # Build pooldebug.c
-POOLDEBUG_C=\
-	$(SRCDIR)\containers.h\
-	C:\lcc\include\string.h\
-	C:\lcc\include\stddef.h\
-	C:\lcc\include\stdlib.h\
-	C:\lcc\include\stddef.h\
-	C:\lcc\include\stdio.h\
-	C:\lcc\include\safelib.h\
-	C:\lcc\include\stdint.h\
-	C:\lcc\include\limits.h\
-	C:\lcc\include\inttypes.h\
-	C:\lcc\include\stdint.h\
-	C:\lcc\include\stdio.h\
 
-pooldebug.obj: $(POOLDEBUG_C) $(SRCDIR)\pooldebug.c
+pooldebug.obj:  $(SRCDIR)\pooldebug.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\pooldebug.c
 
 # Build qsortex.c
-QSORTEX_C=\
-	C:\lcc\include\errno.h\
-	C:\lcc\include\string.h\
-	C:\lcc\include\stdlib.h\
-	C:\lcc\include\stddef.h\
-	$(SRCDIR)\containers.h\
-	C:\lcc\include\string.h\
-	C:\lcc\include\stddef.h\
-	C:\lcc\include\stdlib.h\
-	C:\lcc\include\stdio.h\
-	C:\lcc\include\safelib.h\
-	C:\lcc\include\stdint.h\
-	C:\lcc\include\limits.h\
 
-qsortex.obj: $(QSORTEX_C) $(SRCDIR)\qsortex.c
+qsortex.obj:  $(SRCDIR)\qsortex.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\qsortex.c
 
 # Build redblacktree.c
-REDBLACKTREE_C=\
-	C:\lcc\include\stdio.h\
-	C:\lcc\include\safelib.h\
-	C:\lcc\include\stdlib.h\
-	C:\lcc\include\stddef.h\
-	$(SRCDIR)\containers.h\
-	C:\lcc\include\string.h\
-	C:\lcc\include\stddef.h\
-	C:\lcc\include\stdlib.h\
-	C:\lcc\include\stdio.h\
-	C:\lcc\include\stdint.h\
-	C:\lcc\include\limits.h\
-	$(SRCDIR)\containers.h\
 
-redblacktree.obj: $(REDBLACKTREE_C) $(SRCDIR)\redblacktree.c
+redblacktree.obj:  $(SRCDIR)\redblacktree.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\redblacktree.c
 
 # Build scapegoat.c
-SCAPEGOAT_C=\
-	C:\lcc\include\stdio.h\
-	C:\lcc\include\safelib.h\
-	C:\lcc\include\stdlib.h\
-	C:\lcc\include\stddef.h\
-	$(SRCDIR)\containers.h\
-	C:\lcc\include\string.h\
-	C:\lcc\include\stddef.h\
-	C:\lcc\include\stdlib.h\
-	C:\lcc\include\stdio.h\
-	C:\lcc\include\stdint.h\
-	C:\lcc\include\limits.h\
-	$(SRCDIR)\containers.h\
 
-scapegoat.obj: $(SCAPEGOAT_C) $(SRCDIR)\scapegoat.c
+scapegoat.obj: $(HEADERS) $(SRCDIR)\scapegoat.c
 	$(CC) -c $(CFLAGS) $(SRCDIR)\scapegoat.c
 
 # Build searchtree.c
-SEARCHTREE_C=\
-	C:\lcc\include\stdlib.h\
-	C:\lcc\include\stddef.h\
-	C:\lcc\include\string.h\
-	C:\lcc\include\stdlib.h\
-	$(SRCDIR)\containers.h\
-	C:\lcc\include\string.h\
-	C:\lcc\include\stddef.h\
-	C:\lcc\include\stdlib.h\
-	C:\lcc\include\stdio.h\
-	C:\lcc\include\safelib.h\
-	C:\lcc\include\stdint.h\
-	C:\lcc\include\limits.h\
 
-searchtree.obj: $(SEARCHTREE_C) $(SRCDIR)\searchtree.c
+searchtree.obj: $(HEADERS) $(SRCDIR)\searchtree.c
 	$(CC) -c $(CFLAGS) $(SRCDIR)\searchtree.c
 
 # Build strcollection.c
-STRCOLLECTION_C=\
-	$(SRCDIR)\containers.h\
-	C:\lcc\include\string.h\
-	C:\lcc\include\stddef.h\
-	C:\lcc\include\stdlib.h\
-	C:\lcc\include\stddef.h\
-	C:\lcc\include\stdio.h\
-	C:\lcc\include\safelib.h\
-	C:\lcc\include\stdint.h\
-	C:\lcc\include\limits.h\
 
-strcollection.obj: $(STRCOLLECTION_C) $(SRCDIR)\strcollection.c
+strcollection.obj: $(HEADERS) $(SRCDIR)\strcollection.c
 	$(CC) -c $(CFLAGS) $(SRCDIR)\strcollection.c
 
 queue.obj:	$(SRCDIR)\containers.h queue.c
 	$(CC) $(CFLAGS) queue.c
 
 
-valarrayint.obj:	valarrayint.c valarraygen.c valarraygen.h valarray.h containers.h
+valarrayint.obj:	valarrayint.c valarraygen.c   $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\valarrayint.c
 
-valarrayuint.obj:	valarrayuint.c valarraygen.c valarraygen.h valarray.h containers.h
+valarrayuint.obj:	valarrayuint.c valarraygen.c   $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\valarrayuint.c
 
-valarrayfloat.obj:	valarrayfloat.c valarraygen.c valarraygen.h valarray.h containers.h
+valarrayfloat.obj:	valarrayfloat.c valarraygen.c   $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\valarrayfloat.c
 
-valarraydouble.obj:	valarraydouble.c valarraygen.c valarraygen.h valarray.h containers.h
+valarraydouble.obj:	valarraydouble.c valarraygen.c   $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\valarraydouble.c
 
-valarraylongdouble.obj:	valarraylongdouble.c valarraygen.c valarraygen.h valarray.h containers.h
+valarraylongdouble.obj:	valarraylongdouble.c valarraygen.c   $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\valarraylongdouble.c
 
-valarrayshort.obj:	valarrayshort.c valarraygen.c valarraygen.h valarray.h containers.h
-	$(CC) -c $(CFLAGS) $(SRCDIR)\valarrayshort.c
+ort.obj:	valarrayshort.c valarraygen.c  valarray.h $(HEADERS)
+	$(CC) -c $(CFLAGS) $(SRCDIR)\ort.c
 
-valarraysize_t.obj:	valarraysize_t.c valarraygen.c valarraygen.h valarray.h containers.h
+valarraysize_t.obj:	valarraysize_t.c valarraygen.c   $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\valarraysize_t.c
 
-valarrayulonglong.obj:     valarrayulonglong.c valarraygen.c valarraygen.h valarray.h containers.h
+valarrayulonglong.obj:     valarrayulonglong.c valarraygen.c   $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\valarrayulonglong.c
 
-sequential.obj:	sequential.c containers.h
+sequential.obj:	sequential.c $(HEADERS)
 	$(CC) $(CFLAGS) $(SRCDIR)\sequential.c
 
-memorymanager.obj:	memorymanager.c containers.h
+memorymanager.obj:	$(HEADERS) memorymanager.c
 	$(CC) $(CFLAGS) $(SRCDIR)\memorymanager.c
 
-# Build test.c
-TEST_C=\
-	$(SRCDIR)\containers.h\
-	C:\lcc\include\string.h\
-	C:\lcc\include\stddef.h\
-	C:\lcc\include\stdlib.h\
-	C:\lcc\include\stddef.h\
-	C:\lcc\include\stdio.h\
-	C:\lcc\include\safelib.h\
-	C:\lcc\include\stdint.h\
-	C:\lcc\include\limits.h\
-	C:\lcc\include\stdio.h\
-	C:\lcc\include\stdio.h\
-
-intarray.obj:	containers.h intarray.c
+intarray.obj:	$(HEADERS) intarray.c
 	$(CC) $(CFLAGS) $(SRCDIR)\intarray.c
 
-iMask.obj:	iMask.c containers.h
+iMask.obj:	iMask.c $(HEADERS)
 	$(CC) $(CFLAGS) iMask.c
 
-test.obj: $(TEST_C) $(SRCDIR)\test.c
+test.obj: $(TEST_C) $(SRCDIR)\test.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\test.c
 
 link:

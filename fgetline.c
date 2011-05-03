@@ -3,7 +3,7 @@
 #include <limits.h>
 #include "containers.h"
 #include "ccl_internal.h"
-/* This code was adapted from the public domain version of fgetline of C.B. Falconer */
+/* This code was adapted from the public domain version of fgetline by C.B. Falconer */
 
 static int GetDelim(unsigned char **LinePointer, int *n, int delimiter, FILE *stream, ContainerMemoryManager *mm )
 {

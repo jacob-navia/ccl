@@ -17,23 +17,6 @@ the proposed interface COULD be done.
 #ifndef INT_MAX
 #define INT_MAX (((unsigned)-1) >> 1)
 #endif
-typedef struct _list_element {
-    struct _list_element *Next;
-    char Data[MINIMUM_ARRAY_INDEX];
-} list_element;
-struct _List {
-    ListInterface *VTable;      /* Methods table */
-    size_t count;               /* in elements units */
-    unsigned Flags;    unsigned timestamp;         /* Changed at each modification */
-    size_t ElementSize;         /* Size (in bytes) of each element */
-    list_element *Last;         /* The last item */
-    list_element *First;        /* The contents of the list start here */
-    CompareFunction Compare;    /* Element comparison function */
-    ErrorFunction RaiseError;   /* Error function */
-    ContainerHeap *Heap;
-    ContainerMemoryManager *Allocator;
-	DestructorFunction DestructorFn;
-};
 static int IndexOf(List *AL,void *SearchedElement,void *ExtraArgs,size_t *result);
 static int RemoveAt(List *AL,size_t idx);
 #define CONTAINER_LIST_SMALL    2

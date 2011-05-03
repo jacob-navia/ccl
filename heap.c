@@ -1,9 +1,6 @@
 #include "containers.h"
+#include "ccl_internal.h"
 
-typedef struct _list_element {
-    struct _list_element *Next;
-    char Data[MINIMUM_ARRAY_INDEX];
-} list_element;
 struct tagHeapObject {
 	HeapInterface *VTable;
 	unsigned BlockCount;
