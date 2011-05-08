@@ -2,7 +2,7 @@
  *          ValArrays                                                     *
  ****************************************************************************/
 typedef struct _ValArray ValArray;
-typedef struct tagValArray {
+typedef struct {
     size_t (*Size)(const ValArray *AL);
     unsigned (*GetFlags)(const ValArray *AL);
     unsigned (*SetFlags)(ValArray *AL,unsigned flags);
