@@ -5,10 +5,8 @@
 #undef ValArrayInterface
 #undef ElementType
 #undef ValArray
-#undef tagValArray
 #undef _ValArray
 #define _ValArray _ValArraySize_t
-#define tagValArray tagValArraySize_tInterface
 #define ElementType size_t
 #define ValArrayInterface ValArraySize_tInterface
 #define ValArray ValArraySize_t
@@ -26,10 +24,8 @@ extern ValArraySize_tInterface iValArraySize_t;
 #undef ValArrayInterface
 #undef ElementType
 #undef ValArray
-#undef tagValArray
 #undef _ValArray
 #define _ValArray _ValArrayShort
-#define tagValArray tagValArrayShortInterface
 #define ElementType short
 #define ValArrayInterface ValArrayShortInterface
 #define ValArray ValArrayShort
@@ -45,10 +41,8 @@ extern ValArrayInterface iValArrayShort;
 #undef ValArrayInterface
 #undef ElementType
 #undef ValArray
-#undef tagValArray
 #undef _ValArray
 #define _ValArray _ValArrayInt
-#define tagValArray tagValArrayIntInterface
 #define ElementType int
 #define ValArrayInterface ValArrayIntInterface
 #define ValArray ValArrayInt
@@ -64,10 +58,8 @@ extern ValArrayInterface iValArrayInt;
 #undef ValArrayInterface
 #undef ElementType
 #undef ValArray
-#undef tagValArray
 #undef _ValArray
 #define _ValArray _ValArrayLong
-#define tagValArray tagValArrayLongInterface
 #define ElementType long
 #define ValArrayInterface ValArrayLongInterface
 #define ValArray ValArrayLong
@@ -84,10 +76,8 @@ extern ValArrayInterface iValArrayLong;
 #undef ValArrayInterface
 #undef ElementType
 #undef ValArray
-#undef tagValArray
 #undef _ValArray
 #define _ValArray _ValArrayDouble
-#define tagValArray tagValArrayDoubleInterface
 #define ElementType double
 #define ValArrayInterface ValArrayDoubleInterface
 #define ValArray ValArrayDouble
@@ -101,10 +91,8 @@ extern ValArrayDoubleInterface iValArrayDouble;
 #undef ValArrayInterface
 #undef ElementType
 #undef ValArray
-#undef tagValArray
 #undef _ValArray
 #define _ValArray _ValArrayLongDouble
-#define tagValArray tagValArrayLongDoubleInterface
 #define ElementType long double
 #define ValArrayInterface ValArrayLongDoubleInterface
 #define ValArray ValArrayLongDouble
@@ -118,10 +106,8 @@ extern ValArrayInterface iValArrayLongDouble;
 #undef ValArrayInterface
 #undef ElementType
 #undef ValArray
-#undef tagValArray
 #undef _ValArray
 #define _ValArray _ValArrayLLong
-#define tagValArray tagValArrayLLongInterface
 #define ElementType long long
 #define ValArrayInterface ValArrayLLongInterface
 #define ValArray ValArrayLLong
@@ -137,10 +123,8 @@ extern ValArrayInterface iValArrayLLong;
 #undef ValArrayInterface
 #undef ElementType
 #undef ValArray
-#undef tagValArray
 #undef _ValArray
 #define _ValArray _ValArrayULLong
-#define tagValArray tagValArrayULLongInterface
 #define ElementType unsigned long long
 #define ValArrayInterface ValArrayULLongInterface
 #define ValArray ValArrayULLong
@@ -159,10 +143,8 @@ extern ValArrayInterface iValArrayULLong;
 #undef ValArrayInterface
 #undef ElementType
 #undef ValArray
-#undef tagValArray
 #undef _ValArray
 #define _ValArray _ValArrayFloat
-#define tagValArray tagValArrayFloatInterface
 #define ElementType float
 #define ValArrayInterface ValArrayFloatInterface
 #define ValArray ValArrayFloat
@@ -177,10 +159,8 @@ extern ValArrayInterface iValArrayFloat;
 #undef ValArrayInterface
 #undef ElementType
 #undef ValArray
-#undef tagValArray
 #undef _ValArray
 #define _ValArray _ValArrayUInt
-#define tagValArray tagValArrayUIntInterface
 #define ElementType unsigned
 #define ValArrayInterface ValArrayUIntInterface
 #define ValArray ValArrayUInt
@@ -196,6 +176,5 @@ extern ValArrayInterface iValArrayUInt;
 #undef ValArrayInterface
 #undef ElementType
 #undef ValArray
-#undef tagValArray
 #undef _ValArray
 
