@@ -547,7 +547,7 @@ static void *GetFirst(Iterator *it)
 
 static Iterator *newIterator(Deque *L)
 {
-	struct DequeIterator *result = MALLOC(L,sizeof(struct DequeIterator));
+	struct DequeIterator *result = L->Allocator->malloc(sizeof(struct DequeIterator));
 	if (result == NULL)
 		return NULL;
 	result->it.GetNext = GetNext;

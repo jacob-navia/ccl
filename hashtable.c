@@ -765,7 +765,7 @@ static void *GetCurrent(Iterator *it)
 }
 static Iterator *newIterator(HashTable *ht)
 {
-	struct HashTableIterator *result = MALLOC(ht,sizeof(struct HashTableIterator));
+	struct HashTableIterator *result = ht->Allocator->malloc(sizeof(struct HashTableIterator));
 	if (result == NULL)
 		return NULL;
 	result->it.GetNext = GetNext;

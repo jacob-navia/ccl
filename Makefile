@@ -24,7 +24,7 @@ OBJS=vector.o containererror.o dlist.o qsortex.o bitstrings.o generic.o \
     buffer.o observer.o valarraydouble.o valarrayint.o valarraysize_t.o \
     valarraylongdouble.o valarrayshort.o valarrayfloat.o valarrayuint.o \
     valarraylonglong.o valarrayulonglong.o memorymanager.o sequential.o \
-    iMask.o
+    iMask.o deque.o hashtable.o
 
 dotest:	libccl.a test.o
 	gcc -o dotest $(CFLAGS) test.c libccl.a -lm
