@@ -11,34 +11,24 @@ http://github.com/posborne/simpleds
 #include <string.h>
 #include <assert.h>
 #include "containers.h"
-
-struct deque_node_t {
-    struct deque_node_t *next;
-    struct deque_node_t *prev;
-    char value[1];
-};
+#include "ccl_internal.h"
 
 struct deque_t {
     DequeInterface *VTable;
     size_t count;
     unsigned Flags;
     size_t ElementSize;
-    struct deque_node_t *head;
-    struct deque_node_t *tail;
+    dlist_element *head;
+    dlist_element *tail;
     CompareFunction compare;
     ErrorFunction RaiseError;   /* Error function */
-	ContainerMemoryManager *Allocator;
-	unsigned timestamp;
-	DestructorFunction DestructorFn;
+    ContainerMemoryManager *Allocator;
+    unsigned timestamp;
+    DestructorFunction DestructorFn;
 };
 
-typedef struct deque_node_t *DequeNode;
+typedef dlist_element *DequeNode;
 
-/* The default comparator which simplies does a simple comparison based on
-* memory address.  It is really only useful to compare if two pointers point
-* to the same piece of data, beyond that less than or equal are not very
-* useful.
-*/
 static int default_comparator(const void *left,const void *right,CompareInfo *ExtraArgs)
 {
     size_t siz=((Deque *)ExtraArgs->Container)->ElementSize;
@@ -50,16 +40,15 @@ static int default_comparator(const void *left,const void *right,CompareInfo *Ex
 * the deque, NULL will be returned.
 *
 */
-#define roundup(x,n) (((x)+((n)-1))&(~((n)-1)))
 static Deque * Init(Deque *d, size_t elementsize) 
 {
-	memset(d,0,sizeof(struct deque_t));
+    memset(d,0,sizeof(struct deque_t));
     /* store a pointer to the comparison function */
     d->compare = default_comparator;
 
     d->ElementSize = elementsize;
-	d->VTable =&iDeque;
-	d->Allocator = CurrentMemoryManager;
+    d->VTable =&iDeque;
+    d->Allocator = CurrentMemoryManager;
     return d;
 }
 
@@ -67,10 +56,10 @@ static Deque * Create(size_t elementsize)
 {
     Deque * d = CurrentMemoryManager->malloc(sizeof(struct deque_t));
     if (d == NULL)	{
-		iError.RaiseError("iDeque.Create",CONTAINER_ERROR_BADARG);
-		return NULL;
-	}
-	return Init(d,elementsize);
+    	iError.RaiseError("iDeque.Create",CONTAINER_ERROR_BADARG);
+    	return NULL;
+    }
+    return Init(d,elementsize);
 }
 
 
@@ -78,7 +67,8 @@ static Deque * Create(size_t elementsize)
 static int Finalize(Deque * d) 
 {
     int r = iDeque.Clear(d);
-	d->Allocator->free(d);
+    if (r < 0) return r;
+    d->Allocator->free(d);
     return r;
 }
 
@@ -90,24 +80,24 @@ static int Add(Deque * d, void* item)
     assert(d != NULL);
 
     /* allocate memory for the new node and put it in a valid state */
-    newNode = d->Allocator->malloc(sizeof(struct deque_node_t)+d->ElementSize);
-	if (newNode == NULL) {
-		iError.RaiseError("iDeque.Add",CONTAINER_ERROR_BADARG);
-		return CONTAINER_ERROR_BADARG;
-	}
-    newNode->prev = d->head;
-    newNode->next = NULL;
-    memcpy(newNode->value,item,d->ElementSize);
+    newNode = d->Allocator->malloc(sizeof(dlist_element)+d->ElementSize);
+    if (newNode == NULL) {
+    	iError.RaiseError("iDeque.Add",CONTAINER_ERROR_BADARG);
+    	return CONTAINER_ERROR_BADARG;
+    }
+    newNode->Previous = d->head;
+    newNode->Next = NULL;
+    memcpy(newNode->Data,item,d->ElementSize);
 
     if (d->head != NULL) {
-        d->head->next = newNode;
+        d->head->Next = newNode;
     }
     if (d->tail == NULL) {
         d->tail = newNode; /* only one item */
     }
     d->head = newNode;
     ++d->count;
-	return 1;
+    return 1;
 }
 
 /* Append the specified item to the left end of the deque (tail).
@@ -117,20 +107,20 @@ static int AddLeft(Deque * d, void* item) {
     assert(d != NULL);
 
     /* create the new node and put it in a valid state */
-    newNode = d->Allocator->malloc(sizeof(struct deque_node_t)+d->ElementSize);
-    newNode->next = d->tail;
-    newNode->prev = NULL;
-    memcpy(newNode->value, item,d->ElementSize);
+    newNode = d->Allocator->malloc(sizeof(dlist_element)+d->ElementSize);
+    newNode->Next = d->tail;
+    newNode->Previous = NULL;
+    memcpy(newNode->Data, item,d->ElementSize);
 
     if (d->tail != NULL) {
-        d->tail->prev = newNode;
+        d->tail->Previous = newNode;
     }
     if (d->head == NULL) {
         d->head = d->tail;
     }
     d->tail = newNode;
     ++d->count;
-	return 1;
+    return 1;
 }
 
 /* Clear the specified deque, this will free all data structures related to the
@@ -143,10 +133,10 @@ static int Clear(Deque * d) {
     assert(d != NULL);
     while (d->head != NULL) {
         tmp = d->head;
-        d->head = tmp->next;
-		if (d->DestructorFn)
-			d->DestructorFn(tmp);
-		d->Allocator->free(tmp);
+        d->head = tmp->Next;
+    	if (d->DestructorFn)
+    		d->DestructorFn(tmp);
+    	d->Allocator->free(tmp);
     }
     d->head = NULL;
     d->tail = NULL;
@@ -155,104 +145,104 @@ static int Clear(Deque * d) {
 }
 
 /* Remove the rightmost element from the deque and return a reference to the
-* value pointed to by the deque node.  If there is no rightmost element
+* Data pointed to by the deque node.  If there is no rightmost element
 * then NULL will be returned.
 *
  * This operation is O(1), constant time.
 */
 static int PopFront(Deque * d,void *outbuf) 
 {
-    DequeNode prevHead;
-    void* value;
-	
-	if (d == NULL || outbuf == NULL) {
-		iError.RaiseError("iDeque.PopBack",CONTAINER_ERROR_BADARG);
-		return CONTAINER_ERROR_BADARG;
-	}
-    if ((prevHead = d->head) == NULL) {
+    DequeNode PreviousHead;
+    void* Data;
+    
+    if (d == NULL || outbuf == NULL) {
+    	iError.RaiseError("iDeque.PopBack",CONTAINER_ERROR_BADARG);
+    	return CONTAINER_ERROR_BADARG;
+    }
+    if ((PreviousHead = d->head) == NULL) {
         return 0;
     }
     else {
-        d->head = prevHead->prev;
+        d->head = PreviousHead->Previous;
         d->count--;
-        value = prevHead->value;
-		if (d->DestructorFn)
-			d->DestructorFn(prevHead);
-		d->Allocator->free(prevHead);
-        memcpy(outbuf,value,d->ElementSize);
-		return 1;
+        Data = PreviousHead->Data;
+    	if (d->DestructorFn)
+    		d->DestructorFn(PreviousHead);
+    	d->Allocator->free(PreviousHead);
+        memcpy(outbuf,Data,d->ElementSize);
+    	return 1;
     }
 }
 
-/* Get the value of the deque tail or NULL if the deque is empty */
+/* Get the Data of the deque tail or NULL if the deque is empty */
 static int PeekFront(Deque * d,void *outbuf) 
 {
-	if (d == NULL || outbuf == NULL) {
-		iError.RaiseError("iDeque.PopBack",CONTAINER_ERROR_BADARG);
-		return CONTAINER_ERROR_BADARG;
-	}
-	
+    if (d == NULL || outbuf == NULL) {
+    	iError.RaiseError("iDeque.PopBack",CONTAINER_ERROR_BADARG);
+    	return CONTAINER_ERROR_BADARG;
+    }
+    
     if (d->head == NULL) {
         return 0;
     }
-    memcpy(outbuf,d->head->value,d->ElementSize);
-	return 1;
+    memcpy(outbuf,d->head->Data,d->ElementSize);
+    return 1;
 }
 
 /* Remove the leftmost element from the deque and return a reference to the
-* value pointed to by the deque node.  If there is no leftmost element
+* Data pointed to by the deque node.  If there is no leftmost element
 * then NULL will be returned.
 *
  * This operation is O(1), constant time.
 */
 static int PopBack(Deque * d,void *outbuf) 
 {
-    DequeNode prevTail;
-    void* value;
+    DequeNode PreviousTail;
+    void* Data;
 
-	if (d == NULL || outbuf == NULL) {
-		iError.RaiseError("iDeque.PopBack",CONTAINER_ERROR_BADARG);
-		return CONTAINER_ERROR_BADARG;
-	}
-	
+    if (d == NULL || outbuf == NULL) {
+    	iError.RaiseError("iDeque.PopBack",CONTAINER_ERROR_BADARG);
+    	return CONTAINER_ERROR_BADARG;
+    }
+    
     if (d->tail == NULL) {
         return 0;
     }
     else {
-        prevTail = d->tail;
-        d->tail = prevTail->next;
+        PreviousTail = d->tail;
+        d->tail = PreviousTail->Next;
         if (d->tail != NULL) {
-            d->tail->prev = NULL;
+            d->tail->Previous = NULL;
         }
         d->count--;
-        value = prevTail->value;
-		if (d->DestructorFn)
-			d->DestructorFn(prevTail);
-		d->Allocator->free(prevTail);
-        memcpy(outbuf,value,d->ElementSize);
-		return 1;
+        Data = PreviousTail->Data;
+    	if (d->DestructorFn)
+    		d->DestructorFn(PreviousTail);
+    	d->Allocator->free(PreviousTail);
+        memcpy(outbuf,Data,d->ElementSize);
+    	return 1;
     }
 }
 
-/* Get the value of the deque head (leftmost element) or NULL if empty */
+/* Get the Data of the deque head (leftmost element) or NULL if empty */
 static int PeekBack(Deque * d,void *outbuf) 
 {
-	if (d == NULL || outbuf == NULL) {
-		iError.RaiseError("iDeque.PopBack",CONTAINER_ERROR_BADARG);
-		return CONTAINER_ERROR_BADARG;
-	}
+    if (d == NULL || outbuf == NULL) {
+    	iError.RaiseError("iDeque.PopBack",CONTAINER_ERROR_BADARG);
+    	return CONTAINER_ERROR_BADARG;
+    }
     if (d->tail == NULL) {
         return 0;
     }
-    memcpy(outbuf,d->tail->value,d->ElementSize);
-	return 1;
+    memcpy(outbuf,d->tail->Data,d->ElementSize);
+    return 1;
 }
 
 /* Remove the first occurrence of item from the deque, starting from the left.
-* A reference to the removed node value will be returned, otherwise NULL
+* A reference to the removed node Data will be returned, otherwise NULL
 * will be returned (if the item cannot be found).
 *
- * Note that the comparison is done on the values of the data pointers, so
+ * Note that the comparison is done on the Datas of the data pointers, so
 * even if I had two strings "foo" and "foo" at different places in memory,
 * we would not get a match.
 *
@@ -268,20 +258,20 @@ static int Remove(Deque * d, void* item)
     ci.ExtraArgs = NULL;
 
     while (tmp != NULL) {
-        if ((d->compare)(tmp->value, item,&ci) == 0) {
-            if (tmp->prev != NULL) {
-                tmp->prev->next = tmp->next;
+        if ((d->compare)(tmp->Data, item,&ci) == 0) {
+            if (tmp->Previous != NULL) {
+                tmp->Previous->Next = tmp->Next;
             }
-            if (tmp->next != NULL) {
-                tmp->next->prev = tmp->prev;
+            if (tmp->Next != NULL) {
+                tmp->Next->Previous = tmp->Previous;
             }
-			if (d->DestructorFn)
-				d->DestructorFn(tmp);
-			d->Allocator->free(tmp);
+    		if (d->DestructorFn)
+    			d->DestructorFn(tmp);
+    		d->Allocator->free(tmp);
             d->count--;
             return 1;
         }
-        tmp = tmp->next;
+        tmp = tmp->Next;
     }
     return 0; /* item not found in deque */
 }
@@ -294,7 +284,7 @@ static size_t GetCount(Deque * d) {
 /* Copy the deque and return a reference to the new deque
 *
  * This is a shallow copy, so only the deque container data structures are
-* copied, not the values referenced.
+* copied, not the Datas referenced.
 */
 static Deque *Copy(Deque * d) {
     Deque * NewDeque;
@@ -302,13 +292,13 @@ static Deque *Copy(Deque * d) {
     NewDeque = Create(d->ElementSize);
     tmp = d->head;
     while (tmp != NULL) {
-        Add(NewDeque, tmp->value);
-        tmp = tmp->next;
+        Add(NewDeque, tmp->Data);
+        tmp = tmp->Next;
     }
-	NewDeque->Allocator = d->Allocator;
-	NewDeque->compare = d->compare;
-	NewDeque->Flags = NewDeque->Flags;
-	NewDeque->RaiseError = d->RaiseError;
+    NewDeque->Allocator = d->Allocator;
+    NewDeque->compare = d->compare;
+    NewDeque->Flags = NewDeque->Flags;
+    NewDeque->RaiseError = d->RaiseError;
     return NewDeque;
 }
 
@@ -316,33 +306,33 @@ static Deque *Copy(Deque * d) {
 static int Reverse(Deque * d) 
 {
     DequeNode currNode;
-    DequeNode nextNode;
-	
-	if (d == NULL) {
-		iError.RaiseError("iDeque.Reverse",CONTAINER_ERROR_BADARG);
-		return CONTAINER_ERROR_BADARG;
-	}
-	if (d->count == 0)
-		return 0;
+    DequeNode NextNode;
+    
+    if (d == NULL) {
+    	iError.RaiseError("iDeque.Reverse",CONTAINER_ERROR_BADARG);
+    	return CONTAINER_ERROR_BADARG;
+    }
+    if (d->count == 0)
+    	return 0;
     currNode = d->head;
     while (currNode != NULL) {
-        nextNode = currNode->next;
-        currNode->next = currNode->prev;
-        currNode->prev = nextNode;
-        currNode = nextNode;
+        NextNode = currNode->Next;
+        currNode->Next = currNode->Previous;
+        currNode->Previous = NextNode;
+        currNode = NextNode;
     }
 
     /* flip head and tail */
     currNode = d->tail;
     d->tail = d->head;
     d->head = currNode;
-	return 1;
+    return 1;
 }
 
 /* Return TRUE if the deque contains the specified item and FALSE if not */
 static size_t Contains(Deque * d, void* item) 
 {
-	size_t pos;
+    size_t pos;
     DequeNode tmp = d->head;
     CompareInfo ci;
     ci.Container = d;
@@ -350,10 +340,10 @@ static size_t Contains(Deque * d, void* item)
 
     pos=1;
     while (tmp != NULL) {
-        if ((d->compare)(tmp->value, item,&ci) == 0) {
+        if (d->compare(tmp->Data, item,&ci) == 0) {
             return pos;
         }
-        tmp = tmp->next;
+        tmp = tmp->Next;
         pos++;
     }
     return 0; /* item not found in deque */
@@ -362,20 +352,21 @@ static size_t Contains(Deque * d, void* item)
 static int Equal(Deque * d, Deque *d1) 
 {
     DequeNode tmp = d->head;
-	DequeNode tmp1 = d1->head;
+    DequeNode tmp1 = d1->head;
     CompareInfo ci;
     ci.Container = d;
     ci.ExtraArgs = NULL;
 
-	if (d->ElementSize != d1->ElementSize)
-		return 0;
-    while (tmp != NULL) {
-        if ((d->compare)(tmp->value, tmp1->value,&ci) != 0) {
+    if (d->ElementSize != d1->ElementSize)
+    	return 0;
+    while (tmp != NULL && tmp1 != NULL) {
+        if (d->compare(tmp->Data, tmp1->Data,&ci) != 0) {
             return 0;
         }
-        tmp = tmp->next;
-		tmp1 = tmp1->next;
+        tmp = tmp->Next;
+    	tmp1 = tmp1->Next;
     }
+    if (tmp != tmp1) return 0;
     return 1; 
 }
 
@@ -384,8 +375,8 @@ static void Apply(Deque * d, int (*Applyfn)(void *,void * arg),void *arg)
     DequeNode tmp = d->head;
 
     while (tmp != NULL) {
-        Applyfn(tmp->value, arg);
-        tmp = tmp->next;
+        Applyfn(tmp->Data, arg);
+        tmp = tmp->Next;
     }
 }
 
@@ -399,189 +390,189 @@ static unsigned SetFlags(Deque *d,unsigned newflags){
 }
 static int Save(Deque *d,FILE *stream, SaveFunction saveFn,void *arg)
 {
-	size_t i;
+    size_t i;
     DequeNode tmp = d->head;
 
-	if (fwrite(d,1,sizeof(Deque),stream) <= 0)
-		return EOF;
-	if (saveFn == NULL) {
-		for (i=0; i<d->count; i++) {
-			fwrite(tmp->value,1,d->ElementSize,stream);
-			tmp = tmp->next;
-		}
-	}
-	else {
-		for (i=0; i< d->count; i++) {
-		
-			if (saveFn(tmp->value,arg,stream) <= 0)
-				return EOF;
-			tmp = tmp->next;
-		}
-	}
-	return 0;
+    if (fwrite(d,1,sizeof(Deque),stream) <= 0)
+    	return EOF;
+    if (saveFn == NULL) {
+    	for (i=0; i<d->count; i++) {
+    		fwrite(tmp->Data,1,d->ElementSize,stream);
+    		tmp = tmp->Next;
+    	}
+    }
+    else {
+    	for (i=0; i< d->count; i++) {
+    	
+    		if (saveFn(tmp->Data,arg,stream) <= 0)
+    			return EOF;
+    		tmp = tmp->Next;
+    	}
+    }
+    return 0;
 }
 
 static Deque *Load(FILE *stream, ReadFunction loadFn,void *arg)
 {
-	size_t i;
-	char *buf;
-	Deque D,*d;
+    size_t i;
+    char *buf;
+    Deque D,*d;
 
-	if (fread(&D,1,sizeof(Deque),stream) <= 0)
-		return NULL;
-	d = Create(D.ElementSize);
-	if (d == NULL)
-		return NULL;
-	buf = malloc(D.ElementSize);
-	if (buf == NULL) {
-		Finalize(d);
-		iError.RaiseError("iDeque.Load",CONTAINER_ERROR_NOMEMORY);
-		return NULL;
-	}
-	for (i=0; i<D.count;i++) {
-		if (loadFn == NULL) {
-			if (fread(buf,1,D.ElementSize,stream) <= 0)
-				break;
-		}
-		else {
-			if (loadFn(buf,arg,stream) <= 0) {
-				break;
-			}
-		}
-		Add(d,buf);
-	}
-	free(buf);
-	d->count = D.count;
-	d->Flags = D.Flags;
-	return d;
+    if (fread(&D,1,sizeof(Deque),stream) <= 0)
+    	return NULL;
+    d = Create(D.ElementSize);
+    if (d == NULL)
+    	return NULL;
+    buf = malloc(D.ElementSize);
+    if (buf == NULL) {
+    	Finalize(d);
+    	iError.RaiseError("iDeque.Load",CONTAINER_ERROR_NOMEMORY);
+    	return NULL;
+    }
+    for (i=0; i<D.count;i++) {
+    	if (loadFn == NULL) {
+    		if (fread(buf,1,D.ElementSize,stream) <= 0)
+    			break;
+    	}
+    	else {
+    		if (loadFn(buf,arg,stream) <= 0) {
+    			break;
+    		}
+    	}
+    	Add(d,buf);
+    }
+    free(buf);
+    d->count = D.count;
+    d->Flags = D.Flags;
+    return d;
 }
 
 static ErrorFunction SetErrorFunction(Deque *l,ErrorFunction fn)
 {
-	ErrorFunction old;
-	old = l->RaiseError;
-	l->RaiseError = (fn) ? fn : iError.EmptyErrorFunction;
-	return old;
+    ErrorFunction old;
+    old = l->RaiseError;
+    l->RaiseError = (fn) ? fn : iError.EmptyErrorFunction;
+    return old;
 }
 
 static size_t Sizeof(Deque *d)
 {
-	size_t result = sizeof(Deque);
-	if (d == NULL)
-		return result;
-	result += d->count*(sizeof(DequeNode)+d->ElementSize);
-	return result;
+    size_t result = sizeof(Deque);
+    if (d == NULL)
+    	return result;
+    result += d->count*(sizeof(DequeNode)+d->ElementSize);
+    return result;
 }
 
 struct DequeIterator {
-	Iterator it;
-	Deque *D;
-	size_t index;
-	DequeNode Current;
-	size_t timestamp;
-	char ElementBuffer[1];
+    Iterator it;
+    Deque *D;
+    size_t index;
+    DequeNode Current;
+    size_t timestamp;
+    char ElementBuffer[1];
 };
 
 static void *GetNext(Iterator *it)
 {
-	struct DequeIterator *li = (struct DequeIterator *)it;
-	Deque *D = li->D;
-	void *result;
+    struct DequeIterator *li = (struct DequeIterator *)it;
+    Deque *D = li->D;
+    void *result;
 
-	if (li->index >= (D->count-1) || li->Current == NULL)
-		return NULL;
-	if (li->timestamp != D->timestamp) {
-		D->RaiseError("GetNext",CONTAINER_ERROR_OBJECT_CHANGED);
-		return NULL;
-	}
-	li->Current = li->Current->next;
-	li->index++;
-	result = li->Current->value;
-	return result;
+    if (li->index >= (D->count-1) || li->Current == NULL)
+    	return NULL;
+    if (li->timestamp != D->timestamp) {
+    	D->RaiseError("GetNext",CONTAINER_ERROR_OBJECT_CHANGED);
+    	return NULL;
+    }
+    li->Current = li->Current->Next;
+    li->index++;
+    result = li->Current->Data;
+    return result;
 }
 
 static void *GetPrevious(Iterator *it)
 {
-	struct DequeIterator *li = (struct DequeIterator *)it;
-	Deque *L = li->D;
-	DequeNode rvp;
-	size_t i;
+    struct DequeIterator *li = (struct DequeIterator *)it;
+    Deque *L = li->D;
+    DequeNode rvp;
+    size_t i;
 
-	if (li->index >= L->count || li->index == 0)
-		return NULL;
-	if (li->timestamp != L->timestamp) {
-		L->RaiseError("GetNext",CONTAINER_ERROR_OBJECT_CHANGED);
-		return NULL;
-	}
-	rvp = L->head;
-	i=0;
-	li->index--;
-	if (li->index > 0) {
-		while (rvp && i < li->index) {
-			rvp = rvp->next;
-			i++;
-		}
-	}
-	li->Current = rvp;
-	return rvp->value;
+    if (li->index >= L->count || li->index == 0)
+    	return NULL;
+    if (li->timestamp != L->timestamp) {
+    	L->RaiseError("GetNext",CONTAINER_ERROR_OBJECT_CHANGED);
+    	return NULL;
+    }
+    rvp = L->head;
+    i=0;
+    li->index--;
+    if (li->index > 0) {
+    	while (rvp && i < li->index) {
+    		rvp = rvp->Next;
+    		i++;
+    	}
+    }
+    li->Current = rvp;
+    return rvp->Data;
 }
 static void *GetCurrent(Iterator *it)
 {
-	struct DequeIterator *li = (struct DequeIterator *)it;
+    struct DequeIterator *li = (struct DequeIterator *)it;
     return li->Current;
 }
 static void *GetFirst(Iterator *it)
 {
-	struct DequeIterator *li = (struct DequeIterator *)it;
-	Deque *L = li->D;
-	if (L->count == 0)
-		return NULL;
-	if (li->timestamp != L->timestamp) {
-		L->RaiseError("GetNext",CONTAINER_ERROR_OBJECT_CHANGED);
-		return NULL;
-	}
-	li->index = 0;
-	li->Current = L->head;
-	return L->head->value;
+    struct DequeIterator *li = (struct DequeIterator *)it;
+    Deque *L = li->D;
+    if (L->count == 0)
+    	return NULL;
+    if (li->timestamp != L->timestamp) {
+    	L->RaiseError("GetNext",CONTAINER_ERROR_OBJECT_CHANGED);
+    	return NULL;
+    }
+    li->index = 0;
+    li->Current = L->head;
+    return L->head->Data;
 }
 
 static Iterator *newIterator(Deque *L)
 {
-	struct DequeIterator *result = L->Allocator->malloc(sizeof(struct DequeIterator));
-	if (result == NULL)
-		return NULL;
-	result->it.GetNext = GetNext;
-	result->it.GetPrevious = GetPrevious;
-	result->it.GetFirst = GetFirst;
-	result->it.GetCurrent = GetCurrent;
-	result->D = L;
-	result->timestamp = L->timestamp;
-	return &result->it;
+    struct DequeIterator *result = L->Allocator->malloc(sizeof(struct DequeIterator));
+    if (result == NULL)
+    	return NULL;
+    result->it.GetNext = GetNext;
+    result->it.GetPrevious = GetPrevious;
+    result->it.GetFirst = GetFirst;
+    result->it.GetCurrent = GetCurrent;
+    result->D = L;
+    result->timestamp = L->timestamp;
+    return &result->it;
 }
 static int deleteIterator(Iterator *it)
 {
-	struct DequeIterator *li;
-	Deque *L;
+    struct DequeIterator *li;
+    Deque *L;
 
-	if (it == NULL) {
-		iError.RaiseError("deleteIterator",CONTAINER_ERROR_BADARG);
-		return CONTAINER_ERROR_BADARG;
-	}
-	li = (struct DequeIterator *)it;
-	L = li->D;
-	L->Allocator->free(it);
-	return 1;
+    if (it == NULL) {
+    	iError.RaiseError("deleteIterator",CONTAINER_ERROR_BADARG);
+    	return CONTAINER_ERROR_BADARG;
+    }
+    li = (struct DequeIterator *)it;
+    L = li->D;
+    L->Allocator->free(it);
+    return 1;
 }
 
 static DestructorFunction SetDestructor(Deque *cb,DestructorFunction fn)
 {
-	DestructorFunction oldfn;
-	if (cb == NULL)
-		return NULL;
-	oldfn = cb->DestructorFn;
-	if (fn)
-		cb->DestructorFn = fn;
-	return oldfn;
+    DestructorFunction oldfn;
+    if (cb == NULL)
+    	return NULL;
+    oldfn = cb->DestructorFn;
+    if (fn)
+    	cb->DestructorFn = fn;
+    return oldfn;
 }
 
 
@@ -593,15 +584,15 @@ DequeInterface iDeque = {
     Contains,
     Remove,
     Finalize,
-	Apply,
-	Equal,
+    Apply,
+    Equal,
     Copy,
-	SetErrorFunction,
-	Sizeof,
-	newIterator,
-	deleteIterator,
-	Save,
-	Load,
+    SetErrorFunction,
+    Sizeof,
+    newIterator,
+    deleteIterator,
+    Save,
+    Load,
     Add,
     AddLeft,
     Reverse,
@@ -609,8 +600,8 @@ DequeInterface iDeque = {
     PeekBack,
     PopFront,
     PeekFront,
-	Create,
-	Init,
-	SetDestructor,
+    Create,
+    Init,
+    SetDestructor,
 };
 
