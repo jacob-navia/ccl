@@ -66,8 +66,14 @@ static Deque * Create(size_t elementsize)
 /* Free the data allocated for the deque and all nodes */
 static int Finalize(Deque * d) 
 {
+    unsigned Flags;
+
+    if (d == NULL) return iError.NullPtrError("iDeque.Finalize");
+    Flags = d->Flags;
     int r = iDeque.Clear(d);
     if (r < 0) return r;
+    if (Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(d,CCL_FINALIZE,NULL,NULL);
     d->Allocator->free(d);
     return r;
 }
@@ -77,7 +83,11 @@ static int Finalize(Deque * d)
 static int Add(Deque * d, void* item) 
 {
     DequeNode newNode;
-    assert(d != NULL);
+    if (d == NULL)
+        return iError.NullPtrError("iDeque.Add");
+
+    if (d->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(d,CCL_ADD,item,NULL);
 
     /* allocate memory for the new node and put it in a valid state */
     newNode = d->Allocator->malloc(sizeof(dlist_element)+d->ElementSize);
@@ -128,9 +138,17 @@ static int AddLeft(Deque * d, void* item) {
 *
  * This operation is O(n) where n is the number of elements in the deque.
 */
-static int Clear(Deque * d) {
+static int Clear(Deque * d) 
+{
     DequeNode tmp;
-    assert(d != NULL);
+
+    if (d == NULL) {
+        return iError.NullPtrError("iDeque.Clear");
+    }
+    if (d->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(d,CCL_CLEAR,NULL,NULL);
+
+
     while (d->head != NULL) {
         tmp = d->head;
         d->head = tmp->Next;
@@ -156,9 +174,9 @@ static int PopFront(Deque * d,void *outbuf)
     void* Data;
     
     if (d == NULL || outbuf == NULL) {
-    	iError.RaiseError("iDeque.PopBack",CONTAINER_ERROR_BADARG);
-    	return CONTAINER_ERROR_BADARG;
+    	return iError.NullPtrError("iDeque.PopBack");
     }
+
     if ((PreviousHead = d->head) == NULL) {
         return 0;
     }
@@ -168,6 +186,9 @@ static int PopFront(Deque * d,void *outbuf)
         Data = PreviousHead->Data;
     	if (d->DestructorFn)
     		d->DestructorFn(PreviousHead);
+        if (d->Flags & CONTAINER_HAS_OBSERVER)
+            iObserver.Notify(d,CCL_POP,Data,NULL);
+
     	d->Allocator->free(PreviousHead);
         memcpy(outbuf,Data,d->ElementSize);
     	return 1;
@@ -281,14 +302,16 @@ static size_t GetCount(Deque * d) {
     return d->count;
 }
 
-/* Copy the deque and return a reference to the new deque
-*
- * This is a shallow copy, so only the deque container data structures are
-* copied, not the Datas referenced.
-*/
-static Deque *Copy(Deque * d) {
+/* Copy the deque and return a reference to the new deque */
+static Deque *Copy(Deque * d) 
+{
     Deque * NewDeque;
     DequeNode tmp;
+
+    if (d == NULL) {
+        iError.NullPtrError("iDeque.Copy");
+        return NULL;
+    }
     NewDeque = Create(d->ElementSize);
     tmp = d->head;
     while (tmp != NULL) {
@@ -299,6 +322,10 @@ static Deque *Copy(Deque * d) {
     NewDeque->compare = d->compare;
     NewDeque->Flags = NewDeque->Flags;
     NewDeque->RaiseError = d->RaiseError;
+
+    if (d->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(d,CCL_COPY,NewDeque,NULL);
+
     return NewDeque;
 }
 
@@ -309,8 +336,7 @@ static int Reverse(Deque * d)
     DequeNode NextNode;
     
     if (d == NULL) {
-    	iError.RaiseError("iDeque.Reverse",CONTAINER_ERROR_BADARG);
-    	return CONTAINER_ERROR_BADARG;
+    	return iError.NullPtrError("iDeque.Reverse");
     }
     if (d->count == 0)
     	return 0;
