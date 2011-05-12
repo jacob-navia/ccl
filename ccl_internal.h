@@ -82,6 +82,15 @@ struct _List {
     ErrorFunction RaiseError;   /* Error function */
     ContainerHeap *Heap;
     ContainerMemoryManager *Allocator;
-        DestructorFunction DestructorFn;
+    DestructorFunction DestructorFn;
 };
+
+/*----------------------------------------------------------------------------*/
+/* Definition of the dlist element type used also by deque                    */
+/*----------------------------------------------------------------------------*/
+typedef struct _dlist_element {
+    struct _dlist_element *Next;
+    struct _dlist_element *Previous;
+    char Data[MINIMUM_ARRAY_INDEX];
+} dlist_element;
 

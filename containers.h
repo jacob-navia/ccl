@@ -69,6 +69,7 @@ typedef struct tagError {
     void (*EmptyErrorFunction)(const char *fname,int errcode,...);
     char *(*StrError)(int errcode);
     ErrorFunction (*SetErrorFunction)(ErrorFunction);
+    int (*NullPtrError)(char *fname);
 } ErrorInterface;
 
 extern ErrorInterface iError;

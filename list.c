@@ -41,8 +41,7 @@ static int NullPtrError(char *fnName)
 	char buf[512];
 	
 	sprintf(buf,"iList.%s",fnName);
-	iError.RaiseError(buf,CONTAINER_ERROR_BADARG);
-	return CONTAINER_ERROR_BADARG;
+	return iError.NullPtrError(buf);
 }
 
 /*------------------------------------------------------------------------
