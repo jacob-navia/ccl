@@ -99,7 +99,7 @@ static int Contains(List *l,void *data)
         if (l)
             l->RaiseError("iList.Contains",CONTAINER_ERROR_BADARG);
         else
-            iError.RaiseError("iList.Contains",CONTAINER_ERROR_BADARG);
+            iError.NullPtrError("iList.Contains");
         return CONTAINER_ERROR_BADARG;
     }
     return (IndexOf(l,data,NULL,&idx) < 0) ? 0 : 1;
@@ -196,41 +196,6 @@ static int Add(List *l,void *elem)
     return r;
 }
 
-
-#if 0
-static int Memset(List *l, void *elem, size_t repeat)
-{
-    list_element *newl;
-    if (l == NULL) {
-        iError.RaiseError("iList.Add",CONTAINER_ERROR_BADARG);
-        return CONTAINER_ERROR_BADARG;
-    }
-    if (elem == NULL) {
-        l->RaiseError("iList.Add",CONTAINER_ERROR_BADARG);
-        return CONTAINER_ERROR_BADARG;
-    }
-    if (l->Flags &CONTAINER_READONLY) {
-        return CONTAINER_ERROR_READONLY;
-    }
-    l->timestamp++;
-    while (repeat > 0) {
-        newl = new_link(l, elem, "iList.Add");
-        if (newl == NULL) {
-            return CONTAINER_ERROR_NOMEMORY;
-        }
-        if (l->count ==  0) {
-            l->First = newl;
-        }
-        else {
-            l->Last->Next = newl;
-        }
-        l->Last = newl;
-        l->count++;
-        repeat--;
-    }
-    return 1;
-}
-#endif
 
 /*------------------------------------------------------------------------
  Procedure:     SetReadOnly ID:1
@@ -403,7 +368,7 @@ static int Finalize(List *l)
     unsigned Flags=0;
 
     if (l) Flags = l->Flags;
-	else return CONTAINER_ERROR_BADARG;
+	else return NullPtrError("Finalize");
     t = Clear(l);
     if (t < 0)
         return t;
@@ -700,7 +665,7 @@ static int InsertIn(List *l, size_t idx,List *newData)
         if (l)
             l->RaiseError("iList.InsertIn",CONTAINER_ERROR_BADARG);
         else
-            iError.RaiseError("iList.InsertIn",CONTAINER_ERROR_BADARG);
+            NullPtrError("InsertIn");
         return CONTAINER_ERROR_BADARG;
     }
     if (l->Flags & CONTAINER_READONLY) {
@@ -987,10 +952,8 @@ static int AddRange(List * AL,size_t n, void *data)
         unsigned char *p;
 	list_element *oldLast;
 
-        if (AL == NULL) {
-                iError.RaiseError("iList.AddRange",CONTAINER_ERROR_BADARG);
-                return CONTAINER_ERROR_BADARG;
-        }
+        if (AL == NULL) return NullPtrError("AddRange");
+        
         if (AL->Flags & CONTAINER_READONLY) {
                 AL->RaiseError("iList.AddRange",CONTAINER_ERROR_READONLY);
                 return CONTAINER_ERROR_READONLY;
@@ -1034,7 +997,7 @@ static int IndexOf(List *l,void *ElementToFind,void *ExtraArgs,size_t *result)
         if (l)
             l->RaiseError("iList.IndexOf",CONTAINER_ERROR_BADARG);
         else
-            iError.RaiseError("iList.IndexOf",CONTAINER_ERROR_BADARG);
+            NullPtrError("IndexOf");
         return CONTAINER_ERROR_BADARG;
     }
     rvp = l->First;
@@ -1070,10 +1033,8 @@ static int Sort(List *l)
     list_element *rvp;
     CompareInfo ci;
 
-    if (l == NULL) {
-        iError.RaiseError("iList.Sort",CONTAINER_ERROR_BADARG);
-        return CONTAINER_ERROR_BADARG;
-    }
+    if (l == NULL) return NullPtrError("Sort");
+    
     if (l->count < 2)
         return 1;
     if (l->Flags&CONTAINER_READONLY) {
@@ -1140,7 +1101,7 @@ static ErrorFunction SetErrorFunction(List *l,ErrorFunction fn)
 {
     ErrorFunction old;
     if (l == NULL) {
-        iError.RaiseError("iList.SetErrorFunction",CONTAINER_ERROR_BADARG);
+        NullPtrError("SetErrorFunction");
         return NULL;
     }
     old = l->RaiseError;
@@ -1161,8 +1122,7 @@ static size_t Sizeof(List *l)
 static int UseHeap(List *L, ContainerMemoryManager *m)
 {
     if (L == NULL) {
-        iError.RaiseError("iList.UseHeap",CONTAINER_ERROR_BADARG);
-        return CONTAINER_ERROR_BADARG;
+        return NullPtrError("UseHeap");
     }
     if (L->Heap || L->count) {
         L->RaiseError("UseHeap",CONTAINER_ERROR_NOT_EMPTY);
@@ -1194,7 +1154,7 @@ static void *Seek(Iterator *it,size_t idx)
     list_element *rvp;
 
 	if (it == NULL) {
-		iError.RaiseError("iList.Seek",CONTAINER_ERROR_BADARG);
+		NullPtrError("Seek");
 		return NULL;
 	}
 	if (li->L->count == 0)
@@ -1236,7 +1196,7 @@ static void *GetNext(Iterator *it)
 
 
     if (li == NULL) {
-        iError.RaiseError("iList.GetNext",CONTAINER_ERROR_BADARG);
+        NullPtrError("GetNext");
         return NULL;
     }
 	L = li->L;
@@ -1266,7 +1226,7 @@ static void *GetPrevious(Iterator *it)
     size_t i;
 
     if (li == NULL) {
-        iError.RaiseError("iList.GetPrevious",CONTAINER_ERROR_BADARG);
+        NullPtrError("GetPrevious");
         return NULL;
     }
 	if (li->L->count == 0)
@@ -1300,7 +1260,7 @@ static void *GetCurrent(Iterator *it)
     struct ListIterator *li = (struct ListIterator *)it;
 
     if (li == NULL) {
-        iError.RaiseError("iList.GetCurrent",CONTAINER_ERROR_BADARG);
+        NullPtrError("GetCurrent");
         return NULL;
     }
 	if (li->L->count == 0)
@@ -1321,7 +1281,7 @@ static void *GetFirst(Iterator *it)
 
 
     if (li == NULL) {
-        iError.RaiseError("iList.GetFirst",CONTAINER_ERROR_BADARG);
+        NullPtrError("GetFirst");
         return NULL;
     }
     L = li->L;
@@ -1345,7 +1305,7 @@ static Iterator *newIterator(List *L)
     struct ListIterator *result;
     
     if (L == NULL) {
-        iError.RaiseError("iList.newIterator",CONTAINER_ERROR_BADARG);
+        NullPtrError("newIterator");
         return NULL;
     }
     result = L->Allocator->malloc(sizeof(struct ListIterator));
@@ -1386,8 +1346,7 @@ static int deleteIterator(Iterator *it)
     List *L;
 
     if (it == NULL) {
-        iError.RaiseError("deleteIterator",CONTAINER_ERROR_BADARG);
-        return CONTAINER_ERROR_BADARG;
+        return NullPtrError("deleteIterator");
     }
     li = (struct ListIterator *)it;
     L = li->L;
@@ -1408,10 +1367,7 @@ static int Save(List *L,FILE *stream, SaveFunction saveFn,void *arg)
     size_t i;
     list_element *rvp;
 
-    if (L == NULL) {
-        iError.RaiseError("iList.Save",CONTAINER_ERROR_BADARG);
-        return CONTAINER_ERROR_BADARG;
-    }
+    if (L == NULL) return NullPtrError("Save");
 
     if (stream == NULL) {
         L->RaiseError("iList.Save",CONTAINER_ERROR_BADARG);
@@ -1454,7 +1410,7 @@ static List *Load(FILE *stream, ReadFunction loadFn,void *arg)
     guid Guid;
 
     if (stream == NULL) {
-        iError.RaiseError("iList.Load",CONTAINER_ERROR_BADARG);
+        NullPtrError("Load");
         return NULL;
     }
     if (loadFn == NULL) {
@@ -1510,8 +1466,8 @@ static size_t GetElementSize(List *l)
     if (l) {
         return l->ElementSize;
     }
-    iError.RaiseError("iList.GetElementSize",CONTAINER_ERROR_BADARG);
-    return (size_t)CONTAINER_ERROR_BADARG;
+    NullPtrError("GetElementSize");
+    return 0;
 }
 
 /*------------------------------------------------------------------------
@@ -1530,7 +1486,7 @@ static List *CreateWithAllocator(size_t elementsize,ContainerMemoryManager *allo
     List *result;
 
     if (elementsize == 0 || elementsize >= INT_MAX) {
-        iError.RaiseError("iList.Create",CONTAINER_ERROR_BADARG);
+        NullPtrError("Create");
         return NULL;
     }
     result = allocator->malloc(sizeof(List));
@@ -1556,7 +1512,7 @@ static List *InitWithAllocator(List *result,size_t elementsize,
 	                       ContainerMemoryManager *allocator)
 {
     if (elementsize == 0) {
-        iError.RaiseError("iList.Init",CONTAINER_ERROR_BADARG);
+        NullPtrError("Init");
         return NULL;
     }
     memset(result,0,sizeof(List));
