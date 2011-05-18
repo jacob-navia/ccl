@@ -76,7 +76,7 @@ static int DefaultDlistCompareFunction(const void *left,const void *right,Compar
 static Dlist *Init(Dlist *result,size_t elementsize)
 {
     if (elementsize == 0) {
-    	iError.RaiseError("iDlist.Create",CONTAINER_ERROR_BADARG);
+    	iError.NullPtrError("iDlist.Create");
     	return NULL;
     }
     memset(result,0,sizeof(Dlist));
@@ -106,7 +106,7 @@ static Dlist *CreateWithAllocator(size_t elementsize,ContainerMemoryManager *all
     Dlist *result,*r;
 
     if (elementsize == 0) {
-    	iError.RaiseError("iDlist.Create",CONTAINER_ERROR_BADARG);
+    	iError.NullPtrError("iDlist.Create");
     	return NULL;
     }
     result = allocator->malloc(sizeof(Dlist));
@@ -148,7 +148,7 @@ static Dlist *Splice ( Dlist *list, void *ppos, Dlist *toInsert, int dir )
 {
     dlist_element *pos = ppos;
     if (( list == NULL ) || ( pos == NULL ) || toInsert == NULL) {
-    	iError.RaiseError("iDlist.Splice",CONTAINER_ERROR_BADARG);
+    	iError.NullPtrError("iDlist.Splice");
     	return NULL;
     }
     if (toInsert->count == 0)
@@ -189,8 +189,7 @@ static int Clear(Dlist *l)
         iObserver.Notify(l,CCL_CLEAR,NULL,NULL);
 
     if (l == NULL) {
-    	iError.RaiseError("iDlist.Size",CONTAINER_ERROR_BADARG);
-    	return CONTAINER_ERROR_BADARG;
+    	return iError.NullPtrError("iDlist.Size");
     }
     if (l->Flags &CONTAINER_READONLY) {
     	l->RaiseError("iDlist.Add",CONTAINER_ERROR_READONLY);
@@ -254,7 +253,7 @@ static int Add(Dlist *l,void *elem)
     	if (l)
     		l->RaiseError("iDlist.Add",CONTAINER_ERROR_BADARG);
     	else
-    		iError.RaiseError("iDlist.Add",CONTAINER_ERROR_BADARG);
+    		iError.NullPtrError("iDlist.Add");
     	return CONTAINER_ERROR_BADARG;
     }
     if (l->Flags &CONTAINER_READONLY) {
@@ -275,8 +274,7 @@ static int AddRange(Dlist * AL,size_t n, void *data)
         unsigned char *p;
 
         if (AL == NULL) {
-                iError.RaiseError("iList.AddRange",CONTAINER_ERROR_BADARG);
-                return CONTAINER_ERROR_BADARG;
+                return iError.NullPtrError("iList.AddRange");
         }
         if (AL->Flags & CONTAINER_READONLY) {
                 AL->RaiseError("iList.AddRange",CONTAINER_ERROR_READONLY);
@@ -313,7 +311,7 @@ static unsigned SetFlags(Dlist *l,unsigned newval)
     int result;
 
     if (l == NULL) {
-    	iError.RaiseError("iDlist.Size",CONTAINER_ERROR_BADARG);
+    	iError.NullPtrError("iDlist.Size");
     	return 0;
     }
     result = l->Flags;
@@ -331,7 +329,7 @@ static unsigned SetFlags(Dlist *l,unsigned newval)
 static unsigned GetFlags(Dlist *l)
 {
     if (l == NULL) {
-    	iError.RaiseError("iDlist.Size",CONTAINER_ERROR_BADARG);
+    	iError.NullPtrError("iDlist.Size");
     	return 0;
     }
     return l->Flags;
@@ -347,8 +345,8 @@ static unsigned GetFlags(Dlist *l)
 static size_t Size(Dlist *l)
 {
     if (l == NULL) {
-    	iError.RaiseError("iDlist.Size",CONTAINER_ERROR_BADARG);
-    	return (size_t)-1;
+    	iError.NullPtrError("iDlist.Size");
+    	return 0;
     }
     return l->count;
 }
@@ -368,7 +366,7 @@ static CompareFunction SetCompareFunction(Dlist *l,CompareFunction fn)
     
 
     if (l == NULL) {
-    	iError.RaiseError("iDlist.Size",CONTAINER_ERROR_BADARG);
+    	iError.NullPtrError("iDlist.Size");
     	return NULL;
     }
     oldfn = l->Compare;
@@ -391,7 +389,7 @@ static Dlist *Copy(Dlist *l)
     dlist_element *rvp,*newRvp,*last;
 
     if (l == NULL) {
-    	iError.RaiseError("iDlist.Size",CONTAINER_ERROR_BADARG);
+    	iError.NullPtrError("iDlist.Size");
     	return 0;
     }
     result = Create(l->ElementSize);
@@ -444,10 +442,8 @@ static int Finalize(Dlist *l)
     int t;
     unsigned Flags;
 
-    if (l == NULL) {
-    	iError.RaiseError("iDlist.Finalize",CONTAINER_ERROR_BADARG);
-    	return CONTAINER_ERROR_BADARG;
-    }
+    if (l == NULL) return iError.NullPtrError("iDlist.Finalize");
+    
     Flags = l->Flags;
     t = Clear(l);
     if (Flags & CONTAINER_HAS_OBSERVER)
@@ -471,7 +467,7 @@ static void * GetElement(Dlist *l,int position)
 
 
     if (l == NULL) {
-    	iError.RaiseError("iDlist.ReplaceAt",CONTAINER_ERROR_BADARG);
+    	iError.NullPtrError("iDlist.ReplaceAt");
     	return 0;
     }
     if (position >= (signed)l->count || position < 0) {
@@ -498,7 +494,7 @@ static int ReplaceAt(Dlist *l,size_t position,void *data)
     	if (l)
     		l->RaiseError("iDlist.ReplaceAt",CONTAINER_ERROR_BADARG);
     	else
-    		iError.RaiseError("iDlist.ReplaceAt",CONTAINER_ERROR_BADARG);
+    		iError.NullPtrError("iDlist.ReplaceAt");
     	return CONTAINER_ERROR_BADARG;
     }
     /* Error checking */
@@ -545,7 +541,7 @@ static Dlist *GetRange(Dlist *l,size_t start,size_t end)
     dlist_element *rvp;
 
     if (l == NULL) {
-    	iError.RaiseError("iDlist.GetRange",CONTAINER_ERROR_BADARG);
+    	iError.NullPtrError("iDlist.GetRange");
     	return 0;
     }
     result = Create(l->ElementSize);
@@ -640,7 +636,7 @@ static int PushFront(Dlist *l,void *pdata)
     	if (l)
     		l->RaiseError("iDlist.PushFront",CONTAINER_ERROR_BADARG);
     	else
-    		iError.RaiseError("iDlist.PushFront",CONTAINER_ERROR_BADARG);
+    		iError.NullPtrError("iDlist.PushFront");
     	return CONTAINER_ERROR_BADARG;
     }
     if (l->Flags & CONTAINER_READONLY) {
@@ -671,7 +667,7 @@ static int PushBack(Dlist *l,void *pdata)
     dlist_element *rvp;
 
     if (l == NULL) {
-    	iError.RaiseError("iDlist.Size",CONTAINER_ERROR_BADARG);
+    	iError.NullPtrError("iDlist.Size");
     	return 0;
     }
     if (l->Flags & CONTAINER_READONLY) {
@@ -709,10 +705,8 @@ static int PopFront(Dlist *l,void *result)
 {
     dlist_element *le;
 
-    if (l == NULL) {
-    	iError.RaiseError("iDlist.PopFront",CONTAINER_ERROR_BADARG);
-    	return CONTAINER_ERROR_BADARG;
-    }
+    if (l == NULL) return iError.NullPtrError("iDlist.PopFront");
+    
     if (l->count == 0)
     	return 0;
     if (l->Flags & CONTAINER_READONLY) {
@@ -743,10 +737,8 @@ static int PopBack(Dlist *l,void *result)
 {
     dlist_element *le;
 
-    if (l == NULL) {
-    	iError.RaiseError("iDlist.PopBack",CONTAINER_ERROR_BADARG);
-    	return CONTAINER_ERROR_BADARG;
-    }
+    if (l == NULL) return iError.NullPtrError("iDlist.PopBack");
+    
     if (l->count == 0)
     	return 0;
     if (l->Flags & CONTAINER_READONLY) {
@@ -778,7 +770,7 @@ static int InsertAt(Dlist *l,size_t pos,void *pdata)
     	if (l)
     		l->RaiseError("iDlist.InsertAt",CONTAINER_ERROR_BADARG);
     	else
-    		iError.RaiseError("iDlist.InsertAt",CONTAINER_ERROR_BADARG);
+    		iError.NullPtrError("iDlist.InsertAt");
     	return CONTAINER_ERROR_BADARG;
     }
     if (pos > l->count) {
@@ -830,7 +822,7 @@ static int InsertIn(Dlist *l, size_t idx,Dlist *newData)
     	if (l)
     		l->RaiseError("iDlist.InsertIn",CONTAINER_ERROR_BADARG);
     	else
-    		iError.RaiseError("iDlist.InsertIn",CONTAINER_ERROR_BADARG);
+    		iError.NullPtrError("iDlist.InsertIn");
     	return CONTAINER_ERROR_BADARG;
     }
     if (l->Flags & CONTAINER_READONLY) {
@@ -882,10 +874,8 @@ static int EraseAt(Dlist *l,size_t position)
     dlist_element *rvp=NULL,*last;
     void *removed=NULL;
 
-    if (l == NULL) {
-    	iError.RaiseError("iDlist.InsertIn",CONTAINER_ERROR_BADARG);
-    	return CONTAINER_ERROR_BADARG;
-    }
+    if (l == NULL) return iError.NullPtrError("iDlist.InsertIn");
+    
     if (position >= l->count) {
     	l->RaiseError("iDlist.EraseAt",CONTAINER_ERROR_INDEX);
     	return CONTAINER_ERROR_INDEX;
@@ -937,10 +927,8 @@ static int Reverse(Dlist *l)
 {
     dlist_element *tmp,*rvp;
 
-    if (l == NULL) {
-    	iError.RaiseError("Reverse",CONTAINER_ERROR_BADARG);
-    	return CONTAINER_ERROR_BADARG;
-    }
+    if (l == NULL)  iError.NullPtrError("iDlist.Reverse");
+    
     if (l->Flags & CONTAINER_READONLY) {
     	l->RaiseError("iDlist.Reverse",CONTAINER_ERROR_READONLY);
     	return CONTAINER_ERROR_READONLY;
@@ -979,7 +967,7 @@ static int IndexOf(Dlist *l,void *ElementToFind, void * args,size_t *result)
     	if (l)
     		l->RaiseError("iDlist.IndexOf",CONTAINER_ERROR_BADARG);
     	else
-    		iError.RaiseError("iDlist.IndexOf",CONTAINER_ERROR_BADARG);
+    		iError.NullPtrError("iDlist.IndexOf");
     	return CONTAINER_ERROR_BADARG;
     }
     rvp = l->First;
@@ -1007,7 +995,7 @@ static int Erase(Dlist *l,void *elem)
     	if (l)
     		l->RaiseError("iDlist.Erase",CONTAINER_ERROR_BADARG);
     	else
-    		iError.RaiseError("iDlist.Erase",CONTAINER_ERROR_BADARG);
+    		iError.NullPtrError("iDlist.Erase");
     	return CONTAINER_ERROR_BADARG;
     }
     i = IndexOf(l,elem,NULL,&idx);
@@ -1032,7 +1020,7 @@ static int Contains(Dlist *l,void *data)
     	if (l)
     		l->RaiseError("iDlist.Contains",CONTAINER_ERROR_BADARG);
     	else
-    		iError.RaiseError("iDlist.Contains",CONTAINER_ERROR_BADARG);
+    		iError.NullPtrError("iDlist.Contains");
     	return CONTAINER_ERROR_BADARG;
     }
     i = IndexOf(l,data,NULL,&r);
@@ -1047,7 +1035,7 @@ static int CopyElement(Dlist *l,size_t position,void *outBuffer)
     	if (l)
     		l->RaiseError("iDlist.CopyElement",CONTAINER_ERROR_BADARG);
     	else
-    		iError.RaiseError("iDlist.CopyElement",CONTAINER_ERROR_BADARG);
+    		iError.NullPtrError("iDlist.CopyElement");
     	return CONTAINER_ERROR_BADARG;
     }
     if (position >= l->count) {
@@ -1091,10 +1079,8 @@ static int Sort(Dlist *l)
     dlist_element *rvp;
     CompareInfo ci;
 
-    if (l == NULL) {
-    	iError.RaiseError("iDlist.Sort",CONTAINER_ERROR_BADARG);
-    	return CONTAINER_ERROR_BADARG;
-    }
+    if (l == NULL) return iError.NullPtrError("iDlist.Sort");
+    
     if (l->Flags&CONTAINER_READONLY) {
     	l->RaiseError("iDlist.Sort",CONTAINER_ERROR_READONLY);
     	return CONTAINER_ERROR_READONLY;
@@ -1131,11 +1117,7 @@ static int Apply(Dlist *L,int (Applyfn)(void *,void *),void *arg)
 {
     dlist_element *le;
 
-
-    if (L == NULL) {
-    	iError.RaiseError("iDist.Apply",CONTAINER_ERROR_BADARG);
-    	return CONTAINER_ERROR_BADARG;
-    }
+    if (L == NULL)  return iError.NullPtrError("iDist.Apply");
     if (Applyfn == NULL) {
     	L->RaiseError("iDlist.Apply",CONTAINER_ERROR_BADARG);
     	return CONTAINER_ERROR_BADARG;
@@ -1153,8 +1135,8 @@ static ErrorFunction SetErrorFunction(Dlist *l,ErrorFunction fn)
     ErrorFunction old;
 
     if (l == NULL) {
-    	iError.RaiseError("iDlist.SetErrorFunction",CONTAINER_ERROR_BADARG);
-    	return 0;
+    	iError.NullPtrError("iDlist.SetErrorFunction");
+    	return NULL;
     }
     old = l->RaiseError;
     if (fn)
@@ -1239,7 +1221,7 @@ static void *GetCurrent(Iterator *it)
     struct DListIterator *li = (struct DListIterator *)it;
     
     if (li == NULL) {
-        iError.RaiseError("iDlist.GetCurrent",CONTAINER_ERROR_BADARG);
+        iError.NullPtrError("iDlist.GetCurrent");
         return NULL;
     }
     if (li->L->count == 0)
@@ -1259,7 +1241,7 @@ static Iterator *newIterator(Dlist *L)
     struct DListIterator *result;
     
     if (L == NULL) {
-    	iError.RaiseError("iDlist.newIterator",CONTAINER_ERROR_BADARG);
+    	iError.NullPtrError("iDlist.newIterator");
     	return NULL;
     }
     result = L->Allocator->malloc(sizeof(struct DListIterator));
@@ -1278,10 +1260,8 @@ static Iterator *newIterator(Dlist *L)
 static int Append(Dlist *l1, Dlist *l2)
 {
 
-    if (l1 == NULL || l2 == NULL) {
-    	iError.RaiseError("iDlist.Append",CONTAINER_ERROR_BADARG);
-    	return CONTAINER_ERROR_BADARG;
-    }
+    if (l1 == NULL || l2 == NULL)  return iError.NullPtrError("iDlist.Append");
+    
     if ((l1->Flags & CONTAINER_READONLY) || (l2->Flags & CONTAINER_READONLY)) {
     	l1->RaiseError("iDlist.Append",CONTAINER_ERROR_READONLY);
     	return CONTAINER_ERROR_READONLY;
@@ -1314,7 +1294,7 @@ static int Append(Dlist *l1, Dlist *l2)
 static size_t GetElementSize(Dlist *d) 
 { 
     if (d == NULL) {
-    	iError.RaiseError("iDlist.GetElementSize",CONTAINER_ERROR_BADARG);
+    	iError.NullPtrError("iDlist.GetElementSize");
     	return 0;
     }
 
@@ -1333,10 +1313,8 @@ static int deleteIterator(Iterator *it)
     struct DListIterator *li = (struct DListIterator *)it;
     Dlist *L;
     
-    if (it == NULL) {
-    	iError.RaiseError("iDlist.DeleteIterator",CONTAINER_ERROR_BADARG);
-    	return CONTAINER_ERROR_BADARG;
-    }
+    if (it == NULL) return iError.NullPtrError("iDlist.DeleteIterator");
+    
     L = li->L;
     L->Allocator->free(it);
     return 1;
@@ -1358,7 +1336,7 @@ static int Save(Dlist *L,FILE *stream, SaveFunction saveFn,void *arg)
     	if (L)
     		L->RaiseError("iDlist.Save",CONTAINER_ERROR_BADARG);
     	else
-    		iError.RaiseError("iDlist.Save",CONTAINER_ERROR_BADARG);
+    		iError.NullPtrError("iDlist.Save");
     	return CONTAINER_ERROR_BADARG;
     }
     if (saveFn == NULL) {
@@ -1396,7 +1374,7 @@ static Dlist *Load(FILE *stream, ReadFunction loadFn,void *arg)
     guid Guid;
 
     if (stream == NULL) {
-    	iError.RaiseError("iDlist.Load",CONTAINER_ERROR_BADARG);
+    	iError.NullPtrError("iDlist.Load");
     	return NULL;
     }
     if (loadFn == NULL) {
