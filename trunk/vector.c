@@ -13,8 +13,7 @@ static int NullPtrError(const char *fnName)
 	char buf[512];
 
 	sprintf(buf,"iVector.%s",fnName);
-	iError.RaiseError(buf,CONTAINER_ERROR_BADARG);
-	return CONTAINER_ERROR_BADARG;
+	return iError.NullPtrError(buf);
 }
 
 static int doerror(const Vector *AL,const char *fnName,int code)
@@ -388,7 +387,7 @@ static int CopyElement(Vector *AL,size_t idx, void *outbuf)
 		if (AL)
 			AL->RaiseError("iVector.CopyElement",CONTAINER_ERROR_BADARG);
 		else
-			iError.RaiseError("iVector.CopyElement",CONTAINER_ERROR_BADARG);
+			NullPtrError("CopyElement");
 		return CONTAINER_ERROR_BADARG;
 	}
 	if (idx >= AL->count) {
@@ -713,8 +712,7 @@ static int Mismatch(Vector *a1, Vector *a2,size_t *mismatch)
 	if (a1 == a2)
 		return 0;
 	if (a1 == NULL || a2 == NULL || mismatch == NULL) {
-		iError.RaiseError("iVector.Mismatch",CONTAINER_ERROR_BADARG);
-		return CONTAINER_ERROR_BADARG;
+		return NullPtrError("Mismatch");
 	}
 	if (a1->CompareFn != a2->CompareFn || a1->ElementSize  != a2->ElementSize)
 		return CONTAINER_ERROR_INCOMPATIBLE;
@@ -813,7 +811,7 @@ static int ReplaceAt(Vector *AL,size_t idx,void *newval)
 		if (AL)
 			AL->RaiseError("iVector.ReplaceAt",CONTAINER_ERROR_BADARG);
 		else
-			iError.RaiseError("iVector.ReplaceAt",CONTAINER_ERROR_BADARG);
+			NullPtrError("ReplaceAt");
 		return CONTAINER_ERROR_BADARG;
 	}
 	if (AL->Flags & CONTAINER_READONLY) {
@@ -876,7 +874,7 @@ static ErrorFunction SetErrorFunction(Vector *AL,ErrorFunction fn)
 	ErrorFunction old;
 
 	if (AL == NULL) {
-		iError.RaiseError("iVector.SetErrorFunction",CONTAINER_ERROR_BADARG);
+		iError.NullPtrError("SetErrorFunction");
 		return 0;
 	}
 	old = AL->RaiseError;
