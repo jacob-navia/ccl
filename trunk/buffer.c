@@ -43,7 +43,7 @@ static StreamBuffer *Create(size_t size)
 	return CreateWithAllocator(size,CurrentMemoryManager);
 }
 
-static int resizeBuffer(StreamBuffer *b,size_t chunkSize)
+static int enlargeBuffer(StreamBuffer *b,size_t chunkSize)
 {
 	char *p;
 	size_t newSiz;
@@ -66,7 +66,7 @@ static size_t Write(StreamBuffer *b,void *data, size_t siz)
 		return 0;
 	}
 	if (b->Cursor + siz > b->Size) {
-		int r = resizeBuffer(b,siz);
+		int r = enlargeBuffer(b,siz);
 		if (r < 0)
 			return 0;
 	}
@@ -147,7 +147,28 @@ static char *GetData(StreamBuffer *b)
 		return NULL;
 	}
 	return b->Data;
-}	
+}
+
+static int Resize(StreamBuffer *b,size_t newSize)
+{
+	char *tmp;
+
+	if (b == NULL) {
+		iError.RaiseError("iStreamBuffer.Resize",CONTAINER_ERROR_BADARG);
+		return CONTAINER_ERROR_BADARG;
+	}
+	if (newSize == b->Size)
+		return 0;
+	tmp = b->Allocator->realloc(b->Data,newSize);
+	if (tmp == NULL) {
+		iError.RaiseError("iStreamBuffer.Resize",CONTAINER_ERROR_NOMEMORY);
+		return CONTAINER_ERROR_NOMEMORY;
+	}
+	b->Data = tmp;
+	b->Size = newSize;
+	return 1;
+	
+}
 StreamBufferInterface iStreamBuffer = {
 Create,
 CreateWithAllocator,
@@ -159,6 +180,7 @@ GetPosition,
 StreamBufferSize,
 Clear,
 Finalize,
+Resize,
 };
 /* --------------------------------------------------------------------------
                                Circular buffers

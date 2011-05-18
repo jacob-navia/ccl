@@ -275,6 +275,7 @@ typedef struct tagStreamBufferInterface {
     size_t (*Size)(StreamBuffer *b);
     int (*Clear)(StreamBuffer *b);
     int (*Finalize)(StreamBuffer *b);
+    int (*Resize)(StreamBuffer *b,size_t newSize);
 } StreamBufferInterface;
 extern StreamBufferInterface iStreamBuffer;
 /************************************************************************** */

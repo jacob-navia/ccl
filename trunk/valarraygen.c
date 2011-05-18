@@ -72,8 +72,7 @@ static unsigned GetFlags(const ValArray *AL)
 }
 static unsigned SetFlags(ValArray *AL,unsigned newval)
 {
-	unsigned oldval;
-	oldval = AL->Flags;
+	unsigned oldval = AL->Flags;
 	AL->Flags = newval;
 	return oldval;
 }
@@ -127,11 +126,10 @@ static int ResizeTo(ValArray *AL,size_t newcapacity)
 static int Add(ValArray *AL,ElementType newval)
 {
 	int r;
-	size_t pos;
-	pos = AL->count;
+	size_t pos = AL->count;
 	if (AL->Slice)
 		pos += AL->Slice->increment-1;
-	if ( pos >= AL->capacity) {
+	if (pos >= AL->capacity) {
 		if (pos != AL->count)
 			r = ResizeTo(AL,pos+pos/2);
 		else
@@ -141,13 +139,13 @@ static int Add(ValArray *AL,ElementType newval)
 	}
 	AL->contents[pos] = newval;
 	AL->timestamp++;
-	if (AL->Flags & CONTAINER_HAS_OBSERVER)
-		iObserver.Notify(AL,CCL_ADD,&newval,AL->Slice);
 	++AL->count;
 	if (AL->Slice) {
 		AL->Slice->length++;
 		AL->count += AL->Slice->increment-1;
 	}
+	if (AL->Flags & CONTAINER_HAS_OBSERVER)
+		iObserver.Notify(AL,CCL_ADD,&newval,AL->Slice);
 	return 1;
 }
 
