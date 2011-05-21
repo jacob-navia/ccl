@@ -103,6 +103,7 @@ static int ResizeTo(ValArray *AL,size_t newcapacity)
 {
 	ElementType *oldcontents;
 	
+	if (AL->capacity == newcapacity) return 0;
 	oldcontents = AL->contents;
 	AL->contents = AL->Allocator->realloc(AL->contents,newcapacity*sizeof(ElementType));
 	if (AL->contents == NULL) {
@@ -1908,7 +1909,7 @@ static ElementType Accumulate(ValArray *src)
         for (i=start; i<length;i += incr) {
 		result += src->contents[i];
         }
-        return 1;
+        return result;
 }
 
 
@@ -1927,7 +1928,7 @@ static ElementType Product(ValArray *src)
         for (i=start; i<length;i += incr) {
 		result *= src->contents[i];
         }
-        return 1;
+        return result;
 }
 
 
