@@ -669,6 +669,7 @@ typedef struct tagVector {
     int (*SearchWithKey)(Vector *vec,size_t startByte,size_t sizeKey,size_t startIndex,void *item,size_t *result);
     int (*Select)(Vector *src,Mask *m);
     Vector *(*SelectCopy)(Vector *src,Mask *m);
+    int (*ResizeTo)(Vector *AL,size_t newcapacity);
 
 } VectorInterface;
 
