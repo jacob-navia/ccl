@@ -124,10 +124,14 @@ static int Resize(Vector *AL)
 static int ResizeTo(Vector *AL,size_t newcapacity)
 {
 	void **oldcontents;
-	
+
 	if (AL == NULL) {
 		return NullPtrError("ResizeTo");
 	}
+	if (AL->Flags & CONTAINER_READONLY)
+		return ErrorReadOnly(AL,"Resize");
+	if (AL->capacity == newcapacity)
+		return 0;
 	oldcontents = AL->contents;
 	AL->contents = AL->Allocator->realloc(AL->contents,newcapacity*AL->ElementSize);
 	if (AL->contents == NULL) {
@@ -1528,4 +1532,5 @@ VectorInterface iVector = {
 	SearchWithKey,
 	Select,
 	SelectCopy,
+	ResizeTo,
 };
