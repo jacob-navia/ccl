@@ -927,8 +927,9 @@ static int Reverse(Dlist *l)
 {
     dlist_element *tmp,*rvp;
 
-    if (l == NULL)  iError.NullPtrError("iDlist.Reverse");
-    
+    if (l == NULL)  {
+		return iError.NullPtrError("iDlist.Reverse");
+	}
     if (l->Flags & CONTAINER_READONLY) {
     	l->RaiseError("iDlist.Reverse",CONTAINER_ERROR_READONLY);
     	return CONTAINER_ERROR_READONLY;
