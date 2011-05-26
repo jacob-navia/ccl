@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <wchar.h>
 #ifdef _MSC_VER
 /* Use the library provided stdint.h since microsoft doesn't
    provide one. Note that it is provided for 32 bits only */
@@ -366,7 +367,7 @@ typedef struct tagStringCollection {
     Vector *(*FindTextPositions)(StringCollection *SC,unsigned char *text);
     int (*WriteToFile)(StringCollection *SC, unsigned char *filename);
     StringCollection *(*IndexIn)(const StringCollection *SC,const Vector *AL);
-    StringCollection *(*CreateFromFile)(unsigned char *fileName);
+    StringCollection *(*CreateFromFile)(const unsigned char *fileName);
     StringCollection *(*Create)(size_t startsize);
     StringCollection *(*CreateWithAllocator)(size_t startsize,ContainerMemoryManager *allocator);
 
@@ -398,6 +399,107 @@ typedef struct tagStringCollection {
 } StringCollectionInterface;
 
 extern StringCollectionInterface iStringCollection;
+
+/************************************************************************** */
+/*                                                                          */
+/*                            Wide String Collections                            */
+/*                                                                          */
+/************************************************************************** */
+typedef struct WStringCollection WStringCollection;
+
+typedef int (*WStringCompareFn)(const wchar_t *s1,const wchar_t *s2,CompareInfo *info);
+typedef struct tagWStringCollection {
+	/* -----------------------------------------------This is the generic container part */
+    /* Returns the number of elements stored */
+    size_t (*Size)(WStringCollection *SC);
+    /* Flags for this container */
+    unsigned (*GetFlags)(WStringCollection *SC);
+    /* Sets this collection read-only or unsets the read-only flag */
+    unsigned (*SetFlags)(WStringCollection *SC,unsigned flags);
+    /* Clears all data and frees the memory */
+    int (*Clear)(WStringCollection *SC);
+    /*Case sensitive search of a character string in the data */
+    int (*Contains)(WStringCollection *SC,wchar_t *str);
+    /* erases the given string if found */
+    int (*Erase)(WStringCollection *SC,wchar_t *);
+    /* Frees the memory used by the collection */
+    int (*Finalize)(WStringCollection *SC);
+    /* Calls the given function for all strings. "Arg" is a used supplied argument */
+    /* that can be NULL that is passed to the function to call */
+    int (*Apply)(WStringCollection *SC,int (*Applyfn)(wchar_t *,void * arg),void *arg);
+    /* Compares two string collections */
+    int (*Equal)(WStringCollection *SC1,WStringCollection *SC2);
+    /* Copy a string collection */
+    WStringCollection *(*Copy)(WStringCollection *SC);
+    /* Set or unset the error function */
+    ErrorFunction (*SetErrorFunction)(WStringCollection *SC,ErrorFunction fn);
+    /* Memory used by the string collection object and its data */
+    size_t (*Sizeof)(WStringCollection *SC);
+    Iterator *(*newIterator)(WStringCollection *SC);
+    int (*deleteIterator)(Iterator *);
+    /* Writes the string collection in binary form to a stream */
+    int (*Save)(WStringCollection *SC,FILE *stream, SaveFunction saveFn,void *arg);
+    WStringCollection *(*Load)(FILE *stream, ReadFunction readFn,void *arg);
+    size_t (*GetElementSize)(const WStringCollection *SC);
+	/* -------------------------------------------This is the Sequential container part */
+    /* Adds one element at the end. Given string is copied */
+    int (*Add)(WStringCollection *SC,wchar_t *newval);
+    /* Pushes a string, using the collection as a stack */
+    int (*PushFront)(WStringCollection *SC,wchar_t *str);
+    /* Pops the first (position zero) string of the collection */
+    size_t (*PopFront)(WStringCollection *SC,wchar_t *outbuf,size_t buflen);
+    /* Inserts a string at the given position */
+    int (*InsertAt)(WStringCollection *SC,size_t idx,wchar_t *newval);
+    /*erases the string at the indicated position */
+    int (*EraseAt)(WStringCollection *SC,size_t idx);
+    /* Replaces the character string at the given position with a new one */
+    int (*ReplaceAt)(WStringCollection *SC,size_t idx,wchar_t *newval);
+    /*Returns the index of the given string or -1 if not found */
+	int (*IndexOf)(WStringCollection *SC,wchar_t *SearchedString,size_t *result);
+	/* ---------------------------------------------This is the specific container part */
+    bool (*Sort)(WStringCollection *SC);
+    struct _Vector *(*CastToArray)(WStringCollection *SC);
+    size_t (*FindFirstText)(WStringCollection *SC,wchar_t *text);
+    size_t (*FindNextText)(WStringCollection *SC, wchar_t *text,size_t start);
+    WStringCollection *(*FindText)(WStringCollection *SC,wchar_t *text);
+    Vector *(*FindTextIndex)(WStringCollection *SC,wchar_t *text);
+    Vector *(*FindTextPositions)(WStringCollection *SC,wchar_t *text);
+    int (*WriteToFile)(WStringCollection *SC, unsigned char *filename);
+    WStringCollection *(*IndexIn)(const WStringCollection *SC,const Vector *AL);
+    WStringCollection *(*CreateFromFile)(const unsigned char *fileName);
+    WStringCollection *(*Create)(size_t startsize);
+    WStringCollection *(*CreateWithAllocator)(size_t startsize,ContainerMemoryManager *allocator);
+	
+    /* Adds a NULL terminated table of strings */
+    int (*AddRange)(WStringCollection *SC,size_t n,wchar_t **newvalues);
+    /* Copies all strings into a NULL terminated vector */
+    wchar_t **(*CopyTo)(WStringCollection *SC);
+	
+    /* Inserts a string at the position zero. */
+    int (*Insert)(WStringCollection *SC,wchar_t *);
+    int (*InsertIn)(WStringCollection *source, size_t idx, WStringCollection *newData);
+    /* Returns the string at the given position */
+    wchar_t *(*GetElement)(const WStringCollection *SC,size_t idx);
+    /* Returns the current capacity of the collection */
+    size_t (*GetCapacity)(WStringCollection *SC);
+    /* Sets the capacity if there are no items in the collection */
+    int (*SetCapacity)(WStringCollection *SC,size_t newCapacity);
+    WStringCompareFn (*SetCompareFunction)(WStringCollection *SC,WStringCompareFn);
+    int (*Reverse)(WStringCollection *SC);
+    int (*Append)(WStringCollection *,WStringCollection *);
+    size_t (*PopBack)(WStringCollection *,wchar_t *result,size_t bufsize);
+    int (*PushBack)(WStringCollection *,wchar_t *data);
+    WStringCollection *(*GetRange)(WStringCollection *SC, size_t start,size_t end);
+    ContainerMemoryManager *(*GetAllocator)(WStringCollection *AL);
+    int (*Mismatch)(WStringCollection *a1,WStringCollection *a2,size_t *mismatch);
+    WStringCollection *(*InitWithAllocator)(WStringCollection *result,size_t startsize,ContainerMemoryManager *allocator);
+    WStringCollection *(*Init)(WStringCollection *result,size_t startsize);
+    DestructorFunction (*SetDestructor)(WStringCollection *v,DestructorFunction fn);
+} WStringCollectionInterface;
+
+extern WStringCollectionInterface iWStringCollection;
+
+
 
 /* -------------------------------------------------------------------------
  * LIST Interface                                                           *
@@ -453,7 +555,7 @@ typedef struct tagList {
     List *(*GetRange)(List *l,size_t start,size_t end);
     /* Add a list at the end of another */
     int (*Append)(List *l1,List *l2);
-    /* Set The comparison function */
+    /* Set the comparison function */
     CompareFunction (*SetCompareFunction)(List *l,CompareFunction fn);
     CompareFunction Compare;
     void *(*Seek)(Iterator *it,size_t pos);
