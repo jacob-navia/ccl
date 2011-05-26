@@ -13,6 +13,7 @@
    The resulting line is allocated with the given memory manager
 */
 int GetLine(unsigned char **LinePointer,int *n, FILE *stream,ContainerMemoryManager *mm);
+int WGetLine(wchar_t **LinePointer,int *n, FILE *stream,ContainerMemoryManager *mm);
 typedef struct {
         uint32_t Data1;
         uint16_t Data2;
