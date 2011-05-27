@@ -160,28 +160,28 @@ static int printStr(char *str,void *file)
 }
 #endif
 #if 0
-static void printStringCollection(StringCollection *sc)
+static void printstrCollection(strCollection *sc)
 {
-	iStringCollection.Apply(sc,printStr,stdout);
+	istrCollection.Apply(sc,printStr,stdout);
 }
 
 
-static int LoadSaveStringCollection(StringCollection *sc)
+static int LoadSavestrCollection(strCollection *sc)
 {
-	StringCollection *result;
+	strCollection *result;
 	FILE *f = fopen("strCollection.txt","wb");
 	if (f == NULL)
 		return 1;
-	if (iStringCollection.Save(sc,f,NULL,NULL) < 0)
+	if (istrCollection.Save(sc,f,NULL,NULL) < 0)
 		return 1;
 	fclose(f);
 	f = fopen("strCollection.txt","rb");
 	if (f == NULL)
 		return 1;
-	result = iStringCollection.Load(f,NULL,NULL);
+	result = istrCollection.Load(f,NULL,NULL);
 	if (result == NULL)
 		return 1;
-	if (!iStringCollection.Equal(result,sc))
+	if (!istrCollection.Equal(result,sc))
 		return 1;
 	fclose(f);
 	remove("strCollection.txt");
@@ -255,62 +255,62 @@ static void TestBitstring(void){
 }
 
 #include <stdio.h>
-static void PrintStringCollection(StringCollection *SC){
+static void PrintstrCollection(strCollection *SC){
     size_t i;
-    printf("Count %d, Capacity %d\n",(int)iStringCollection.Size(SC),(int)iStringCollection.GetCapacity(SC));
-    for (i=0; i<iStringCollection.Size(SC);i++) {
-        printf("%s\n",iStringCollection.GetElement(SC,i));
+    printf("Count %d, Capacity %d\n",(int)istrCollection.Size(SC),(int)istrCollection.GetCapacity(SC));
+    for (i=0; i<istrCollection.Size(SC);i++) {
+        printf("%s\n",istrCollection.GetElement(SC,i));
     }
     printf("\n");
 }
-static void testStringCollection(void)
+static void teststrCollection(void)
 {
-    StringCollection *SC = iStringCollection.Create(10);
+    strCollection *SC = istrCollection.Create(10);
     unsigned char *p,buf[40];
 	size_t idx;
-    iStringCollection.Add(SC,(unsigned char *)"Martin");
-    iStringCollection.Insert(SC,(unsigned char *)"Jakob");
-    if (!iStringCollection.Contains(SC,(unsigned char *)"Martin")) {
+    istrCollection.Add(SC,(unsigned char *)"Martin");
+    istrCollection.Insert(SC,(unsigned char *)"Jakob");
+    if (!istrCollection.Contains(SC,(unsigned char *)"Martin")) {
         Abort();
     }
-    if (2 != iStringCollection.Size(SC))
+    if (2 != istrCollection.Size(SC))
 		Abort();
-    iStringCollection.InsertAt(SC,1,(unsigned char *)"Position 1");
-    iStringCollection.InsertAt(SC,2,(unsigned char *)"Position 2");
-	if (0 == iStringCollection.Contains(SC,(unsigned char *)"Position 1"))
+    istrCollection.InsertAt(SC,1,(unsigned char *)"Position 1");
+    istrCollection.InsertAt(SC,2,(unsigned char *)"Position 2");
+	if (0 == istrCollection.Contains(SC,(unsigned char *)"Position 1"))
 		Abort();
-	iStringCollection.IndexOf(SC,(unsigned char *)"Position 2",&idx);
+	istrCollection.IndexOf(SC,(unsigned char *)"Position 2",&idx);
 	if (idx != 2)
 		Abort();
-	if (4 != iStringCollection.Size(SC))
+	if (4 != istrCollection.Size(SC))
 		Abort();
-    iStringCollection.Erase(SC,(unsigned char *)"Jakob");
-    if (iStringCollection.Contains(SC,(unsigned char *)"Jakob"))
+    istrCollection.Erase(SC,(unsigned char *)"Jakob");
+    if (istrCollection.Contains(SC,(unsigned char *)"Jakob"))
 		Abort();
-	if (3 != iStringCollection.Size(SC))
+	if (3 != istrCollection.Size(SC))
 		Abort();
-    iStringCollection.PushFront(SC,(unsigned char *)"pushed");
-	if (4 != iStringCollection.Size(SC))
+    istrCollection.PushFront(SC,(unsigned char *)"pushed");
+	if (4 != istrCollection.Size(SC))
 		Abort();
-	iStringCollection.IndexOf(SC,(unsigned char *)"pushed",&idx);
+	istrCollection.IndexOf(SC,(unsigned char *)"pushed",&idx);
 	if (0 != idx)
 		Abort();
-    iStringCollection.PopFront(SC,(unsigned char *)buf,sizeof(buf));
-	if (3 != iStringCollection.Size(SC))
+    istrCollection.PopFront(SC,(unsigned char *)buf,sizeof(buf));
+	if (3 != istrCollection.Size(SC))
 		Abort();
 	if (strcmp((char *)buf,"pushed"))
 		Abort();
-    PrintStringCollection(SC);
-    p = iStringCollection.GetElement(SC,1);
+    PrintstrCollection(SC);
+    p = istrCollection.GetElement(SC,1);
     printf("Item position 1:%s\n",p);
-    PrintStringCollection(SC);
-	iStringCollection.Finalize(SC);
+    PrintstrCollection(SC);
+	istrCollection.Finalize(SC);
 #if 0
 	/* Here you should add a file path (text file)
 	   that can be used to test the string collection */
-	SC = iStringCollection.CreateFromFile((unsigned char *)"../../test.c");
-	PrintStringCollection(SC);
-	iStringCollection.Finalize(SC);
+	SC = istrCollection.CreateFromFile((unsigned char *)"../../test.c");
+	PrintstrCollection(SC);
+	istrCollection.Finalize(SC);
 #endif
 }
 
@@ -487,11 +487,11 @@ int main(void)
 #if 1
 	int errors=0;
 	errors += testBloomFilter();
-    testStringCollection();
+    teststrCollection();
 	errors += testVector();
 	testList();
 	testBinarySearchTree();
-	testStringCollection();
+	teststrCollection();
 	TestDictionary();
 	TestBitstring();
 	testScapegoatTree();

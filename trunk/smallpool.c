@@ -15,8 +15,6 @@ typedef unsigned int uint32_t;
 #define ALIGN(size, boundary) (((size) + ((boundary) - 1)) & ~((boundary) - 1))
 #define ALIGN_DEFAULT(size) ALIGN(size, 8)
 
-/** The fundamental pool type */
-typedef struct Pool Pool;
 /*
 * Note The max_free_index and current_free_index fields are not really
 * indices, but quantities of BOUNDARY_SIZE big memory blocks.
