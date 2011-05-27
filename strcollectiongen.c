@@ -51,6 +51,7 @@ static int encode_ule128(FILE *stream,size_t val)
 }
 
 #ifdef WCHAR_TYPE
+#ifdef __MAC_OSX
 static int wcscasecmp (const wchar_t* s1, const wchar_t* s2) 
 { 
   wchar_t* s1_lower; 
@@ -78,13 +79,14 @@ static int wcscasecmp (const wchar_t* s1, const wchar_t* s2)
   return result; 
 } 
 #endif
+#endif
 
 
 static int NullPtrError(const char *fnName)
 {
 	char buf[512];
 
-	snprintf(buf,sizeof(buf),"iStringCollection.%s",fnName);
+	snprintf(buf,sizeof(buf),"istrCollection.%s",fnName);
 	iError.RaiseError(buf,CONTAINER_ERROR_BADARG);
 	return CONTAINER_ERROR_BADARG;
 }
@@ -150,12 +152,12 @@ static CHAR_TYPE *DuplicateString(ElementType *SC,CHAR_TYPE *str,const char *fnn
 {
     CHAR_TYPE *result;
     if (str == NULL)      return NULL;
-    result = SC->Allocator->malloc(1+sizeof(CHAR_TYPE)*STRLEN(str));
+    result = SC->Allocator->malloc(sizeof(CHAR_TYPE)*(1+STRLEN(str)));
     if (result == NULL) {
         NoMemoryError(SC,fnname);
         return NULL;
     }
-    STRCPY((CHAR_TYPE *)result,(CHAR_TYPE *)str);
+    STRCPY(result,str);
     return result;
 }
 
@@ -500,7 +502,7 @@ static ElementType *IndexIn(const ElementType *SC,const Vector *AL)
 		return NULL;
 	}
 	if (iVector.GetElementSize(AL) != sizeof(size_t)) {
-		SC->RaiseError("iElementType.IndexIn",CONTAINER_ERROR_INCOMPATIBLE);
+		SC->RaiseError("istrCollection.IndexIn",CONTAINER_ERROR_INCOMPATIBLE);
 		return NULL;
 	}
 	top = iVector.Size(AL);
@@ -956,7 +958,7 @@ static size_t Sizeof(ElementType *SC)
 /*                                Iterators                                       */
 /* ------------------------------------------------------------------------------ */
 
-struct ElementTypeIterator {
+struct strCollectionIterator {
 	Iterator it;
 	ElementType *SC;
 	size_t index;
@@ -967,7 +969,7 @@ struct ElementTypeIterator {
 
 static void *GetNext(Iterator *it)
 {
-	struct ElementTypeIterator *sci = (struct ElementTypeIterator *)it;
+	struct strCollectionIterator *sci = (struct strCollectionIterator *)it;
 	ElementType *SC;
 
 	if (sci == NULL) {
@@ -988,7 +990,7 @@ static void *GetNext(Iterator *it)
 
 static void *GetPrevious(Iterator *it)
 {
-	struct ElementTypeIterator *ali = (struct ElementTypeIterator *)it;
+	struct strCollectionIterator *ali = (struct strCollectionIterator *)it;
 	ElementType *SC;
 
 	if (ali == NULL) {
@@ -1009,7 +1011,7 @@ static void *GetPrevious(Iterator *it)
 
 static void *GetFirst(Iterator *it)
 {
-	struct ElementTypeIterator *ali = (struct ElementTypeIterator *)it;
+	struct strCollectionIterator *ali = (struct strCollectionIterator *)it;
 
 	if (ali == NULL) {
 		NullPtrError("GetFirst");
@@ -1024,7 +1026,7 @@ static void *GetFirst(Iterator *it)
 
 static void *GetCurrent(Iterator *it)
 {
-	struct ElementTypeIterator *ali = (struct ElementTypeIterator *)it;
+	struct strCollectionIterator *ali = (struct strCollectionIterator *)it;
 	
 	if (ali == NULL) {
 		NullPtrError("GetCurrent");
@@ -1035,13 +1037,13 @@ static void *GetCurrent(Iterator *it)
 
 static Iterator *newIterator(ElementType *SC)
 {
-	struct ElementTypeIterator *result;
+	struct strCollectionIterator *result;
 
 	if (SC == NULL) {
 		NullPtrError("newIterator");
 		return NULL;
 	}
-	result  = SC->Allocator->malloc(sizeof(struct ElementTypeIterator));
+	result  = SC->Allocator->malloc(sizeof(struct strCollectionIterator));
 	if (result == NULL) {
 		NoMemoryError(SC,"newIterator");
 		return NULL;
@@ -1058,7 +1060,7 @@ static Iterator *newIterator(ElementType *SC)
 
 static int deleteIterator(Iterator *it)
 {
-	struct ElementTypeIterator *sci = (struct ElementTypeIterator *)it;
+	struct strCollectionIterator *sci = (struct strCollectionIterator *)it;
 	ElementType *SC;
 
 	if (sci == NULL) {
@@ -1103,7 +1105,7 @@ static int Save(ElementType *SC,FILE *stream, SaveFunction saveFn,void *arg)
 	}
 	if (saveFn == NULL)
 		saveFn = DefaultSaveFunction;
-	if (fwrite(&StringCollectionGuid,sizeof(guid),1,stream) <= 0)
+	if (fwrite(&strCollectionGuid,sizeof(guid),1,stream) <= 0)
 		return EOF;
 	if (SaveHeader(SC,stream) <= 0)
 		return EOF;
@@ -1129,15 +1131,15 @@ static ElementType *Load(FILE *stream, ReadFunction readFn,void *arg)
 		arg = &len;
 	}
 	if (fread(&Guid,sizeof(guid),1,stream) <= 0) {
-		iError.RaiseError("iElementType.Load",CONTAINER_ERROR_FILE_READ);
+		iError.RaiseError("istrCollection.Load",CONTAINER_ERROR_FILE_READ);
 		return NULL;
 	}
-	if (memcmp(&Guid,&StringCollectionGuid,sizeof(guid))) {
-		iError.RaiseError("iElementType.Load",CONTAINER_ERROR_WRONGFILE);
+	if (memcmp(&Guid,&strCollectionGuid,sizeof(guid))) {
+		iError.RaiseError("istrCollection.Load",CONTAINER_ERROR_WRONGFILE);
 		return NULL;
 	}
 	if (fread(&SC,1,sizeof(ElementType),stream) <= 0) {
-		iError.RaiseError("iElementType.Load",CONTAINER_ERROR_FILE_READ);
+		iError.RaiseError("istrCollection.Load",CONTAINER_ERROR_FILE_READ);
 		return NULL;
 	}
 	result = iElementType.Create(SC.count);
@@ -1191,7 +1193,7 @@ static ElementType *CreateFromFile(const unsigned char *fileName)
 	}
 	f = fopen((char *)fileName,"r");
 	if (f == NULL) {
-		iError.RaiseError("iElementType.CreateFromFile",CONTAINER_ERROR_NOENT);
+		iError.RaiseError("istrCollection.CreateFromFile",CONTAINER_ERROR_NOENT);
 		return NULL;
 	}
 	result = iElementType.Create(10);
@@ -1267,12 +1269,12 @@ static int WriteToFile(ElementType *SC,unsigned char *fileName)
 	}
 	f = fopen((char *)fileName,"w");
 	if (f == NULL) {
-		SC->RaiseError("iElementType.WriteToFile",CONTAINER_ERROR_FILEOPEN);
+		SC->RaiseError("istrCollection.WriteToFile",CONTAINER_ERROR_FILEOPEN);
 		return CONTAINER_ERROR_FILEOPEN;
 	}
 	for (i=0; i<SC->count;i++) {
 		if (fwrite(SC->contents[i],1,strlen((char *)SC->contents[i]),f) <= 0) {
-			iError.RaiseError("iElementType.WriteToFile",CONTAINER_ERROR_FILE_WRITE);
+			iError.RaiseError("istrCollection.WriteToFile",CONTAINER_ERROR_FILE_WRITE);
 			fclose(f);
 			return CONTAINER_ERROR_FILE_WRITE;
 		}
@@ -1398,7 +1400,7 @@ static ElementType *InitWithAllocator(ElementType *result,size_t startsize,Conta
     if (startsize > 0) {
         result->contents = CurrentMemoryManager->malloc(startsize*sizeof(char *));
         if (result->contents == NULL) {
-            iError.RaiseError("iElementType.Create",CONTAINER_ERROR_NOMEMORY);
+            iError.RaiseError("istrCollection.Create",CONTAINER_ERROR_NOMEMORY);
             return NULL;
         }
         else {
@@ -1418,7 +1420,7 @@ static ElementType  *CreateWithAllocator(size_t startsize,ContainerMemoryManager
 
     r1 = allocator->malloc(sizeof(*result));
     if (r1 == NULL) {
-        iError.RaiseError("iElementType.Create",CONTAINER_ERROR_NOMEMORY);
+        iError.RaiseError("istrCollection.Create",CONTAINER_ERROR_NOMEMORY);
         return NULL;
     }
 	result = InitWithAllocator(r1,startsize,allocator);

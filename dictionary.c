@@ -674,23 +674,23 @@ static ErrorFunction SetErrorFunction(Dictionary *Dict,ErrorFunction fn)
  Output:        A string collection with all keys
  Errors:        NULL if no more memory available
 ------------------------------------------------------------------------*/
-static StringCollection *GetKeys(Dictionary *Dict)
+static strCollection *GetKeys(Dictionary *Dict)
 {
 	size_t i;
 	struct DataList *p;
-	StringCollection *result;
+	strCollection *result;
 
 	if (Dict == NULL) {
 		NullPtrError("GetKeys");
 		return 0; 
 	}	
 
-	result = iStringCollection.Create(Dict->count);
+	result = istrCollection.Create(Dict->count);
 	if (result == NULL)
 		return NULL;
 	for (i=0; i<Dict->size;i++) {
 		for (p = Dict->buckets[i]; p; p = p->Next) {
-			iStringCollection.Add(result,p->Key);
+			istrCollection.Add(result,p->Key);
 		}
 	}
 	return result;
@@ -814,7 +814,7 @@ static Vector *CastToArray(Dictionary *Dict)
 static int Save(Dictionary *Dict,FILE *stream, SaveFunction saveFn,void *arg)
 {
 	Vector *al; 
-	StringCollection *sc; 
+	strCollection *sc; 
 	
 	if (Dict == NULL) {
 		return NullPtrError("Save");
@@ -826,7 +826,7 @@ static int Save(Dictionary *Dict,FILE *stream, SaveFunction saveFn,void *arg)
 	sc = GetKeys(Dict);
 	if (fwrite(&DictionaryGuid,sizeof(guid),1,stream) <= 0)
 		return EOF;
-	if (iStringCollection.Save(sc,stream,NULL,NULL) < 0)
+	if (istrCollection.Save(sc,stream,NULL,NULL) < 0)
 		return EOF;
 	if (iVector.Save(al,stream,saveFn,arg) < 0)
 		return EOF;
@@ -862,7 +862,7 @@ static Dictionary *Copy(Dictionary *src)
 
 static Dictionary *Load(FILE *stream, ReadFunction readFn, void *arg)
 {
-	StringCollection *sc;
+	strCollection *sc;
 	Vector *al;
 	Dictionary *result;
 	size_t i;
@@ -880,21 +880,21 @@ static Dictionary *Load(FILE *stream, ReadFunction readFn, void *arg)
 		iError.RaiseError("iDictionary.Load",CONTAINER_ERROR_WRONGFILE);
 		return NULL;
 	}
-	sc = iStringCollection.Load(stream,NULL,NULL);
+	sc = istrCollection.Load(stream,NULL,NULL);
 	if (sc == NULL)
 		return NULL;
 	al = iVector.Load(stream,readFn,arg);
 	if (al == NULL) {
-		iStringCollection.Finalize(sc);
+		istrCollection.Finalize(sc);
 		return NULL;
 	}
-	result = Create(iVector.GetElementSize(al),iStringCollection.Size(sc));
-	for (i=0; i<iStringCollection.Size(sc);i++) {
-		unsigned char *key = (unsigned char *)iStringCollection.GetElement(sc,i);
+	result = Create(iVector.GetElementSize(al),istrCollection.Size(sc));
+	for (i=0; i<istrCollection.Size(sc);i++) {
+		unsigned char *key = (unsigned char *)istrCollection.GetElement(sc,i);
 		void *data = iVector.GetElement(al,i);
 		result->VTable->Add(result,key,data);
 	}
-	iStringCollection.Finalize(sc);
+	istrCollection.Finalize(sc);
 	iVector.Finalize(al);
 	return result;
 }
