@@ -412,6 +412,7 @@ static unsigned GetFlags(Deque *d) {
 static unsigned SetFlags(Deque *d,unsigned newflags){
     unsigned oldflags = d->Flags;
     d->Flags = newflags;
+	d->timestamp++;
     return oldflags;
 }
 static int Save(Deque *d,FILE *stream, SaveFunction saveFn,void *arg)
