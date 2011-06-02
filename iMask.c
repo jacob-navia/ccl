@@ -118,6 +118,13 @@ static int Or(Mask *src1,Mask *src2)
         return 1;
 }
 
+static size_t Sizeof(Mask *m)
+{
+	if (m == NULL)
+		return sizeof(Mask);
+	return sizeof(Mask) + m->length;
+}
+
 
 
 MaskInterface iMask = {
@@ -128,6 +135,7 @@ MaskInterface iMask = {
 	Create,
 	Copy,
 	Size,
+	Sizeof,
 	Set,
 	Clear,
 	Finalize

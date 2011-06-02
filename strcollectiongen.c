@@ -51,7 +51,7 @@ static int encode_ule128(FILE *stream,size_t val)
 }
 
 #ifdef WCHAR_TYPE
-#ifdef __MAC_OSX
+//#ifdef __MAC_OSX
 static int wcscasecmp (const wchar_t* s1, const wchar_t* s2) 
 { 
   wchar_t* s1_lower; 
@@ -78,7 +78,7 @@ static int wcscasecmp (const wchar_t* s1, const wchar_t* s2)
   free(s2_lower); 
   return result; 
 } 
-#endif
+//#endif
 #endif
 
 
@@ -121,7 +121,7 @@ static int NoMemoryError(ElementType *SC,const char *fnName)
 
 static int Strcmp(const CHAR_TYPE *s1,const CHAR_TYPE *s2,CompareInfo *ci)
 {
-	return STRCMP((CHAR_TYPE *)s1,(CHAR_TYPE *)s2);
+	return STRCMP(s1,s2);
 }
 
 static int CompareStrings(const void *s1,const void *s2)
@@ -180,7 +180,7 @@ static size_t GetCount(ElementType *SC)
  Output:        the state of the flag
  Errors:        None
 ------------------------------------------------------------------------*/
-static unsigned GetFlags(ElementType *SC)
+static unsigned GetFlags(const ElementType *SC)
 {
 	if (SC == NULL) {
 		NullPtrError("GetFlags");
@@ -244,6 +244,7 @@ static unsigned SetFlags(ElementType *SC,unsigned newval)
 	}
 	oldval = SC->Flags;
     SC->Flags = newval;
+	SC->timestamp++;
     return oldval;
 }
 static int ResizeTo(ElementType *SC,size_t newcapacity)
@@ -1024,6 +1025,30 @@ static void *GetFirst(Iterator *it)
 	return ali->current;
 }
 
+static void *Seek(Iterator *it,size_t idx)
+{
+        struct strCollectionIterator *ali = (struct strCollectionIterator *)it;
+        ElementType *AL;
+        CHAR_TYPE *p;
+
+        if (ali == NULL) {
+                NullPtrError("Seek");
+                return NULL;
+        }
+        AL = ali->SC;
+        if (idx >= AL->count)
+                return NULL;
+        if (ali->timestamp != AL->timestamp) {
+                AL->RaiseError("Seek",CONTAINER_ERROR_OBJECT_CHANGED);
+                return NULL;
+        }
+        p = AL->contents[idx];
+        ali->index = idx;
+        ali->current = p;
+        return p;
+}
+
+
 static void *GetCurrent(Iterator *it)
 {
 	struct strCollectionIterator *ali = (struct strCollectionIterator *)it;
@@ -1052,6 +1077,7 @@ static Iterator *newIterator(ElementType *SC)
 	result->it.GetPrevious = GetPrevious;
 	result->it.GetFirst = GetFirst;
 	result->it.GetCurrent = GetCurrent;
+	result->it.Seek = Seek;
 	result->SC = SC;
 	result->timestamp = SC->timestamp;
 	result->current = NULL;
@@ -1488,7 +1514,10 @@ static DestructorFunction SetDestructor(ElementType *cb,DestructorFunction fn)
 
 
 INTERFACE_TYP INTERFACE_OBJECT = {
-    GetCount, GetFlags, SetFlags,  Clear,
+    GetCount, 
+    GetFlags, 
+    SetFlags,  
+    Clear,
 	Contains,
 	Erase,
     Finalize,

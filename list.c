@@ -1334,6 +1334,7 @@ static int initIterator(List *L,void *r)
     result->it.GetPrevious = GetPrevious;
     result->it.GetFirst = GetFirst;
     result->it.GetCurrent = GetCurrent;
+    result->it.Seek = Seek;
     result->L = L;
     result->timestamp = L->timestamp;
 	result->index = (size_t)-1;
@@ -1583,7 +1584,6 @@ ListInterface iList = {
     Append,
     SetCompareFunction,
     DefaultListCompareFunction,
-    Seek,
     UseHeap,
     AddRange,
     Create,
