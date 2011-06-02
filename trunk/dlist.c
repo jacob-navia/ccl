@@ -316,6 +316,7 @@ static unsigned SetFlags(Dlist *l,unsigned newval)
     }
     result = l->Flags;
     l->Flags = newval;
+	l->timestamp++;
     return result;
 }
 
@@ -1237,6 +1238,38 @@ static void *GetCurrent(Iterator *it)
     return li->Current->Data;
 }
 
+static void *Seek(Iterator *it,size_t idx)
+{
+    struct DListIterator *li = (struct DListIterator *)it;
+    dlist_element *rvp;
+
+        if (it == NULL) {
+                iError.NullPtrError("iDlist.Seek");
+                return NULL;
+        }
+        if (li->L->count == 0)
+                return NULL;
+        rvp = li->L->First;
+        if (idx == 0) {
+        li->index = 0;
+        li->Current = li->L->First;
+        }
+    else if (idx >= li->L->count-1) {
+        li->index = li->L->count-1;
+        li->Current = li->L->Last;
+    }
+    else {
+        li->index = idx;
+        while (idx > 0) {
+            rvp = rvp->Next;
+            idx--;
+        }
+        li->Current = rvp;
+    }
+    return li->Current;
+}
+
+
 static Iterator *newIterator(Dlist *L)
 {
     struct DListIterator *result;
@@ -1254,6 +1287,7 @@ static Iterator *newIterator(Dlist *L)
     result->it.GetPrevious = GetPrevious;
     result->it.GetFirst = GetFirst;
     result->it.GetCurrent = GetCurrent;
+    result->it.Seek = Seek;
     result->L = L;
     result->timestamp = L->timestamp;
     return &result->it;

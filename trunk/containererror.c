@@ -48,7 +48,7 @@ static ErrorFunction SetError(ErrorFunction n)
 	return old;
 }
 
-static int NullPtrError(char *fname)
+static int BadArgError(char *fname)
 {
 	iError.RaiseError(fname,CONTAINER_ERROR_BADARG);
 	return CONTAINER_ERROR_BADARG;
@@ -60,6 +60,6 @@ ErrorInterface iError = {
 	EmptyErrorFunction,
 	StrError,
 	SetError,
-	NullPtrError,
+	BadArgError,
 };
 
