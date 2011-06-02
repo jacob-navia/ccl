@@ -1027,21 +1027,49 @@ static void *GetNext(Iterator *it)
 		return NULL;
 	}
 	AL = ali->AL;
-	if (ali->index >= AL->count)
+	if (ali->index >= AL->count-1)
 		return NULL;
 	if (ali->timestamp != AL->timestamp) {
 		AL->RaiseError("GetNext",CONTAINER_ERROR_OBJECT_CHANGED);
 		return NULL;
 	}
 	p = AL->contents;
+	++ali->index;
 	p += ali->index*AL->ElementSize;
 	if (AL->Flags & CONTAINER_READONLY) {
 		memcpy(ali->ElementBuffer,p,AL->ElementSize);
 		p = ali->ElementBuffer;
 	}
-	ali->index++;
 	ali->Current = p;
 	return p;
+}
+
+static void *Seek(Iterator *it,size_t idx)
+{
+        struct VectorIterator *ali = (struct VectorIterator *)it;
+        Vector *AL;
+        char *p;
+
+        if (ali == NULL) {
+                NullPtrError("GetNext");
+                return NULL;
+        }
+        AL = ali->AL;
+        if (idx >= AL->count)
+                return NULL;
+        if (ali->timestamp != AL->timestamp) {
+                AL->RaiseError("GetNext",CONTAINER_ERROR_OBJECT_CHANGED);
+                return NULL;
+        }
+        p = AL->contents;
+        ali->index = idx;
+        p += ali->index*AL->ElementSize;
+        if (AL->Flags & CONTAINER_READONLY) {
+                memcpy(ali->ElementBuffer,p,AL->ElementSize);
+                p = ali->ElementBuffer;
+        }
+        ali->Current = p;
+        return p;
 }
 
 static void *GetPrevious(Iterator *it)
@@ -1139,7 +1167,7 @@ static Iterator *newIterator(Vector *AL)
 		NullPtrError("newIterator");
 		return NULL;
 	}
-	result = AL->Allocator->malloc(sizeof(struct VectorIterator)+AL->ElementSize);
+	result = AL->Allocator->calloc(sizeof(struct VectorIterator)+AL->ElementSize,1);
 	if (result == NULL) {
 		NoMemory(AL,"newIterator");
 		return NULL;
@@ -1149,9 +1177,11 @@ static Iterator *newIterator(Vector *AL)
 	result->it.GetFirst = GetFirst;
 	result->it.GetCurrent = GetCurrent;
 	result->it.GetLast = GetLast;
+	result->it.Seek = Seek;
 	result->AL = AL;
 	result->Current = NULL;
 	result->timestamp = AL->timestamp;
+	result->index = -1;
 	return &result->it;
 }
 
