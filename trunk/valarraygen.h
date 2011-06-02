@@ -110,4 +110,5 @@ typedef struct {
     int (*Fprintf)(ValArray *src,FILE *out,const char *fmt);
     int (*Select)(ValArray *src,const Mask *m);
     ValArray *(*SelectCopy)(const ValArray *src,const Mask *m);
+    ElementType *(*Seek)(Iterator *it,size_t idx);
 } ValArrayInterface;
