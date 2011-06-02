@@ -101,6 +101,7 @@ typedef struct tagMaskInterface {
     Mask *(*Create)(size_t n);
     Mask *(*Copy)(Mask *src);
     size_t (*Size)(Mask *);
+    size_t (*Sizeof)(Mask *);
     int (*Set)(Mask *m,size_t idx,int val);
     int (*Clear)(Mask *m);
     int (*Finalize)(Mask *m);
@@ -117,7 +118,7 @@ typedef struct _Iterator {
     void *(*GetFirst)(struct _Iterator *);
     void *(*GetCurrent)(struct _Iterator *);
     void *(*GetLast)(struct _Iterator *);
-    void *(*CopyCurrent)(struct _Iterator *);
+    void *(*Seek)(struct _Iterator *,size_t);
 } Iterator;
 
 /* Type definition of the compare function */
@@ -314,7 +315,7 @@ typedef struct tagstrCollection {
     /* Returns the number of elements stored */
     size_t (*Size)(strCollection *SC);
     /* Flags for this container */
-    unsigned (*GetFlags)(strCollection *SC);
+    unsigned (*GetFlags)(const strCollection *SC);
     /* Sets this collection read-only or unsets the read-only flag */
     unsigned (*SetFlags)(strCollection *SC,unsigned flags);
     /* Clears all data and frees the memory */
@@ -413,7 +414,7 @@ typedef struct tagWstrCollection {
     /* Returns the number of elements stored */
     size_t (*Size)(WstrCollection *SC);
     /* Flags for this container */
-    unsigned (*GetFlags)(WstrCollection *SC);
+    unsigned (*GetFlags)(const WstrCollection *SC);
     /* Sets this collection read-only or unsets the read-only flag */
     unsigned (*SetFlags)(WstrCollection *SC,unsigned flags);
     /* Clears all data and frees the memory */
@@ -455,7 +456,7 @@ typedef struct tagWstrCollection {
     /* Replaces the character string at the given position with a new one */
     int (*ReplaceAt)(WstrCollection *SC,size_t idx,wchar_t *newval);
     /*Returns the index of the given string or -1 if not found */
-	int (*IndexOf)(WstrCollection *SC,wchar_t *SearchedString,size_t *result);
+    int (*IndexOf)(WstrCollection *SC,wchar_t *SearchedString,size_t *result);
 	/* ---------------------------------------------This is the specific container part */
     bool (*Sort)(WstrCollection *SC);
     struct _Vector *(*CastToArray)(WstrCollection *SC);
@@ -558,7 +559,6 @@ typedef struct tagList {
     /* Set the comparison function */
     CompareFunction (*SetCompareFunction)(List *l,CompareFunction fn);
     CompareFunction Compare;
-    void *(*Seek)(Iterator *it,size_t pos);
     int (*UseHeap)(List *L, ContainerMemoryManager *m);
     int (*AddRange)(List *L, size_t n,void *data);
     List *(*Create)(size_t element_size);
@@ -566,7 +566,7 @@ typedef struct tagList {
     List *(*Init)(List *aList,size_t element_size);
     List *(*InitWithAllocator)(List *aList,size_t element_size,ContainerMemoryManager *allocator);
     List *(*SetAllocator)(List *l, ContainerMemoryManager  *allocator);
-    int (*initIterator)(List *list,void *storage);
+    int (*InitIterator)(List *list,void *storage);
     ContainerMemoryManager *(*GetAllocator)(List *list);
     DestructorFunction (*SetDestructor)(List *v,DestructorFunction fn);
 } ListInterface;
@@ -771,8 +771,7 @@ typedef struct tagVector {
     int (*SearchWithKey)(Vector *vec,size_t startByte,size_t sizeKey,size_t startIndex,void *item,size_t *result);
     int (*Select)(Vector *src,Mask *m);
     Vector *(*SelectCopy)(Vector *src,Mask *m);
-    int (*ResizeTo)(Vector *AL,size_t newcapacity);
-
+    int (*Resize)(Vector *AL,size_t newcapacity);
 } VectorInterface;
 
 extern VectorInterface iVector;
@@ -1103,13 +1102,12 @@ typedef struct tagBitString {
     int        (*RightShift)(BitString *bs,size_t shift);
     size_t     (*Print)(BitString *b,size_t bufsiz,unsigned char *out);
     int        (*Append)(BitString *left,BitString *right);
-    int        (*Set)(BitString *,size_t start,size_t stop,bool newval);
+    int        (*Memset)(BitString *,size_t start,size_t stop,bool newval);
     /* creates a bit string */
     BitString *(*Create)(size_t bitlen);
     BitString *(*Init)(BitString *BitStr,size_t bitlen);
     unsigned char *(*GetBits)(BitString *BitStr);
     int        (*CopyBits)(BitString *bitstr,void *buf);
-    int        (*Memset)(BitString *b,size_t siz,int newval);
     int (*AddRange)(BitString *b, size_t bitSize, void *data);
 } BitStringInterface;
 

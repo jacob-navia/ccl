@@ -976,8 +976,8 @@ static void *GetNext(Iterator *it)
 		iValArrayInterface.RaiseError("GetNext",CONTAINER_ERROR_OBJECT_CHANGED);
 		return NULL;
 	}
-	p = AL->contents + ali->index;
 	ali->index++;
+	p = AL->contents + ali->index;
 	ali->Current = p;
 	return p;
 }
@@ -995,11 +995,30 @@ static void *GetPrevious(Iterator *it)
 		iValArrayInterface.RaiseError("iValArray.GetPrevious",CONTAINER_ERROR_OBJECT_CHANGED);
 		return NULL;
 	}
-	p = AL->contents + ali->index;
 	ali->index--;
+	p = AL->contents + ali->index;
 	ali->Current = p;
 	return p;
 }
+static void *Seek(Iterator *it,size_t idx)
+{
+        struct ValArrayIterator *ali = (struct ValArrayIterator *)it;
+        ValArray *AL;
+        ElementType *p;
+
+        AL = ali->AL;
+        if (idx >= AL->count)
+                return NULL;
+        if (ali->timestamp != AL->timestamp) {
+                iError.RaiseError("iValArray.Seek",CONTAINER_ERROR_OBJECT_CHANGED);
+                return NULL;
+        }
+        ali->index = idx;
+        p = AL->contents + ali->index;
+        ali->Current = p;
+        return p;
+}
+
 
 static void *GetLast(Iterator *it)
 {
@@ -1034,7 +1053,7 @@ static void *GetFirst(Iterator *it)
 		ali->Current = NULL;
 		return NULL;
 	}
-	ali->index = 1;
+	ali->index = 0;
 	ali->Current = ali->AL->contents;
 	return ali->Current;
 }
@@ -1043,7 +1062,7 @@ static Iterator *newIterator(ValArray *AL)
 {
 	struct ValArrayIterator *result;
 
-	result = AL->Allocator->malloc(sizeof(struct ValArrayIterator)+ sizeof(ElementType));
+	result = AL->Allocator->calloc(1,sizeof(struct ValArrayIterator)+ sizeof(ElementType));
 	if (result == NULL) {
 		NoMemory("newIterator");
 		return NULL;
@@ -1053,9 +1072,11 @@ static Iterator *newIterator(ValArray *AL)
 	result->it.GetFirst = GetFirst;
 	result->it.GetCurrent = GetCurrent;
 	result->it.GetLast = GetLast;
+	result->it.Seek = Seek;
 	result->AL = AL;
 	result->Current = NULL;
 	result->timestamp = AL->timestamp;
+	result->index = -1;
 	return &result->it;
 }
 

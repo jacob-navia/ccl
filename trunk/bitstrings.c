@@ -689,6 +689,7 @@ static unsigned SetFlags(BitString *b,unsigned newval)
 {
 	int result = b->Flags;
 	b->Flags = newval;
+	b->timestamp++;
 	return result;
 }
 
@@ -723,27 +724,6 @@ static int Add(BitString *b,int newval)
 	b->count++;
 	return 1;
 }
-
-static int Memset(BitString *b,size_t siz,int newval)
-{
-	size_t bytepos;
-
-	bytepos = (siz) >> 3;
-	while (bytepos >= b->capacity) {
-		if (!expandBitstring(b))	
-			return CONTAINER_ERROR_NOMEMORY;
-	}
-	if (newval) {
-		memset(b->contents,0xff,bytepos);
-	}
-	else {
-		memset(b->contents,0,bytepos);
-	}
-	if (siz >= b->count)
-		b->count = siz;
-	return 1;
-}
-
 
 static int ReplaceAt(BitString *b,size_t idx,bool newval)
 {
@@ -1053,7 +1033,7 @@ static int Erase(BitString *bitStr,bool val)
 	return 1;
 }
 
-static int Set(BitString *b,size_t start,size_t stop,bool newval)
+static int Memset(BitString *b,size_t start,size_t stop,bool newval)
 {
 	BIT_TYPE *contents;
 	size_t startbyte,stopbyte;
@@ -1389,12 +1369,11 @@ BitStringInterface iBitString = {
 	RightShift,
 	Print,
 	Append,
-	Set,
+	Memset,
 	Create,
 	Init,
 	GetBits,
 	CopyBits,
-	Memset,
 	AddRange,
 };
 

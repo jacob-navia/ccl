@@ -41,6 +41,7 @@ OBJS=\
 	observer.obj \
 	memorymanager.obj \
 	sequential.obj \
+	wstrcollection.obj \
 
 EXE=dotest.exe
 
@@ -53,40 +54,40 @@ ccl.lib: $(OBJS)
 	lcclib /out:ccl.lib $(OBJS)
 
 # Build arraylist.c
-arraylist.obj: $(HEADERS) $(SRCDIR)\arraylist.c
+arraylist.obj: $(HEADERS) $(SRCDIR)\arraylist.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\arraylist.c
 
 # Build bitstrings.c
 
-bitstrings.obj: $(HEADERS) $(SRCDIR)\bitstrings.c
+bitstrings.obj: $(HEADERS) $(SRCDIR)\bitstrings.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\bitstrings.c
 
-bloom.obj: $(HEADERS) $(SRCDIR)\bloom.c
+bloom.obj: $(HEADERS) $(SRCDIR)\bloom.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\bloom.c
 
-containererror.obj: $(HEADERS) $(SRCDIR)\containererror.c
+containererror.obj: $(HEADERS) $(SRCDIR)\containererror.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\containererror.c
 
 # Build deque.c
-deque.obj: $(HEADERS) $(SRCDIR)\deque.c
+deque.obj: $(HEADERS) $(SRCDIR)\deque.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\deque.c
 
-dictionary.obj: $(HEADERS) $(SRCDIR)\dictionary.c
+dictionary.obj: $(HEADERS) $(SRCDIR)\dictionary.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\dictionary.c
 
-dlist.obj: $(HEADERS) $(SRCDIR)\dlist.c
+dlist.obj: $(HEADERS) $(SRCDIR)\dlist.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\dlist.c
 
-fgetline.obj: $(HEADERS) $(SRCDIR)\fgetline.c
+fgetline.obj: $(HEADERS) $(SRCDIR)\fgetline.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\fgetline.c
 
-generic.obj:	$(HEADERS) generic.c
+generic.obj:	$(HEADERS) generic.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\generic.c
 
-hashtable.obj: $(HEADERS) $(SRCDIR)\hashtable.c
+hashtable.obj: $(HEADERS) $(SRCDIR)\hashtable.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\hashtable.c
 
-heap.obj: $(HEADERS) $(SRCDIR)\heap.c
+heap.obj: $(HEADERS) $(SRCDIR)\heap.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\heap.c
 
 # Build list.c
@@ -118,25 +119,25 @@ qsortex.obj:  $(SRCDIR)\qsortex.c $(HEADERS)
 
 # Build redblacktree.c
 
-redblacktree.obj:  $(SRCDIR)\redblacktree.c $(HEADERS)
+redblacktree.obj:  $(SRCDIR)\redblacktree.c $(HEADERS) 
 	$(CC) -c $(CFLAGS) $(SRCDIR)\redblacktree.c
 
 # Build scapegoat.c
 
-scapegoat.obj: $(HEADERS) $(SRCDIR)\scapegoat.c
+scapegoat.obj: $(HEADERS) $(SRCDIR)\scapegoat.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\scapegoat.c
 
 # Build searchtree.c
 
-searchtree.obj: $(HEADERS) $(SRCDIR)\searchtree.c
+searchtree.obj: $(HEADERS) $(SRCDIR)\searchtree.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\searchtree.c
 
 # Build strcollection.c
 
-strcollection.obj: $(HEADERS) $(SRCDIR)\strcollection.c
+strcollection.obj: $(HEADERS) $(SRCDIR)\strcollection.c strcollectiongen.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\strcollection.c
 
-queue.obj:	$(SRCDIR)\containers.h queue.c
+queue.obj:	$(SRCDIR)\containers.h queue.c $(HEADERS)
 	$(CC) $(CFLAGS) queue.c
 
 
@@ -175,6 +176,9 @@ intarray.obj:	$(HEADERS) intarray.c
 
 iMask.obj:	iMask.c $(HEADERS)
 	$(CC) $(CFLAGS) iMask.c
+
+wstrcollection.obj:	wstrcollection.c strcollectiongen.c containers.h ccl_internal.h
+	$(CC) $(CFLAGS) wstrcollection.c
 
 test.obj: $(TEST_C) $(SRCDIR)\test.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\test.c

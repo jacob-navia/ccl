@@ -13,7 +13,7 @@ Added fixes from Gerome. Oct. 20 2005
 #define CHAR_TYPE unsigned char
 #define SNPRINTF snprintf
 #define STRCMP strcmp
-#define STRICMP strcasecmp
+#define STRICMP stricmp
 #define STRCPY strcpy
 #define STRLEN strlen
 #define ElementType strCollection
