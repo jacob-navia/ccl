@@ -1509,6 +1509,20 @@ static List *Create(size_t elementsize)
     return CreateWithAllocator(elementsize,CurrentMemoryManager);
 }
 
+static List *InitializeWith(size_t elementSize,size_t n,void *Data)
+{
+	List *result = Create(elementSize);
+	size_t i;
+	char *pData = Data;
+	if (result == NULL)
+		return result;
+	for (i=0; i<n; i++) {
+		Add_nd(result,pData);
+		pData += elementSize;
+	}
+	return result;
+}
+
 static List *InitWithAllocator(List *result,size_t elementsize,
 	                       ContainerMemoryManager *allocator)
 {
@@ -1594,4 +1608,5 @@ ListInterface iList = {
 	initIterator,
 	GetAllocator,
 	SetDestructor,
+	InitializeWith,
 };

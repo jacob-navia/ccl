@@ -322,18 +322,11 @@ static int Equal(const Dictionary *d1,const Dictionary *d2)
                 error code
  Errors:        The container must be read/write.
 ------------------------------------------------------------------------*/
-static int Add(Dictionary *Dict,const unsigned char *Key,void *Value)
+static int add_nd(Dictionary *Dict,const unsigned char *Key,void *Value)
 {
 	size_t i;
 	struct DataList *p;
 	unsigned char *tmp;
-
-	if (Dict == NULL) 
-		return NullPtrError("Add");
-	if (Dict->Flags & CONTAINER_READONLY) 
-		return ReadOnlyError(Dict,"Add");
-	if (Key == NULL || Value == NULL) 
-		return BadArgError(Dict,"Add");
 
 	i = (*Dict->hash)(Key)%Dict->size;
 	for (p = Dict->buckets[i]; p; p = p->Next) {
@@ -351,8 +344,10 @@ static int Add(Dictionary *Dict,const unsigned char *Key,void *Value)
 			if (tmp) Dict->Allocator->free(tmp);
 			return NoMemoryError(Dict,"Add");
 		}
-        p->Value = (void *)(p+1);
+		p->Value = (void *)(p+1);
+		if (Value)
 		memcpy((void *)p->Value,Value,Dict->ElementSize);
+		else p->Value = NULL;
 		strcpy((char *)tmp,(char *)Key);
 		p->Key = tmp;
 		i = (*Dict->hash)(Key)%Dict->size;
@@ -362,8 +357,21 @@ static int Add(Dictionary *Dict,const unsigned char *Key,void *Value)
 		return 1;
 	}
 	/* Overwrite the data for an existing element */
-	memcpy((void *)p->Value,Value,Dict->ElementSize);
+	if (Value)
+		memcpy((void *)p->Value,Value,Dict->ElementSize);
+	else	p->Value = NULL;
 	return 0;
+}
+static int Add(Dictionary *Dict,const unsigned char *Key,void *Value)
+{
+	if (Dict == NULL) 
+		return NullPtrError("Add");
+	if (Dict->Flags & CONTAINER_READONLY) 
+		return ReadOnlyError(Dict,"Add");
+	if (Key == NULL) 
+		return BadArgError(Dict,"Add");
+
+	return add_nd(Dict,Key,Value);
 }
 static int Insert(Dictionary *Dict,const unsigned char *Key,void *Value)
 {
@@ -553,7 +561,7 @@ static int InsertIn(Dictionary *dst,Dictionary *src)
 	stamp = src->timestamp;
 	for (i = 0; i < src->size; i++) {
 		for (p = src->buckets[i]; p; p = p->Next) {
-			r = Add(dst,p->Key,p->Value);
+			r = add_nd(dst,p->Key,p->Value);
 			if (r < 0)
 				return r;
 			if (src->timestamp != stamp)
@@ -976,6 +984,23 @@ static Dictionary *Create(size_t elementsize,size_t hint)
 {
 	return CreateWithAllocator(elementsize,hint,CurrentMemoryManager);
 }
+
+static Dictionary *InitializeWith(size_t elementSize,size_t n, unsigned char **Keys,void *Values)
+{
+	Dictionary *result = Create(elementSize,n);
+	size_t i;
+	char *pValues = Values;
+
+	if (result == NULL) return result;
+	i=0;
+	while (n-- > 0) {
+		add_nd(result,Keys[i],pValues);
+		i++;
+		pValues += elementSize;
+	}
+	return result;
+}
+
 static DestructorFunction SetDestructor(Dictionary *cb,DestructorFunction fn)
 {
 	DestructorFunction oldfn;
@@ -1020,4 +1045,5 @@ DictionaryInterface iDictionary = {
 	GetKeys,
 	GetAllocator,
 	SetDestructor,
+	InitializeWith,
 };

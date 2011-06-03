@@ -30,7 +30,7 @@ static const guid DlistGuid = {0xac2525ff, 0x2e2a, 0x4540,
 #define CONTAINER_READONLY	1
 #define LIST_HASPOINTER	2
 #define CHUNK_SIZE	1000
-
+static int Add_nd(Dlist *l,void *elem);
 /*------------------------------------------------------------------------
  Procedure:     new_link ID:1
  Purpose:       Allocation of a new Dlist element. If the element
@@ -125,6 +125,21 @@ static Dlist *Create(size_t elementsize)
 {
     return CreateWithAllocator(elementsize,CurrentMemoryManager);
 }
+
+static Dlist *InitializeWith(size_t elementSize,size_t n,void *Data)
+{
+        Dlist *result = Create(elementSize);
+        size_t i;
+        char *pData = Data;
+        if (result == NULL)
+                return result;
+        for (i=0; i<n; i++) {
+                Add_nd(result,pData);
+                pData += elementSize;
+        }
+        return result;
+}
+
 
 static int UseHeap(Dlist *L, ContainerMemoryManager *m)
 {
@@ -1520,5 +1535,6 @@ DlistInterface iDlist = {
     CopyElement,
     InsertIn,
     SetDestructor,
+    InitializeWith,
 };
 

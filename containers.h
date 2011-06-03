@@ -397,6 +397,7 @@ typedef struct tagstrCollection {
     strCollection *(*InitWithAllocator)(strCollection *result,size_t startsize,ContainerMemoryManager *allocator);
     strCollection *(*Init)(strCollection *result,size_t startsize);
     DestructorFunction (*SetDestructor)(strCollection *v,DestructorFunction fn);
+    strCollection *(*InitializeWith)(size_t n, unsigned char **data);
 } strCollectionInterface;
 
 extern strCollectionInterface istrCollection;
@@ -496,6 +497,7 @@ typedef struct tagWstrCollection {
     WstrCollection *(*InitWithAllocator)(WstrCollection *result,size_t startsize,ContainerMemoryManager *allocator);
     WstrCollection *(*Init)(WstrCollection *result,size_t startsize);
     DestructorFunction (*SetDestructor)(WstrCollection *v,DestructorFunction fn);
+    WstrCollection *(*InitializeWith)(size_t n,wchar_t **data);
 } WstrCollectionInterface;
 
 extern WstrCollectionInterface iWstrCollection;
@@ -569,6 +571,7 @@ typedef struct tagList {
     int (*InitIterator)(List *list,void *storage);
     ContainerMemoryManager *(*GetAllocator)(List *list);
     DestructorFunction (*SetDestructor)(List *v,DestructorFunction fn);
+    List *(*InitializeWith)(size_t elementSize,size_t n,void *data);
 } ListInterface;
 
 extern ListInterface iList;
@@ -684,6 +687,7 @@ typedef struct tagDlist {
     int (*CopyElement)(Dlist *l,size_t idx,void *outbuf);/* Copies element to buffer */
     int (*InsertIn)(Dlist *l, size_t idx,Dlist *newData);/* Inserts list at position */
     DestructorFunction (*SetDestructor)(Dlist *v,DestructorFunction fn);
+    Dlist *(*InitializeWith)(size_t elementSize, size_t n,void *data);
 
 } DlistInterface;
 
@@ -772,6 +776,7 @@ typedef struct tagVector {
     int (*Select)(Vector *src,Mask *m);
     Vector *(*SelectCopy)(Vector *src,Mask *m);
     int (*Resize)(Vector *AL,size_t newcapacity);
+    Vector *(*InitializeWith)(size_t elementSize, size_t n, void *Data);
 } VectorInterface;
 
 extern VectorInterface iVector;
@@ -832,6 +837,7 @@ typedef struct tagDictionary {
     strCollection *(*GetKeys)(Dictionary *Dict);
     ContainerMemoryManager *(*GetAllocator)(Dictionary *Dict);
     DestructorFunction (*SetDestructor)(Dictionary *v,DestructorFunction fn);	
+    Dictionary *(*InitializeWith)(size_t elementSize,size_t n, unsigned char **Keys,void *Values);
 } DictionaryInterface;
 
 extern DictionaryInterface iDictionary;
@@ -1015,6 +1021,7 @@ typedef struct tagTreeMapInterface {
     size_t (*GetElementSize)(TreeMap *d);
     TreeMap *(*Load)(FILE *stream, ReadFunction loadFn,void *arg);
     DestructorFunction (*SetDestructor)(TreeMap *v,DestructorFunction fn);
+    TreeMap *(*InitializeWith)(size_t ElementSize, size_t n, void *data);
 } TreeMapInterface;
 
 extern TreeMapInterface iTreeMap;

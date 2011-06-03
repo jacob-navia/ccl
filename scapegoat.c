@@ -380,7 +380,7 @@ static TreeMap *Copy(TreeMap *src)
     }
     return result;
 }
-
+
 /* Other binary tree helper functions. */
 
 /* Returns the address of the pointer that points down to P
@@ -795,6 +795,22 @@ static TreeMap *Create(size_t ElementSize)
     return CreateWithAllocator(ElementSize,CurrentMemoryManager);
 }
 
+static TreeMap *InitializeWith(size_t ElementSize, size_t n, void *data)
+{
+	TreeMap *result = Create(ElementSize);
+	char *p = data;
+
+	if (result == NULL) return NULL;
+	while (n-- > 0) {
+		if (Add(result,p,NULL) < 0) {
+			iTreeMap.Finalize(result);
+			return NULL;
+		}
+		p += ElementSize;
+	}
+	return result;
+}
+
 static size_t DefaultSaveFunction(const void *element,void *arg, FILE *Outfile)
 {
     const unsigned char *str = element;
@@ -938,7 +954,8 @@ TreeMapInterface iTreeMap = {
     Create,
     GetElementSize,
     Load,
-	SetDestructor,
+    SetDestructor,
+    InitializeWith,
 };
 
 
