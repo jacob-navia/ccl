@@ -765,18 +765,18 @@ static void *GetFirst(Iterator *it)
 	return GetNext(it);
 }
 
-static Iterator *newIterator(Dictionary *Dict)
+static Iterator *NewIterator(Dictionary *Dict)
 {
 	struct DictionaryIterator *result;
 
 	if (Dict == NULL) {
-		NullPtrError("newIterator");
+		NullPtrError("NewIterator");
 		return NULL;
 	}
 
 	result = Dict->Allocator->malloc(sizeof(struct DictionaryIterator));
 	if (result == NULL) {
-		NoMemoryError(Dict,"newIterator");
+		NoMemoryError(Dict,"NewIterator");
 		return NULL;
 	}
 	result->it.GetNext = GetNext;
@@ -1025,7 +1025,7 @@ DictionaryInterface iDictionary = {
 	Copy,
 	SetErrorFunction,
 	Sizeof,
-	newIterator,
+	NewIterator,
 	deleteIterator,
 	Save,
 	Load,

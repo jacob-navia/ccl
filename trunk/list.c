@@ -1300,17 +1300,17 @@ static void *GetFirst(Iterator *it)
     return L->First->Data;
 }
 
-static Iterator *newIterator(List *L)
+static Iterator *NewIterator(List *L)
 {
     struct ListIterator *result;
     
     if (L == NULL) {
-        NullPtrError("newIterator");
+        NullPtrError("NewIterator");
         return NULL;
     }
     result = L->Allocator->malloc(sizeof(struct ListIterator));
     if (result == NULL) {
-        L->RaiseError("iList.newIterator",CONTAINER_ERROR_NOMEMORY);
+        L->RaiseError("iList.NewIterator",CONTAINER_ERROR_NOMEMORY);
         return NULL;
     }
     result->it.GetNext = GetNext;
@@ -1574,7 +1574,7 @@ ListInterface iList = {
     Copy,
     SetErrorFunction,
     Sizeof,
-    newIterator,
+    NewIterator,
     deleteIterator,
     Save,
     Load,

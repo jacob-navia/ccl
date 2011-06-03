@@ -1159,17 +1159,17 @@ static void *GetFirst(Iterator *it)
 	return ali->Current;
 }
 
-static Iterator *newIterator(Vector *AL)
+static Iterator *NewIterator(Vector *AL)
 {
 	struct VectorIterator *result;
 
 	if (AL == NULL) {
-		NullPtrError("newIterator");
+		NullPtrError("NewIterator");
 		return NULL;
 	}
 	result = AL->Allocator->calloc(sizeof(struct VectorIterator)+AL->ElementSize,1);
 	if (result == NULL) {
-		NoMemory(AL,"newIterator");
+		NoMemory(AL,"NewIterator");
 		return NULL;
 	}
 	result->it.GetNext = GetNext;
@@ -1536,7 +1536,7 @@ VectorInterface iVector = {
 	Copy,
 	SetErrorFunction,
 	Sizeof,
-	newIterator,
+	NewIterator,
 	deleteIterator,
 	Save,
 	Load,

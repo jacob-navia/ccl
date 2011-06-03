@@ -43,7 +43,7 @@ static ErrorFunction SetErrorFunction(RedBlackTree *ST, ErrorFunction fn);
 static CompareFunction SetCompareFunction(RedBlackTree *ST,CompareFunction fn);
 static size_t Sizeof(RedBlackTree *ST);
 static int DefaultCompareFunction(const void *arg1, const void *arg2, CompareInfo *ExtraArgs);
-static Iterator *newIterator(RedBlackTree *);
+static Iterator *NewIterator(RedBlackTree *);
 static int deleteIterator(Iterator *);
 static RedBlackTree *Create(size_t ElementSize,size_t KeySize)
 {
@@ -662,7 +662,7 @@ static int Remove(RedBlackTree *Tree, const void *delete_key, void *ExtraArgs)
    }
 }
 
-static Iterator *newIterator(RedBlackTree *p) { return NULL;}
+static Iterator *NewIterator(RedBlackTree *p) { return NULL;}
 static int deleteIterator(Iterator * it) {return 1;}
 
 static int Apply(RedBlackTree *ST,int (*Applyfn)(const void *data,void *arg),void *arg)
@@ -718,7 +718,7 @@ RedBlackTreeInterface iRedBlackTree = {
 	SetCompareFunction,
 	Sizeof,
 	DefaultCompareFunction,
-	newIterator,
+	NewIterator,
 	deleteIterator,
 	SetDestructor,
 };

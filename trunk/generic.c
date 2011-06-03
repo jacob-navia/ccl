@@ -81,9 +81,9 @@ typedef struct tagGenericIterator {
 	GenericContainer *Gen;
 } GenericIterator;
 
-static Iterator *newIterator(GenericContainer *gen)
+static Iterator *NewIterator(GenericContainer *gen)
 {
-	return gen->vTable->newIterator(gen);
+	return gen->vTable->NewIterator(gen);
 }
 static int deleteIterator(Iterator *git)
 {
@@ -110,7 +110,7 @@ Equal,
 Copy,
 SetErrorFunction,
 Sizeof,
-newIterator,
+NewIterator,
 deleteIterator,
 Save,
 };

@@ -1285,17 +1285,17 @@ static void *Seek(Iterator *it,size_t idx)
 }
 
 
-static Iterator *newIterator(Dlist *L)
+static Iterator *NewIterator(Dlist *L)
 {
     struct DListIterator *result;
     
     if (L == NULL) {
-    	iError.NullPtrError("iDlist.newIterator");
+    	iError.NullPtrError("iDlist.NewIterator");
     	return NULL;
     }
     result = L->Allocator->malloc(sizeof(struct DListIterator));
     if (result == NULL) {
-    	L->RaiseError("iDlist.newIterator",CONTAINER_ERROR_NOMEMORY);
+    	L->RaiseError("iDlist.NewIterator",CONTAINER_ERROR_NOMEMORY);
     	return NULL;
     }
     result->it.GetNext = GetNext;
@@ -1504,7 +1504,7 @@ DlistInterface iDlist = {
     Copy,
     SetErrorFunction,
     Sizeof,
-    newIterator,
+    NewIterator,
     deleteIterator,
     Save,
     Load,

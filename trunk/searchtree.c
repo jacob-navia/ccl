@@ -58,7 +58,7 @@ static size_t Sizeof(BinarySearchTree *ST);
 static int DefaultCompareFunction(const void *arg1, const void *arg2, CompareInfo *ExtraArgs);
 static BinarySearchTree *Merge(BinarySearchTree *left, BinarySearchTree *right, const void *data);
 static bool Equal(const BinarySearchTree *left, const BinarySearchTree *right);
-static Iterator *newIterator(BinarySearchTree *);
+static Iterator *NewIterator(BinarySearchTree *);
 static int deleteIterator(Iterator *);
 
 struct tagBinarySearchTree {
@@ -798,7 +798,7 @@ static bool Equal(const BinarySearchTree *left, const BinarySearchTree *right)
 	return compareNodes(left->root,right->root,&ci);
 }
 
-static Iterator *newIterator(BinarySearchTree *tree)
+static Iterator *NewIterator(BinarySearchTree *tree)
 {
 	return NULL;
 }
@@ -842,7 +842,7 @@ BinarySearchTreeInterface iBinarySearchTree = {
 	Sizeof,
 	DefaultCompareFunction,
 	Merge,
-	newIterator,
+	NewIterator,
 	deleteIterator,
 	Create,
 	SetDestructor,

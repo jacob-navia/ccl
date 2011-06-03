@@ -663,7 +663,7 @@ static void *GetFirst(Iterator *itrav)
     return NULL;
 }
 
-static Iterator *newIterator(TreeMap *tree)
+static Iterator *NewIterator(TreeMap *tree)
 {
     struct TreeMapIterator *result = tree->Allocator->malloc(sizeof(struct TreeMapIterator));
     if (result == NULL)
@@ -712,7 +712,7 @@ static int Clear(TreeMap *tree)
     Iterator *it;
     void *obj;
 	if (tree->DestructorFn) {
-		it = newIterator(tree);
+		it = NewIterator(tree);
 	
 		for (obj = it->GetFirst(it);
 			 obj != NULL;
@@ -740,7 +740,7 @@ static int Finalize(TreeMap *tree)
 
 static int Apply(TreeMap *tree,int (*Applyfn)(const void *data,void *arg),void *arg)
 {
-    Iterator *it = newIterator(tree);
+    Iterator *it = NewIterator(tree);
     void *obj;
 
     for (obj = it->GetFirst(it);
@@ -942,7 +942,7 @@ TreeMapInterface iTreeMap = {
     Copy,
     SetErrorFunction,
     Sizeof,
-    newIterator,
+    NewIterator,
     deleteIterator,
     Save,
     Add,
