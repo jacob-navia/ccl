@@ -563,7 +563,7 @@ static void *GetFirst(Iterator *it)
     return L->head->Data;
 }
 
-static Iterator *newIterator(Deque *L)
+static Iterator *NewIterator(Deque *L)
 {
     struct DequeIterator *result = L->Allocator->malloc(sizeof(struct DequeIterator));
     if (result == NULL)
@@ -616,7 +616,7 @@ DequeInterface iDeque = {
     Copy,
     SetErrorFunction,
     Sizeof,
-    newIterator,
+    NewIterator,
     deleteIterator,
     Save,
     Load,

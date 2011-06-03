@@ -1215,7 +1215,7 @@ static void *GetFirst(Iterator *it)
 	return GetNext(it);
 }
 
-static Iterator *newIterator(BitString *bitstr)
+static Iterator *NewIterator(BitString *bitstr)
 {
 	struct BitstringIterator *result = bitstr->Allocator->malloc(sizeof(struct BitstringIterator));
 	if (result == NULL)
@@ -1330,7 +1330,7 @@ BitStringInterface iBitString = {
 	Copy,
 	SetErrorFunction,
 	Sizeof,
-	newIterator,
+	NewIterator,
 	deleteIterator,
 	Save,
 	Load,

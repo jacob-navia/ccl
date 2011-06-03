@@ -763,7 +763,7 @@ static void *GetCurrent(Iterator *it)
 	struct HashTableIterator *d = (struct HashTableIterator *)it;
     return d->Current;
 }
-static Iterator *newIterator(HashTable *ht)
+static Iterator *NewIterator(HashTable *ht)
 {
 	struct HashTableIterator *result = ht->Allocator->malloc(sizeof(struct HashTableIterator));
 	if (result == NULL)
@@ -820,7 +820,7 @@ Copy,
 SetHashFunction,
 Overlay,
 Merge,
-newIterator,
+NewIterator,
 deleteIterator,
 Save,
 Load,

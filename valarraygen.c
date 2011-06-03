@@ -1058,13 +1058,13 @@ static void *GetFirst(Iterator *it)
 	return ali->Current;
 }
 
-static Iterator *newIterator(ValArray *AL)
+static Iterator *NewIterator(ValArray *AL)
 {
 	struct ValArrayIterator *result;
 
 	result = AL->Allocator->calloc(1,sizeof(struct ValArrayIterator)+ sizeof(ElementType));
 	if (result == NULL) {
-		NoMemory("newIterator");
+		NoMemory("NewIterator");
 		return NULL;
 	}
 	result->it.GetNext = GetNext;
@@ -2059,7 +2059,7 @@ ValArrayInterface iValArrayInterface = {
 	Copy,
 	SetErrorFunction,
 	Sizeof,
-	newIterator,
+	NewIterator,
 	deleteIterator,
 	Save,
 	Load,

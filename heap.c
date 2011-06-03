@@ -261,12 +261,12 @@ static void *GetCurrent(Iterator *it)
 	return result;
 }
 
-static Iterator *newIterator(ContainerHeap *heap)
+static Iterator *NewIterator(ContainerHeap *heap)
 {
 	struct HeapIterator *result;
 
 	if (heap == NULL) {
-		iError.RaiseError("iHeap.newIterator",CONTAINER_ERROR_BADARG);
+		iError.RaiseError("iHeap.NewIterator",CONTAINER_ERROR_BADARG);
 		return NULL;
 	}
 	result = heap->Allocator->malloc(sizeof(struct HeapIterator));
@@ -298,6 +298,6 @@ HeapInterface iHeap = {
 	DestroyHeap,
 	InitHeap,
 	GetHeapSize,
-	newIterator,
+	NewIterator,
 	deleteIterator
 };

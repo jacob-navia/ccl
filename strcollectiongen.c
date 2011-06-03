@@ -1060,17 +1060,17 @@ static void *GetCurrent(Iterator *it)
 	return ali->current;
 }
 
-static Iterator *newIterator(ElementType *SC)
+static Iterator *NewIterator(ElementType *SC)
 {
 	struct strCollectionIterator *result;
 
 	if (SC == NULL) {
-		NullPtrError("newIterator");
+		NullPtrError("NewIterator");
 		return NULL;
 	}
 	result  = SC->Allocator->malloc(sizeof(struct strCollectionIterator));
 	if (result == NULL) {
-		NoMemoryError(SC,"newIterator");
+		NoMemoryError(SC,"NewIterator");
 		return NULL;
 	}
 	result->it.GetNext = GetNext;
@@ -1542,7 +1542,7 @@ INTERFACE_TYP INTERFACE_OBJECT = {
 	Copy,
  	SetErrorFunction,
 	Sizeof,
-	newIterator,
+	NewIterator,
 	deleteIterator,
 	Save,
 	Load,

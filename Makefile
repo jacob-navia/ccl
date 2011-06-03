@@ -4,7 +4,7 @@
 # 
 #---------------------------------------------------
 # Optimized CFLAGS setting
-CFLAGS=-Os -Wno-pointer-sign -DUNIX -Wall
+CFLAGS=-Os -Wno-pointer-sign -DUNIX -Wall -D__MAC_OSX
 # Debug CFLAGS setting
 #CFLAGS=-g -Wno-pointer-sign -DUNIX -Wall 
 SRC=	vector.c bloom.c containererror.c dlist.c qsortex.c heap.c \
@@ -63,5 +63,6 @@ heap.o:	heap.c containers.h ccl_internal.h
 memorymanager.o:	memorymanager.c containers.h ccl_internal.h
 sequential.o:	sequential.c containers.h ccl_internal.h
 iMask.o:	iMask.c containers.h ccl_internal.h
+scapegoat.o:	scapegoat.c containers.h ccl_internal.h
 wstrcollection.o:	wstrcollection.c strcollectiongen.c containers.h ccl_internal.h
 strcollection.o:       strcollection.c strcollectiongen.c containers.h ccl_internal.h
