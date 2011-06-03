@@ -1378,6 +1378,17 @@ static Vector *Create(size_t elementsize,size_t startsize)
 	return CreateWithAllocator(elementsize,startsize,CurrentMemoryManager);
 }
 
+static Vector *InitializeWith(size_t elementSize,size_t n,void *data)
+{
+        Vector *result = Create(elementSize,n);
+        if (result == NULL)
+                return result;
+        memcpy(result->contents,data,n*elementSize);
+        result->count = n;
+        return result;
+}
+
+
 static int SearchWithKey(Vector *vec,size_t startByte,size_t sizeKey,size_t startidx,void *item,size_t *result)
 {
 	size_t i;
@@ -1563,4 +1574,5 @@ VectorInterface iVector = {
 	Select,
 	SelectCopy,
 	ResizeTo,
+	InitializeWith,
 };

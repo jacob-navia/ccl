@@ -1466,6 +1466,22 @@ static ElementType *Create(size_t startsize)
 	return CreateWithAllocator(startsize,CurrentMemoryManager);
 }
 
+static ElementType *InitializeWith(size_t n, CHAR_TYPE **data)
+{
+	size_t i;
+	ElementType *result = Create(n);
+	if (result == NULL) return result;
+	for (i=0; i<n; i++) {
+		result->contents[i] = DuplicateString(result,data[i],"InitializeWith");
+		if (result->contents[i] == NULL) {
+			Finalize(result);
+			return NULL;
+		}
+	}
+	result->count = n;
+	return result;
+}
+
 static size_t GetElementSize(const ElementType *sc)
 {
 	return sizeof(void *);
@@ -1568,4 +1584,5 @@ INTERFACE_TYP INTERFACE_OBJECT = {
 	InitWithAllocator,
 	Init,
 	SetDestructor,
+	InitializeWith,
 };
