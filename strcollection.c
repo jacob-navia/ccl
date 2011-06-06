@@ -16,6 +16,7 @@ Added fixes from Gerome. Oct. 20 2005
 #define STRICMP stricmp
 #define STRCPY strcpy
 #define STRLEN strlen
+#define STRSTR strstr
 #define ElementType strCollection
 #define iElementType istrCollection
 #define STRSTR strstr 
