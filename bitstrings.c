@@ -170,14 +170,14 @@ static int GetElement(BitString *bs,size_t position)
 	return (bs->contents[position>>3] &BitIndexMask[position&(CHAR_BIT-1)]) ? 1 : 0;
 }
 
-static int RightShift(BitString *bs,size_t shift)
+static int BitRightShift(BitString *bs,size_t shift)
 {
 	size_t left = 0,tmp,tmp1;
 	size_t len,bytesize;
 	unsigned char *pdata;
 
 	if (bs == NULL) {
-		return NullPtrError("RightShift");
+		return NullPtrError("BitRightShift");
 	}
 	len = bs->count;
 	pdata = bs->contents;
@@ -212,14 +212,14 @@ static int RightShift(BitString *bs,size_t shift)
 	return 1;
 }
 
-static int LeftShift(BitString *bs,size_t shift){
+static int BitLeftShift(BitString *bs,size_t shift){
 	unsigned int tmp=0,tmp1;
 	size_t left=0;
 	unsigned char *pdata;
 	size_t len,bytesize;
 
 	if (bs == NULL) {
-		return NullPtrError("LeftShift");
+		return NullPtrError("BitLeftShift");
 	}
 	len = bs->count;
 	pdata = bs->contents;
@@ -742,7 +742,7 @@ static int ReplaceAt(BitString *b,size_t idx,bool newval)
 	return 1;
 }
 
-static int Pop(BitString *b){
+static int PopBack(BitString *b){
 	size_t bytepos,bitpos,idx;
 	int result;
 
@@ -959,7 +959,7 @@ static size_t Insert(BitString *b,bool bit){
 }
 
 /*------------------------------------------------------------------------
-Procedure:     RemoveAt ID:1
+Procedure:     EraseAt ID:1
 Purpose:       Removes the indicated bit from the bitstring, making
                it shorter by 1 bit.
 Input:         The bitstring and the index
@@ -968,14 +968,14 @@ Errors:        No error functions are called. It returns just zero.
                The rationale behind is that you can remove bits in
                a loop until there are none.
 ------------------------------------------------------------------------*/
-static int RemoveAt(BitString *bitStr,size_t idx)
+static int EraseAt(BitString *bitStr,size_t idx)
 {
 	size_t bitpos,oldval,newval;
 	size_t bytepos,bytesize;
 	unsigned tmp;
 
 	if (bitStr == NULL)
-		return NullPtrError("RemoveAt");
+		return NullPtrError("EraseAt");
 
 	if (bitStr->count == 0) /* If bit string empty there is nothing to remove */
 		return 0;
@@ -1029,7 +1029,7 @@ static int Erase(BitString *bitStr,bool val)
 	i = IndexOf(bitStr,val,NULL,&idx);
 	if (i <0)
 		return i;
-	RemoveAt(bitStr,idx);
+	EraseAt(bitStr,idx);
 	return 1;
 }
 
@@ -1339,9 +1339,9 @@ BitStringInterface iBitString = {
 	Add,
 	GetElement,
 	Add, /* Add and push are identical */
-	Pop,
+	PopBack,
 	InsertAt,
-	RemoveAt,
+	EraseAt,
 	ReplaceAt,
 	IndexOf,
 /* Bitstring specific functions */
@@ -1361,12 +1361,11 @@ BitStringInterface iBitString = {
 	BitBlockCount,
 	LessEqual,
 	Reverse,
-	RemoveAt,
 	GetRange,
 	StringToBitString,
 	ObjectToBitString,
-	LeftShift,
-	RightShift,
+	BitLeftShift,
+	BitRightShift,
 	Print,
 	Append,
 	Memset,

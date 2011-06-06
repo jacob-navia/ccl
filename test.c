@@ -226,7 +226,7 @@ static void TestBitstring(void){
 	PrintBitstring(c,"c:");
 	iBitString.Add(c,1);
 	PrintBitstring(c,"Add 1: c");
-	iBitString.LeftShift(c,5);
+	iBitString.BitLeftShift(c,5);
 	PrintBitstring(c,"LeftShift(c,5)");
 	d = iBitString.GetRange(b,6,10);
 	PrintBitstring(d,"GetRange(b,4):d");

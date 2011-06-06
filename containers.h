@@ -361,8 +361,8 @@ typedef struct tagstrCollection {
  /* ---------------------------------------------This is the specific container part */
     bool (*Sort)(strCollection *SC);
     struct _Vector *(*CastToArray)(strCollection *SC);
-    size_t (*FindFirstText)(strCollection *SC,unsigned char *text);
-    size_t (*FindNextText)(strCollection *SC, unsigned char *text,size_t start);
+    size_t (*FindFirst)(strCollection *SC,unsigned char *text);
+    size_t (*FindNext)(strCollection *SC, unsigned char *text,size_t start);
     strCollection *(*FindText)(strCollection *SC,unsigned char *text);
     Vector *(*FindTextIndex)(strCollection *SC,unsigned char *text);
     Vector *(*FindTextPositions)(strCollection *SC,unsigned char *text);
@@ -461,8 +461,8 @@ typedef struct tagWstrCollection {
 	/* ---------------------------------------------This is the specific container part */
     bool (*Sort)(WstrCollection *SC);
     struct _Vector *(*CastToArray)(WstrCollection *SC);
-    size_t (*FindFirstText)(WstrCollection *SC,wchar_t *text);
-    size_t (*FindNextText)(WstrCollection *SC, wchar_t *text,size_t start);
+    size_t (*FindFirst)(WstrCollection *SC,wchar_t *text);
+    size_t (*FindNext)(WstrCollection *SC, wchar_t *text,size_t start);
     WstrCollection *(*FindText)(WstrCollection *SC,wchar_t *text);
     Vector *(*FindTextIndex)(WstrCollection *SC,wchar_t *text);
     Vector *(*FindTextPositions)(WstrCollection *SC,wchar_t *text);
@@ -1067,9 +1067,9 @@ typedef struct tagBitString {
     /* Returns the string at the given position */
     int (*GetElement)(BitString *BitStr,size_t idx);
     /* Pushes a bit */
-    int        (*Push)(BitString *BitStr,int val);
+    int        (*PushBack)(BitString *BitStr,int val);
     /* Pops the last bit off */
-    int       (*Pop)(BitString *BitStr);
+    int       (*PopBack)(BitString *BitStr);
     /* Inserts a string at the given position */
     size_t (*InsertAt)(BitString *BitStr,size_t idx,bool bit);
     /*erases the string at the indicated position */
@@ -1101,12 +1101,11 @@ typedef struct tagBitString {
     uintmax_t  (*BitBlockCount)(BitString *b);
     int        (*LessEqual)(BitString *bsl,BitString *bsr);
     BitString *(*Reverse)(BitString *b);
-    int        (*RemoveAt)(BitString *bitStr,size_t idx);
     BitString *(*GetRange)(BitString *b,size_t start,size_t end);
     BitString *(*StringToBitString)(unsigned char *);
     BitString *(*ObjectToBitString)(size_t size,void *data);
-    int        (*LeftShift)(BitString *bs,size_t shift);
-    int        (*RightShift)(BitString *bs,size_t shift);
+    int        (*BitLeftShift)(BitString *bs,size_t shift);
+    int        (*BitRightShift)(BitString *bs,size_t shift);
     size_t     (*Print)(BitString *b,size_t bufsiz,unsigned char *out);
     int        (*Append)(BitString *left,BitString *right);
     int        (*Memset)(BitString *,size_t start,size_t stop,bool newval);
