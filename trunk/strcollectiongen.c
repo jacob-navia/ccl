@@ -1316,7 +1316,7 @@ static size_t FindFirstText(ElementType *SC,CHAR_TYPE *text)
 	if (SC == NULL || text == NULL)
 		return 0;
 	for (i=0; i<SC->count;i++) {
-		if (strstr((char *)SC->contents[i],(char *)text)) {
+		if (STRSTR(SC->contents[i],text)) {
 			return i+1;
 		}
 	}
@@ -1343,7 +1343,7 @@ static size_t FindNextText(ElementType *SC, CHAR_TYPE *text, size_t start)
 	if (SC == NULL || text == NULL)
 		return 0;
 	for (i=start; i<SC->count;i++) {
-		if (strstr((char *)SC->contents[i],(char *)text)) {
+		if (STRSTR(SC->contents[i],text)) {
 			return i+1;
 		}
 	}
@@ -1356,7 +1356,7 @@ static ElementType *FindText(ElementType *SC,CHAR_TYPE *text)
 	size_t i;
 
 	for (i=0; i<SC->count;i++) {
-		if (strstr((char *)SC->contents[i],(char *)text)) {
+		if (STRSTR(SC->contents[i],text)) {
 			if (result == NULL) {
 				result = iElementType.Create(sizeof(size_t));
 				if (result == NULL)
@@ -1375,7 +1375,7 @@ static Vector *FindTextIndex(ElementType *SC,CHAR_TYPE *text)
 	size_t i;
 
 	for (i=0; i<SC->count;i++) {
-		if (strstr((char *)SC->contents[i],(char *)text)) {
+		if (STRSTR(SC->contents[i],text)) {
 			if (result == NULL) {
 				result = iVector.Create(sizeof(size_t),10);
 				if (result == NULL)
