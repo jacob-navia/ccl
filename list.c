@@ -80,7 +80,7 @@ static list_element *new_link(List *li,void *data,const char *fname)
 }
 static int DefaultListCompareFunction(const void *left,const void *right,CompareInfo *ExtraArgs)
 {
-        size_t siz=((List *)ExtraArgs->Container)->ElementSize;
+        size_t siz=((List *)ExtraArgs->ContainerLeft)->ElementSize;
         return memcmp(left,right,siz);
 }
 
@@ -562,7 +562,8 @@ static int Equal(List *l1,List *l2)
     fn = l1->Compare;
     link1 = l1->First;
     link2 = l2->First;
-    ci.Container = l1;
+    ci.ContainerLeft = l1;
+    ci.ContainerRight = l2;
     ci.ExtraArgs = NULL;
     while (link1 && link2) {
         if (fn(link1->Data,link2->Data,&ci))
@@ -1002,7 +1003,8 @@ static int IndexOf(List *l,void *ElementToFind,void *ExtraArgs,size_t *result)
     }
     rvp = l->First;
     fn = l->Compare;
-    ci.Container = l;
+    ci.ContainerLeft = l;
+    ci.ContainerRight = NULL;
     ci.ExtraArgs = ExtraArgs;
     while (rvp) {
         r = fn(&rvp->Data,ElementToFind,&ci);
@@ -1021,7 +1023,7 @@ static int lcompar (const void *elem1, const void *elem2,CompareInfo *ExtraArgs)
 {
     list_element *Elem1 = *(list_element **)elem1;
     list_element *Elem2 = *(list_element **)elem2;
-    List *l = (List *)ExtraArgs->Container;
+    List *l = (List *)ExtraArgs->ContainerLeft;
     CompareFunction fn = l->Compare;
     return fn(Elem1->Data,Elem2->Data,ExtraArgs);
 }
@@ -1051,7 +1053,8 @@ static int Sort(List *l)
         tab[i] = rvp;
         rvp = rvp->Next;
     }
-    ci.Container = l;
+    ci.ContainerLeft = l;
+    ci.ContainerRight = NULL;
     ci.ExtraArgs = NULL;
     qsortEx(tab,l->count,sizeof(list_element *),lcompar,&ci);
     for (i=0; i<l->count-1;i++) {

@@ -215,8 +215,9 @@ static int Mismatch(ElementType *a1,ElementType *a2,size_t *mismatch)
 		return 1;
 	p1 = a1->contents;
 	p2 = a2->contents;
-	ci.Container = a1;
-	ci.ExtraArgs = a2;
+	ci.ContainerLeft = a1;
+	ci.ContainerRight = a2;
+	ci.ExtraArgs = NULL;
 	for (i=0;i<siz;i++) {
 		if (a1->strcompare(*p1,*p2,&ci) != 0) {
 			*mismatch = i;

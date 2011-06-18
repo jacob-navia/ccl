@@ -62,7 +62,7 @@ static void *DuplicateElement(Vector *AL,void *str,size_t size,const char *funct
 #define CHUNKSIZE 20
 static int DefaultVectorCompareFunction(const void *left,const void *right,CompareInfo *ExtraArgs)
 {
-	size_t siz=((Vector *)ExtraArgs->Container)->ElementSize;
+	size_t siz=((Vector *)ExtraArgs->ContainerLeft)->ElementSize;
 	return memcmp(left,right,siz);
 }
 
@@ -307,7 +307,8 @@ static int Contains(Vector *AL,void *data,void *ExtraArgs)
 	p = (char *)AL->contents;
 	if (ExtraArgs == NULL) {
 		ExtraArgs = &ci;
-		ci.Container = AL;
+		ci.ContainerLeft = AL;
+		ci.ContainerRight = NULL;
 		ci.ExtraArgs = ExtraArgs;
 	}
 	for (i = 0; i<AL->count;i++) {
@@ -450,7 +451,8 @@ static int IndexOf(Vector *AL,void *data,void *ExtraArgs,size_t *result)
 		return CONTAINER_ERROR_BADARG;
 	}
 	p = AL->contents;
-	ci.Container = AL;
+	ci.ContainerLeft = AL;
+	ci.ContainerRight = NULL;
 	ci.ExtraArgs = ExtraArgs;
 	for (i=0; i<AL->count;i++) {
 		if (!AL->CompareFn(p,data,&ci)) {
@@ -727,8 +729,9 @@ static int Mismatch(Vector *a1, Vector *a2,size_t *mismatch)
 		return 1;
 	p1 = a1->contents;
 	p2 = a2->contents;
-	ci.Container = a1;
-	ci.ExtraArgs = a2;
+	ci.ContainerLeft = a1;
+	ci.ContainerRight = a2;
+	ci.ExtraArgs = NULL;
 	for (i=0;i<siz;i++) {
 		if (a1->CompareFn(p1,p2,&ci) != 0) {
 			*mismatch = i;
@@ -923,7 +926,7 @@ static int Sort(Vector *AL)
 	if (AL == NULL) {
 		return NullPtrError("Sort");
 	}
-	ci.Container = AL;
+	ci.ContainerLeft = AL;
 	ci.ExtraArgs = NULL;
 	qsortEx(AL->contents,AL->count,AL->ElementSize,AL->CompareFn,&ci);
 	return 1;

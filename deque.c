@@ -31,7 +31,7 @@ typedef dlist_element *DequeNode;
 
 static int default_comparator(const void *left,const void *right,CompareInfo *ExtraArgs)
 {
-    size_t siz=((Deque *)ExtraArgs->Container)->ElementSize;
+    size_t siz=((Deque *)ExtraArgs->ContainerLeft)->ElementSize;
     return memcmp(left,right,siz);
 }
 
@@ -275,7 +275,7 @@ static int Remove(Deque * d, void* item)
     DequeNode tmp = d->tail;
     CompareInfo ci;
 
-    ci.Container = d;
+    ci.ContainerLeft = d;
     ci.ExtraArgs = NULL;
 
     while (tmp != NULL) {
@@ -361,7 +361,7 @@ static size_t Contains(Deque * d, void* item)
     size_t pos;
     DequeNode tmp = d->head;
     CompareInfo ci;
-    ci.Container = d;
+    ci.ContainerLeft = d;
     ci.ExtraArgs = NULL;
 
     pos=1;
@@ -380,7 +380,7 @@ static int Equal(Deque * d, Deque *d1)
     DequeNode tmp = d->head;
     DequeNode tmp1 = d1->head;
     CompareInfo ci;
-    ci.Container = d;
+    ci.ContainerLeft = d;
     ci.ExtraArgs = NULL;
 
     if (d->ElementSize != d1->ElementSize)
