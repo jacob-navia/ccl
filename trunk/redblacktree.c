@@ -58,7 +58,7 @@ static RedBlackTree *Create(size_t ElementSize,size_t KeySize)
 }
 static int DefaultCompareFunction(const void *arg1, const void *arg2, CompareInfo *ExtraArgs)
 {
-	RedBlackTree *tree = (RedBlackTree *)ExtraArgs->Container;
+	RedBlackTree *tree = (RedBlackTree *)ExtraArgs->ContainerLeft;
 	size_t len = tree->KeySize;
 	return memcmp(arg1,arg2,len);
 }
@@ -146,7 +146,8 @@ static void *Find(RedBlackTree *Tree, void *query_key, void *ExtraArgs)
 	if (node->left == NULL)
 		return NULL;
 	tmp_node = node;
-	ci.Container = Tree;
+	ci.ContainerLeft = Tree;
+	ci.ContainerRight = NULL;
 	ci.ExtraArgs = ExtraArgs;
 	while (tmp_node->right != NULL ) {
 		cmpval = Tree->KeyCompareFn(tmp_node->Key,query_key,&ci);
@@ -182,7 +183,8 @@ static int Insert(RedBlackTree *Tree,const void *new_key, const void *new_object
 	int cmpval;
 	CompareInfo ci;
 
-	ci.Container = Tree;
+	ci.ContainerLeft = Tree;
+	ci.ContainerRight = NULL;
 	ci.ExtraArgs = ExtraArgs;
 	if( treenode->left == NULL ) {
 		void *tmp = CopyObject(Tree,new_object);
@@ -302,7 +304,8 @@ static int Remove(RedBlackTree *Tree, const void *delete_key, void *ExtraArgs)
 	int cmpval;
 	RedBlackTreeNode *treenode = Tree->root;
 
-	ci.Container = Tree;
+	ci.ContainerLeft = Tree;
+	ci.ContainerRight = NULL;
 	ci.ExtraArgs = ExtraArgs;
 	if (treenode->left == NULL )
 		return 0;
