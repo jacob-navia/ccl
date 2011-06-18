@@ -124,7 +124,8 @@ typedef struct _Iterator {
 /* Type definition of the compare function */
 typedef struct tagCompareInfo {
     void *ExtraArgs;
-    void *Container;
+    void *ContainerLeft;
+    void *ContainerRight;
 } CompareInfo;
 typedef int (*CompareFunction)(const void *elem1, const void *elem2,CompareInfo *ExtraArgs);
 typedef size_t (*SaveFunction)(const void *element, void *arg, FILE *OutputStream);
@@ -151,7 +152,6 @@ typedef struct _HeapAllocatorInterface {
     size_t (*Sizeof)(ContainerHeap *heap);
     Iterator *(*NewIterator)(ContainerHeap *);
     int (*deleteIterator)(Iterator *it);
-
 } HeapInterface;
 
 extern HeapInterface iHeap;
@@ -398,6 +398,7 @@ typedef struct tagstrCollection {
     strCollection *(*Init)(strCollection *result,size_t startsize);
     DestructorFunction (*SetDestructor)(strCollection *v,DestructorFunction fn);
     strCollection *(*InitializeWith)(size_t n, unsigned char **data);
+//    unsigned char *(*Find)(strCollection *SC,unsigned char *str,CompareInfo *ci);
 } strCollectionInterface;
 
 extern strCollectionInterface istrCollection;
@@ -498,6 +499,7 @@ typedef struct tagWstrCollection {
     WstrCollection *(*Init)(WstrCollection *result,size_t startsize);
     DestructorFunction (*SetDestructor)(WstrCollection *v,DestructorFunction fn);
     WstrCollection *(*InitializeWith)(size_t n,wchar_t **data);
+//    wchar_t *Find(WstrCollection *SC,wchar_t *data,CompareInfo *ci);
 } WstrCollectionInterface;
 
 extern WstrCollectionInterface iWstrCollection;

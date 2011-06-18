@@ -26,7 +26,7 @@ struct tagTreeMap {
     unsigned timestamp;
     ContainerHeap *Heap;
     ContainerMemoryManager *Allocator;
-	DestructorFunction DestructorFn;
+    DestructorFunction DestructorFn;
 };
 
 
@@ -517,7 +517,7 @@ static int Add(TreeMap *tree, void *Data,void *ExtraArgs)
     CompareInfo cInfo;
 
     cInfo.ExtraArgs = ExtraArgs;
-    cInfo.Container = tree;
+    cInfo.ContainerLeft = tree;
     p = iHeap.newObject(tree->Heap);
     if (p) {
     	memcpy(p->data ,Data,tree->ElementSize);
@@ -538,7 +538,7 @@ static int AddRange(TreeMap *tree,size_t n, void *Data,void *ExtraArgs)
     CompareInfo cInfo;
 	
     cInfo.ExtraArgs = ExtraArgs;
-    cInfo.Container = tree;
+    cInfo.ContainerLeft = tree;
 	while (n > 0) {
 		p = iHeap.newObject(tree->Heap);
 		if (p) {
@@ -563,7 +563,7 @@ static int Insert(TreeMap *tree, const void *Data, void *ExtraArgs)
     CompareInfo cInfo;
 
     cInfo.ExtraArgs = ExtraArgs;
-    cInfo.Container = tree;
+    cInfo.ContainerLeft = tree;
     tree->aux = &cInfo;
     p = iHeap.newObject(tree->Heap);
     tree->aux = NULL;
@@ -585,7 +585,7 @@ static void *Find(TreeMap *tree,void *data,void *ExtraArgs)
     CompareInfo cInfo;
 
     cInfo.ExtraArgs = ExtraArgs;
-    cInfo.Container = tree;
+    cInfo.ContainerLeft = tree;
     tree->aux = &cInfo;
     p = find(tree, data);
     tree->aux = NULL;
@@ -601,7 +601,7 @@ static int Erase(TreeMap *tree, void * element,void *ExtraArgs)
     CompareInfo cInfo;
 	
     cInfo.ExtraArgs = ExtraArgs;
-    cInfo.Container = tree;
+    cInfo.ContainerLeft = tree;
     tree->aux = &cInfo;	
     n = find(tree,element);
     if (n == NULL)
@@ -754,7 +754,7 @@ static int Apply(TreeMap *tree,int (*Applyfn)(const void *data,void *arg),void *
 
 static int DefaultTreeCompareFunction(const void *left,const void *right,CompareInfo *ExtraArgs)
 {
-    size_t siz=((TreeMap *)ExtraArgs->Container)->ElementSize;
+    size_t siz=((TreeMap *)ExtraArgs->ContainerLeft)->ElementSize;
     return memcmp(left,right,siz);
 }
 

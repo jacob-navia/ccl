@@ -69,7 +69,7 @@ static dlist_element *new_dlink(Dlist *l,void *data,const char *fname)
 
 static int DefaultDlistCompareFunction(const void *left,const void *right,CompareInfo *ExtraArgs)
 {
-        size_t siz=((Dlist *)ExtraArgs->Container)->ElementSize;
+        size_t siz=((Dlist *)ExtraArgs->ContainerLeft)->ElementSize;
         return memcmp(left,right,siz);
 }
 
@@ -621,7 +621,8 @@ static bool Equal(Dlist *l1,Dlist *l2)
     fn = l1->Compare;
     link1 = l1->First;
     link2 = l2->First;
-    ci.Container = l1;
+    ci.ContainerLeft = l1;
+    ci.ContainerRight = l2;
     ci.ExtraArgs = NULL;
     while (link1 && link2) {
     	if (fn(link1->Data,link2->Data,&ci))
@@ -989,7 +990,8 @@ static int IndexOf(Dlist *l,void *ElementToFind, void * args,size_t *result)
     }
     rvp = l->First;
     fn = l->Compare;
-    ci.Container = l;
+    ci.ContainerLeft = l;
+    ci.ContainerRight = NULL;
     ci.ExtraArgs = args;
     while (rvp) {
     	r = fn(&rvp->Data,ElementToFind,&ci);
@@ -1084,7 +1086,7 @@ static int dlcompar (const void *elem1, const void *elem2,CompareInfo *ExtraArgs
 {
     dlist_element *Elem1 = *(dlist_element **)elem1;
     dlist_element *Elem2 = *(dlist_element **)elem2;
-    Dlist *l = (Dlist *)ExtraArgs->Container;
+    Dlist *l = (Dlist *)ExtraArgs->ContainerLeft;
     CompareFunction fn = l->Compare;
     return fn(Elem1->Data,Elem2->Data,ExtraArgs);
 }
@@ -1114,7 +1116,8 @@ static int Sort(Dlist *l)
     	tab[i] = rvp;
     	rvp = rvp->Next;
     }
-    ci.Container = l;
+    ci.ContainerLeft = l;
+    ci.ContainerRight = NULL;
     ci.ExtraArgs = NULL;
     qsortEx(tab,l->count,sizeof(dlist_element *),dlcompar,&ci);
     for (i=1; i<l->count-1;i++) {
