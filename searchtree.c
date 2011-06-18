@@ -433,7 +433,8 @@ static int Remove(BinarySearchTree *tree, const void *data, void *ExtraArgs)
 	ad[0] = 0;
 	ap[0] = tree->root;
 
-	ci.Container = tree;
+	ci.ContainerLeft = tree;
+	ci.ContainerRight = NULL;
 	ci.ExtraArgs = ExtraArgs;
 	z = tree->root;
 	for (;;) {
@@ -663,7 +664,7 @@ static void *lookup(BinarySearchTree *tree, BinarySearchTreeNode *node, void *da
 
 static int DefaultCompareFunction(const void *arg1, const void *arg2, CompareInfo *ExtraArgs)
 {
-	BinarySearchTree *tree = (BinarySearchTree *)ExtraArgs->Container;
+	BinarySearchTree *tree = (BinarySearchTree *)ExtraArgs->ContainerLeft;
 	size_t len = tree->ElementSize;
 	return memcmp(arg1,arg2,len);
 }
@@ -689,7 +690,8 @@ static int Insert(BinarySearchTree *tree, const void *data,void *ExtraArgs)
 	int                balanced = 0;
 	CompareInfo ci;
 
-	ci.Container = tree;
+	ci.ContainerLeft = tree;
+	ci.ContainerRight = NULL;
 	ci.ExtraArgs = ExtraArgs;
 
 	return insert(tree, &tree->root, data, &balanced, &ci);
@@ -705,7 +707,8 @@ static void *Find(BinarySearchTree *tree, void *data)
 {
 	CompareInfo ci;
 
-	ci.Container = tree;
+	ci.ContainerLeft = tree;
+	ci.ContainerRight = NULL;
 	ci.ExtraArgs = NULL;
 	return lookup(tree, tree->root, data, &ci);
 }
@@ -774,7 +777,7 @@ static int compareNodes(const BinarySearchTreeNode *left,const BinarySearchTreeN
 	if ((left->right == NULL && right->right != NULL) ||
 		(left->right != NULL && right->right == NULL))
 		return 0;
-	tree = ci->Container;
+	tree = ci->ContainerLeft;
 	if (tree->VTable->Compare(left->data,right->data,ci))
 		return 0;
 	if (left->left) {
@@ -794,7 +797,8 @@ static bool Equal(const BinarySearchTree *left, const BinarySearchTree *right)
 	if (!compareHeaders(left,right))
 		return 0;
 	ci.ExtraArgs = NULL;
-	ci.Container = (void *)left;
+	ci.ContainerLeft = (void *)left;
+	ci.ContainerRight = NULL;
 	return compareNodes(left->root,right->root,&ci);
 }
 
