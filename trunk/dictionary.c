@@ -96,10 +96,10 @@ struct _Dictionary {
 	size_t ElementSize;
 	ContainerMemoryManager *Allocator;
 	DestructorFunction DestructorFn;
-	unsigned (*hash)(const unsigned char *Key);
+	unsigned (*hash)(const char *Key);
 	struct DataList {
 		struct DataList *Next;
-		unsigned char *Key;
+		char *Key;
 		void *Value;
 	} **buckets;
 };
@@ -116,7 +116,7 @@ static Dictionary *Create(size_t elementsize,size_t hint);
                 signed characters. The input MUST be unsigned
 ------------------------------------------------------------------------*/
 #if 0
-static unsigned hash(const unsigned char *str)
+static unsigned hash(const char *str)
 {
 	unsigned int h = scatter[*str];
 	if (*str == 0)
@@ -156,10 +156,10 @@ static int NoMemoryError(Dictionary *SC,const char *fnName)
 	return doerrorCall(SC->RaiseError,fnName,CONTAINER_ERROR_NOMEMORY);
 }
 
-static unsigned int hash(const unsigned char *key)
+static unsigned int hash(const char *key)
 {
     unsigned int Hash = 0;
-    const unsigned char *p;
+    const char *p;
 	
     /*
 	 * This was in the apache run time. This comment shows the long
@@ -210,10 +210,10 @@ static unsigned int hash(const unsigned char *key)
 }
 
 #if 0
-static unsigned int hashlen(const unsigned char *key,int *klen)
+static unsigned int hashlen(const char *key,int *klen)
 {
     unsigned int hash = 0;
-    const unsigned char *p;
+    const char *p;
 	int i;
 	
 	for (p = key, i = *klen; i; i--, p++) {
@@ -234,7 +234,7 @@ static unsigned int hashlen(const unsigned char *key,int *klen)
                 error code will be returned. Returns zero if there
                 is no more memory
 ------------------------------------------------------------------------*/
-static const void *GetElement(const Dictionary *Dict,const unsigned char *Key)
+static const void *GetElement(const Dictionary *Dict,const char *Key)
 {
 	size_t i;
 	struct DataList *p;
@@ -255,7 +255,7 @@ static const void *GetElement(const Dictionary *Dict,const unsigned char *Key)
 	return NULL;
 }
 
-static int CopyElement(const Dictionary *Dict,const unsigned char *Key,void *outbuf)
+static int CopyElement(const Dictionary *Dict,const char *Key,void *outbuf)
 {
 	size_t i;
 	struct DataList *p;
@@ -274,7 +274,7 @@ static int CopyElement(const Dictionary *Dict,const unsigned char *Key,void *out
 	return 0;
 }
 
-static int Contains(Dictionary *Dict,const unsigned char *Key)
+static int Contains(Dictionary *Dict,const char *Key)
 {
 	if (Dict == NULL)  {
 		return NullPtrError("Contains");
@@ -322,11 +322,11 @@ static int Equal(const Dictionary *d1,const Dictionary *d2)
                 error code
  Errors:        The container must be read/write.
 ------------------------------------------------------------------------*/
-static int add_nd(Dictionary *Dict,const unsigned char *Key,void *Value)
+static int add_nd(Dictionary *Dict,const char *Key,void *Value)
 {
 	size_t i;
 	struct DataList *p;
-	unsigned char *tmp;
+	char *tmp;
 
 	i = (*Dict->hash)(Key)%Dict->size;
 	for (p = Dict->buckets[i]; p; p = p->Next) {
@@ -362,7 +362,7 @@ static int add_nd(Dictionary *Dict,const unsigned char *Key,void *Value)
 	else	p->Value = NULL;
 	return 0;
 }
-static int Add(Dictionary *Dict,const unsigned char *Key,void *Value)
+static int Add(Dictionary *Dict,const char *Key,void *Value)
 {
 	if (Dict == NULL) 
 		return NullPtrError("Add");
@@ -373,11 +373,11 @@ static int Add(Dictionary *Dict,const unsigned char *Key,void *Value)
 
 	return add_nd(Dict,Key,Value);
 }
-static int Insert(Dictionary *Dict,const unsigned char *Key,void *Value)
+static int Insert(Dictionary *Dict,const char *Key,void *Value)
 {
 	size_t i;
 	struct DataList *p;
-	unsigned char *tmp;
+	char *tmp;
 
 	if (Dict == NULL) 
 		return NullPtrError("Add");
@@ -412,7 +412,7 @@ static int Insert(Dictionary *Dict,const unsigned char *Key,void *Value)
 	Dict->count++;
 	return 1;
 }
-static int Replace(Dictionary *Dict,const unsigned char *Key,void *Value)
+static int Replace(Dictionary *Dict,const char *Key,void *Value)
 {
 	size_t i;
 	struct DataList *p;
@@ -515,7 +515,7 @@ static unsigned SetFlags(Dictionary *Dict,unsigned Flags)
  Errors:        If Dictionary is a NULL pointer or the function is a
                 NULL pointer returns zero.
 ------------------------------------------------------------------------*/
-static int Apply(Dictionary *Dict,int (*apply)(const unsigned char *Key,const void *Value, void *ExtraArgs),
+static int Apply(Dictionary *Dict,int (*apply)(const char *Key,const void *Value, void *ExtraArgs),
 	void *ExtraArgs)
 {
 	size_t i;
@@ -581,7 +581,7 @@ static int InsertIn(Dictionary *dst,Dictionary *src)
                 returns zero. If the dictionary is read-only the
 				result is also zero.
 ------------------------------------------------------------------------*/
-static int Erase(Dictionary *Dict,const unsigned char *Key)
+static int Erase(Dictionary *Dict,const char *Key)
 {
 	size_t i;
 	struct DataList **pp;
@@ -898,7 +898,7 @@ static Dictionary *Load(FILE *stream, ReadFunction readFn, void *arg)
 	}
 	result = Create(iVector.GetElementSize(al),istrCollection.Size(sc));
 	for (i=0; i<istrCollection.Size(sc);i++) {
-		unsigned char *key = (unsigned char *)istrCollection.GetElement(sc,i);
+		char *key = (char *)istrCollection.GetElement(sc,i);
 		void *data = iVector.GetElement(al,i);
 		result->VTable->Add(result,key,data);
 	}
@@ -985,7 +985,7 @@ static Dictionary *Create(size_t elementsize,size_t hint)
 	return CreateWithAllocator(elementsize,hint,CurrentMemoryManager);
 }
 
-static Dictionary *InitializeWith(size_t elementSize,size_t n, unsigned char **Keys,void *Values)
+static Dictionary *InitializeWith(size_t elementSize,size_t n, char **Keys,void *Values)
 {
 	Dictionary *result = Create(elementSize,n);
 	size_t i;

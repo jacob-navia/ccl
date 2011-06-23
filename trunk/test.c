@@ -266,36 +266,36 @@ static void PrintstrCollection(strCollection *SC){
 static void teststrCollection(void)
 {
     strCollection *SC = istrCollection.Create(10);
-    unsigned char *p,buf[40];
+    char *p,buf[40];
 	size_t idx;
-    istrCollection.Add(SC,(unsigned char *)"Martin");
-    istrCollection.Insert(SC,(unsigned char *)"Jakob");
-    if (!istrCollection.Contains(SC,(unsigned char *)"Martin")) {
+    istrCollection.Add(SC,"Martin");
+    istrCollection.Insert(SC,(char *)"Jakob");
+    if (!istrCollection.Contains(SC,(char *)"Martin")) {
         Abort();
     }
     if (2 != istrCollection.Size(SC))
 		Abort();
-    istrCollection.InsertAt(SC,1,(unsigned char *)"Position 1");
-    istrCollection.InsertAt(SC,2,(unsigned char *)"Position 2");
-	if (0 == istrCollection.Contains(SC,(unsigned char *)"Position 1"))
+    istrCollection.InsertAt(SC,1,(char *)"Position 1");
+    istrCollection.InsertAt(SC,2,(char *)"Position 2");
+	if (0 == istrCollection.Contains(SC,(char *)"Position 1"))
 		Abort();
-	istrCollection.IndexOf(SC,(unsigned char *)"Position 2",&idx);
+	istrCollection.IndexOf(SC,(char *)"Position 2",&idx);
 	if (idx != 2)
 		Abort();
 	if (4 != istrCollection.Size(SC))
 		Abort();
-    istrCollection.Erase(SC,(unsigned char *)"Jakob");
-    if (istrCollection.Contains(SC,(unsigned char *)"Jakob"))
+    istrCollection.Erase(SC,(char *)"Jakob");
+    if (istrCollection.Contains(SC,(char *)"Jakob"))
 		Abort();
 	if (3 != istrCollection.Size(SC))
 		Abort();
-    istrCollection.PushFront(SC,(unsigned char *)"pushed");
+    istrCollection.PushFront(SC,(char *)"pushed");
 	if (4 != istrCollection.Size(SC))
 		Abort();
-	istrCollection.IndexOf(SC,(unsigned char *)"pushed",&idx);
+	istrCollection.IndexOf(SC,(char *)"pushed",&idx);
 	if (0 != idx)
 		Abort();
-    istrCollection.PopFront(SC,(unsigned char *)buf,sizeof(buf));
+    istrCollection.PopFront(SC,(char *)buf,sizeof(buf));
 	if (3 != istrCollection.Size(SC))
 		Abort();
 	if (strcmp((char *)buf,"pushed"))
@@ -323,24 +323,24 @@ static int TestDictionary(void)
 
 	data[1] = 1;
 	data[2] = 2;
-	iDictionary.Add(d,(const unsigned char *)"One",&data[1]);
-	iDictionary.Add(d,(const unsigned char *)"Two",&data[2]);
-	pi = (int *)iDictionary.GetElement(d,(const unsigned char *)"Two");
+	iDictionary.Add(d,"One",&data[1]);
+	iDictionary.Add(d,"Two",&data[2]);
+	pi = (int *)iDictionary.GetElement(d,"Two");
 	if (*pi != 2)
 		Abort();
-	pi = (int *)iDictionary.GetElement(d,(const unsigned char *)"One");
+	pi = (int *)iDictionary.GetElement(d,"One");
 	if (*pi != 1)
 		Abort();
 	count = iDictionary.Size(d);
 	if (count != 2)
 		Abort();
-	count=iDictionary.Erase(d,(const unsigned char *)"long data");
+	count=iDictionary.Erase(d,"long data");
 	if (count != (unsigned)CONTAINER_ERROR_NOTFOUND)
 		Abort();
 	count = iDictionary.Size(d);
 	if (count != 2)
 		Abort();
-	iDictionary.Erase(d,(const unsigned char *)"One");
+	iDictionary.Erase(d,"One");
 	count = iDictionary.Size(d);
 	if (count != 1)
 		Abort();

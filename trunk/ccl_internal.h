@@ -12,7 +12,7 @@
 /* This function is needed to read a line from a file.
    The resulting line is allocated with the given memory manager
 */
-int GetLine(unsigned char **LinePointer,int *n, FILE *stream,ContainerMemoryManager *mm);
+int GetLine(char **LinePointer,int *n, FILE *stream,ContainerMemoryManager *mm);
 int WGetLine(wchar_t **LinePointer,int *n, FILE *stream,ContainerMemoryManager *mm);
 typedef struct {
         uint32_t Data1;

@@ -10,7 +10,7 @@ Added fixes from Gerome. Oct. 20 2005
 #include <wchar.h>
 #include "containers.h"
 #include "ccl_internal.h"
-#define CHAR_TYPE unsigned char
+#define CHAR_TYPE char
 #define SNPRINTF snprintf
 #define STRCMP strcmp
 #define STRICMP stricmp

@@ -1206,7 +1206,7 @@ static Vector *CastToArray(ElementType *SC)
 }
 
 /* Bug fixes proposed by oetelaar.automatisering */
-static ElementType *CreateFromFile(const unsigned char *fileName)
+static ElementType *CreateFromFile(const char *fileName)
 {
 	ElementType *result;
 	CHAR_TYPE *line=NULL;
@@ -1286,7 +1286,7 @@ static ElementType *GetRange(ElementType *SC, size_t start,size_t end)
 }
 
 
-static int WriteToFile(ElementType *SC,unsigned char *fileName)
+static int WriteToFile(ElementType *SC, char *fileName)
 {
 	FILE *f;
 	size_t i;
