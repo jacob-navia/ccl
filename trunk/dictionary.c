@@ -159,7 +159,7 @@ static int NoMemoryError(Dictionary *SC,const char *fnName)
 static unsigned int hash(const char *key)
 {
     unsigned int Hash = 0;
-    const char *p;
+    const unsigned char *p;
 	
     /*
 	 * This was in the apache run time. This comment shows the long
@@ -202,7 +202,7 @@ static unsigned int hash(const char *key)
      *                  -- Ralf S. Engelschall <rse@engelschall.com>
      */
 	
-     for (p = key; *p; p++) {
+     for (p = (const unsigned char *)key; *p; p++) {
         Hash = Hash * 33 + scatter[*p];
      }
 	
