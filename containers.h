@@ -309,7 +309,7 @@ extern CircularBufferInterface iCircularBuffer;
 typedef struct strCollection strCollection;
 typedef struct _Vector Vector;
 
-typedef int (*StringCompareFn)(const unsigned char *s1,const unsigned char *s2,CompareInfo *info);
+typedef int (*StringCompareFn)(const char *s1,const char *s2,CompareInfo *info);
 typedef struct tagstrCollection {
 /* -----------------------------------------------This is the generic container part */
     /* Returns the number of elements stored */
@@ -321,14 +321,14 @@ typedef struct tagstrCollection {
     /* Clears all data and frees the memory */
     int (*Clear)(strCollection *SC);
     /*Case sensitive search of a character string in the data */
-    int (*Contains)(strCollection *SC,unsigned char *str);
+    int (*Contains)(strCollection *SC,char *str);
     /* erases the given string if found */
-    int (*Erase)(strCollection *SC,unsigned char *);
+    int (*Erase)(strCollection *SC,char *);
     /* Frees the memory used by the collection */
     int (*Finalize)(strCollection *SC);
     /* Calls the given function for all strings. "Arg" is a used supplied argument */
     /* that can be NULL that is passed to the function to call */
-    int (*Apply)(strCollection *SC,int (*Applyfn)(unsigned char *,void * arg),void *arg);
+    int (*Apply)(strCollection *SC,int (*Applyfn)(char *,void * arg),void *arg);
     /* Compares two string collections */
     int (*Equal)(strCollection *SC1,strCollection *SC2);
     /* Copy a string collection */
@@ -345,43 +345,43 @@ typedef struct tagstrCollection {
     size_t (*GetElementSize)(const strCollection *SC);
  /* -------------------------------------------This is the Sequential container part */
     /* Adds one element at the end. Given string is copied */
-    int (*Add)(strCollection *SC,unsigned char *newval);
+    int (*Add)(strCollection *SC,char *newval);
     /* Pushes a string, using the collection as a stack */
-    int (*PushFront)(strCollection *SC,unsigned char *str);
+    int (*PushFront)(strCollection *SC,char *str);
     /* Pops the first (position zero) string of the collection */
-    size_t (*PopFront)(strCollection *SC,unsigned char *outbuf,size_t buflen);
+    size_t (*PopFront)(strCollection *SC,char *outbuf,size_t buflen);
     /* Inserts a string at the given position */
-    int (*InsertAt)(strCollection *SC,size_t idx,unsigned char *newval);
+    int (*InsertAt)(strCollection *SC,size_t idx,char *newval);
     /*erases the string at the indicated position */
     int (*EraseAt)(strCollection *SC,size_t idx);
     /* Replaces the character string at the given position with a new one */
-    int (*ReplaceAt)(strCollection *SC,size_t idx,unsigned char *newval);
+    int (*ReplaceAt)(strCollection *SC,size_t idx,char *newval);
     /*Returns the index of the given string or -1 if not found */
-   int (*IndexOf)(strCollection *SC,unsigned char *SearchedString,size_t *result);   
+   int (*IndexOf)(strCollection *SC,char *SearchedString,size_t *result);   
  /* ---------------------------------------------This is the specific container part */
     bool (*Sort)(strCollection *SC);
     struct _Vector *(*CastToArray)(strCollection *SC);
-    size_t (*FindFirst)(strCollection *SC,unsigned char *text);
-    size_t (*FindNext)(strCollection *SC, unsigned char *text,size_t start);
-    strCollection *(*FindText)(strCollection *SC,unsigned char *text);
-    Vector *(*FindTextIndex)(strCollection *SC,unsigned char *text);
-    Vector *(*FindTextPositions)(strCollection *SC,unsigned char *text);
-    int (*WriteToFile)(strCollection *SC, unsigned char *filename);
+    size_t (*FindFirst)(strCollection *SC,char *text);
+    size_t (*FindNext)(strCollection *SC, char *text,size_t start);
+    strCollection *(*FindText)(strCollection *SC,char *text);
+    Vector *(*FindTextIndex)(strCollection *SC,char *text);
+    Vector *(*FindTextPositions)(strCollection *SC,char *text);
+    int (*WriteToFile)(strCollection *SC, char *filename);
     strCollection *(*IndexIn)(const strCollection *SC,const Vector *AL);
-    strCollection *(*CreateFromFile)(const unsigned char *fileName);
+    strCollection *(*CreateFromFile)(const char *fileName);
     strCollection *(*Create)(size_t startsize);
     strCollection *(*CreateWithAllocator)(size_t startsize,ContainerMemoryManager *allocator);
 
     /* Adds a NULL terminated table of strings */
-    int (*AddRange)(strCollection *SC,size_t n,unsigned char **newvalues);
+    int (*AddRange)(strCollection *SC,size_t n,char **newvalues);
     /* Copies all strings into a NULL terminated vector */
-    unsigned char **(*CopyTo)(strCollection *SC);
+    char **(*CopyTo)(strCollection *SC);
 
     /* Inserts a string at the position zero. */
-    int (*Insert)(strCollection *SC,unsigned char *);
+    int (*Insert)(strCollection *SC,char *);
     int (*InsertIn)(strCollection *source, size_t idx, strCollection *newData);
     /* Returns the string at the given position */
-    unsigned char *(*GetElement)(const strCollection *SC,size_t idx);
+    char *(*GetElement)(const strCollection *SC,size_t idx);
     /* Returns the current capacity of the collection */
     size_t (*GetCapacity)(strCollection *SC);
     /* Sets the capacity if there are no items in the collection */
@@ -389,15 +389,15 @@ typedef struct tagstrCollection {
     StringCompareFn (*SetCompareFunction)(strCollection *SC,StringCompareFn);
     int (*Reverse)(strCollection *SC);
     int (*Append)(strCollection *,strCollection *);
-    size_t (*PopBack)(strCollection *,unsigned char *result,size_t bufsize);
-    int (*PushBack)(strCollection *,unsigned char *data);
+    size_t (*PopBack)(strCollection *, char *result,size_t bufsize);
+    int (*PushBack)(strCollection *,char *data);
     strCollection *(*GetRange)(strCollection *SC, size_t start,size_t end);
     ContainerMemoryManager *(*GetAllocator)(strCollection *AL);
     int (*Mismatch)(strCollection *a1,strCollection *a2,size_t *mismatch);
     strCollection *(*InitWithAllocator)(strCollection *result,size_t startsize,ContainerMemoryManager *allocator);
     strCollection *(*Init)(strCollection *result,size_t startsize);
     DestructorFunction (*SetDestructor)(strCollection *v,DestructorFunction fn);
-    strCollection *(*InitializeWith)(size_t n, unsigned char **data);
+    strCollection *(*InitializeWith)(size_t n, char **data);
 //    unsigned char *(*Find)(strCollection *SC,unsigned char *str,CompareInfo *ci);
 } strCollectionInterface;
 
@@ -467,9 +467,9 @@ typedef struct tagWstrCollection {
     WstrCollection *(*FindText)(WstrCollection *SC,wchar_t *text);
     Vector *(*FindTextIndex)(WstrCollection *SC,wchar_t *text);
     Vector *(*FindTextPositions)(WstrCollection *SC,wchar_t *text);
-    int (*WriteToFile)(WstrCollection *SC, unsigned char *filename);
+    int (*WriteToFile)(WstrCollection *SC, char *filename);
     WstrCollection *(*IndexIn)(const WstrCollection *SC,const Vector *AL);
-    WstrCollection *(*CreateFromFile)(const unsigned char *fileName);
+    WstrCollection *(*CreateFromFile)(const char *fileName);
     WstrCollection *(*Create)(size_t startsize);
     WstrCollection *(*CreateWithAllocator)(size_t startsize,ContainerMemoryManager *allocator);
 	
@@ -799,14 +799,14 @@ typedef struct tagDictionary {
     unsigned (*SetFlags)(Dictionary *Dict,unsigned flags);
     /* Clears all data and frees the memory */
     int (*Clear)(Dictionary *Dict);
-    int (*Contains)(Dictionary *dict,const unsigned char *key);
+    int (*Contains)(Dictionary *dict,const char *key);
     /* erases the given element if found */
-    int (*Erase)(Dictionary *Dict,const unsigned char *);
+    int (*Erase)(Dictionary *Dict,const char *);
     /* Frees the memory used by the dictionary */
     int (*Finalize)(Dictionary *Dict);
     /* Calls the given function for all objects. "Arg" is a used supplied argument */
     /* (that can be NULL) that is passed to the function to call */
-    int (*Apply)(Dictionary *Dict,int (*Applyfn)(const unsigned char *Key,
+    int (*Apply)(Dictionary *Dict,int (*Applyfn)(const char *Key,
                                                   const void *data,void *arg),void *arg);
     int (*Equal)(const Dictionary *d1,const Dictionary *d2);
     Dictionary *(*Copy)(Dictionary *dict);
@@ -822,15 +822,15 @@ typedef struct tagDictionary {
     /* Hierarchical container specific fields */
 
     /* Adds one element. Given string is copied */
-    int (*Add)(Dictionary *Dict,const unsigned char *key,void *Data);
+    int (*Add)(Dictionary *Dict,const char *key,void *Data);
     /* Returns the element at the given position */
-    const void *(*GetElement)(const Dictionary *Dict,const unsigned char *Key);
-    int (*Replace)(Dictionary *dict,const unsigned char *Key,void *Data);
-    int (*Insert)(Dictionary *Dict,const unsigned char *key,void *Data);
+    const void *(*GetElement)(const Dictionary *Dict,const char *Key);
+    int (*Replace)(Dictionary *dict,const char *Key,void *Data);
+    int (*Insert)(Dictionary *Dict,const char *key,void *Data);
     /* Dictionary specific fields */
 
     Vector *(*CastToArray)(Dictionary *);
-    int (*CopyElement)(const Dictionary *Dict,const unsigned char *Key,void *outbuf);
+    int (*CopyElement)(const Dictionary *Dict,const char *Key,void *outbuf);
     int (*InsertIn)(Dictionary *dst,Dictionary *src);
     Dictionary *(*Create)(size_t ElementSize,size_t hint);
     Dictionary *(*CreateWithAllocator)(size_t elementsize,size_t hint,ContainerMemoryManager *allocator);
@@ -839,7 +839,7 @@ typedef struct tagDictionary {
     strCollection *(*GetKeys)(Dictionary *Dict);
     ContainerMemoryManager *(*GetAllocator)(Dictionary *Dict);
     DestructorFunction (*SetDestructor)(Dictionary *v,DestructorFunction fn);	
-    Dictionary *(*InitializeWith)(size_t elementSize,size_t n, unsigned char **Keys,void *Values);
+    Dictionary *(*InitializeWith)(size_t elementSize,size_t n, char **Keys,void *Values);
 } DictionaryInterface;
 
 extern DictionaryInterface iDictionary;
