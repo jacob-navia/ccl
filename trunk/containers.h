@@ -690,6 +690,7 @@ typedef struct tagDlist {
     int (*InsertIn)(Dlist *l, size_t idx,Dlist *newData);/* Inserts list at position */
     DestructorFunction (*SetDestructor)(Dlist *v,DestructorFunction fn);
     Dlist *(*InitializeWith)(size_t elementSize, size_t n,void *data);
+    ContainerMemoryManager *(*GetAllocator)(Dlist *l);
 
 } DlistInterface;
 
@@ -1024,6 +1025,8 @@ typedef struct tagTreeMapInterface {
     TreeMap *(*Load)(FILE *stream, ReadFunction loadFn,void *arg);
     DestructorFunction (*SetDestructor)(TreeMap *v,DestructorFunction fn);
     TreeMap *(*InitializeWith)(size_t ElementSize, size_t n, void *data);
+	ContainerMemoryManager *(*GetAllocator)(TreeMap *t);
+	
 } TreeMapInterface;
 
 extern TreeMapInterface iTreeMap;
@@ -1105,7 +1108,7 @@ typedef struct tagBitString {
     BitString *(*Reverse)(BitString *b);
     BitString *(*GetRange)(BitString *b,size_t start,size_t end);
     BitString *(*StringToBitString)(unsigned char *);
-    BitString *(*ObjectToBitString)(size_t size,void *data);
+    BitString *(*InitializeWith)(size_t size,void *data);
     int        (*BitLeftShift)(BitString *bs,size_t shift);
     int        (*BitRightShift)(BitString *bs,size_t shift);
     size_t     (*Print)(BitString *b,size_t bufsiz,unsigned char *out);
@@ -1117,6 +1120,7 @@ typedef struct tagBitString {
     unsigned char *(*GetBits)(BitString *BitStr);
     int        (*CopyBits)(BitString *bitstr,void *buf);
     int (*AddRange)(BitString *b, size_t bitSize, void *data);
+	ContainerMemoryManager *(*GetAllocator)(BitString *b);
 } BitStringInterface;
 
 extern BitStringInterface iBitString;

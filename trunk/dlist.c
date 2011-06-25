@@ -1493,6 +1493,13 @@ static DestructorFunction SetDestructor(Dlist *cb,DestructorFunction fn)
     	cb->DestructorFn = fn;
     return oldfn;
 }
+static ContainerMemoryManager *GetAllocator(Dlist *l)
+{
+    if (l == NULL)
+        return NULL;
+    return l->Allocator;
+}
+
 
 DlistInterface iDlist = {
     Size,
@@ -1539,5 +1546,6 @@ DlistInterface iDlist = {
     InsertIn,
     SetDestructor,
     InitializeWith,
+    GetAllocator,
 };
 
