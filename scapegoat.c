@@ -928,6 +928,13 @@ static DestructorFunction SetDestructor(TreeMap *cb,DestructorFunction fn)
 		cb->DestructorFn = fn;
 	return oldfn;
 }
+static ContainerMemoryManager *GetAllocator(TreeMap *l)
+{
+    if (l == NULL)
+        return NULL;
+    return l->Allocator;
+}
+
 
 TreeMapInterface iTreeMap = {
     Size,
@@ -956,6 +963,7 @@ TreeMapInterface iTreeMap = {
     Load,
     SetDestructor,
     InitializeWith,
+	GetAllocator,
 };
 
 

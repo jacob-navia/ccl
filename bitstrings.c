@@ -498,7 +498,7 @@ static int NotAssign(BitString *bsl)
 }
 
 
-static BitString *ObjectToBitString(size_t siz,void *p)
+static BitString *InitializeWith(size_t siz,void *p)
 {
 	BitString *result = Create(CHAR_BIT*siz);
 	memcpy(result->contents,p,siz);
@@ -1317,6 +1317,14 @@ static BitString *Init(BitString *set, size_t bitlen)
 	return set;
 }
 
+static ContainerMemoryManager *GetAllocator(BitString *b)
+{
+    if (b == NULL)
+        return NULL;
+    return b->Allocator;
+}
+
+
 BitStringInterface iBitString = {
 	GetCount,
 	GetFlags,
@@ -1363,7 +1371,7 @@ BitStringInterface iBitString = {
 	Reverse,
 	GetRange,
 	StringToBitString,
-	ObjectToBitString,
+	InitializeWith,
 	BitLeftShift,
 	BitRightShift,
 	Print,
@@ -1374,6 +1382,7 @@ BitStringInterface iBitString = {
 	GetBits,
 	CopyBits,
 	AddRange,
+	GetAllocator,
 };
 
 
