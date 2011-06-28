@@ -101,7 +101,7 @@ typedef struct {
     int (*Mod)(ValArray *left,const ValArray *right);
     int (*ModScalar)(ValArray *left,const ElementType right);
 #else
-    char *(*FCompare)(const ValArray *left, const ValArray *right,char *bytearray,ElementType tolerance);
+    Mask *(*FCompare)(const ValArray *left, const ValArray *right, Mask *bytearray,ElementType tolerance);
     int (*Inverse)(ValArray *src);
 #endif
     int (*ForEach)(ValArray *src,ElementType (*ApplyFn)(ElementType));
