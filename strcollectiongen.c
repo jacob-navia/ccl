@@ -1290,11 +1290,12 @@ static int WriteToFile(ElementType *SC, char *fileName)
 {
 	FILE *f;
 	size_t i;
+	int result = 0;
 
 	if (SC == NULL || fileName == NULL) {
 		return NullPtrError("WriteToFile");
 	}
-	f = fopen((char *)fileName,"w");
+	f = fopen(fileName,"w");
 	if (f == NULL) {
 		SC->RaiseError("istrCollection.WriteToFile",CONTAINER_ERROR_FILEOPEN);
 		return CONTAINER_ERROR_FILEOPEN;
@@ -1302,12 +1303,14 @@ static int WriteToFile(ElementType *SC, char *fileName)
 	for (i=0; i<SC->count;i++) {
 		if (fwrite(SC->contents[i],1,strlen((char *)SC->contents[i]),f) <= 0) {
 			iError.RaiseError("istrCollection.WriteToFile",CONTAINER_ERROR_FILE_WRITE);
-			fclose(f);
-			return CONTAINER_ERROR_FILE_WRITE;
+			result = CONTAINER_ERROR_FILE_WRITE;
+			break;
 		}
 	}
+	if (i == SC->count && i > 0)
+		result = 1;
 	fclose(f);
-	return SC->count ? 1:0;
+	return result;
 }
 
 static size_t FindFirstText(ElementType *SC,CHAR_TYPE *text)
