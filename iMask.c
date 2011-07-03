@@ -1,7 +1,7 @@
 #include "containers.h"
 #include "ccl_internal.h"
 
-Mask *CreateFromMask(size_t n,char *data)
+static Mask *CreateFromMask(size_t n,char *data)
 {
 	Mask *result = CurrentMemoryManager->malloc(n+sizeof(Mask));
 	if (result == NULL) {
@@ -14,7 +14,7 @@ Mask *CreateFromMask(size_t n,char *data)
 	return result;
 }
 
-Mask *Copy(Mask *src)
+static Mask *Copy(Mask *src)
 {
 	if (src == NULL) return NULL;
 	Mask *result = src->Allocator->malloc(src->length+sizeof(Mask));
@@ -27,11 +27,11 @@ Mask *Copy(Mask *src)
 	return result;
 }
 
-Mask *Create(size_t n)
+static Mask *Create(size_t n)
 {
 	Mask *result = CurrentMemoryManager->malloc(n+sizeof(Mask));
 	if (result == NULL) {
-		iError.RaiseError("iMask.Copy",CONTAINER_ERROR_NOMEMORY);
+		iError.RaiseError("iMask.Create",CONTAINER_ERROR_NOMEMORY);
 		return NULL;
 	}
 	result->Allocator = CurrentMemoryManager;
@@ -40,7 +40,7 @@ Mask *Create(size_t n)
 	return result;
 }
 
-int Set(Mask *m,size_t idx,int val)
+static int Set(Mask *m,size_t idx,int val)
 {
 	if (idx >= m->length) {
 		iError.RaiseError("iMask.Set",CONTAINER_ERROR_INDEX);
@@ -50,19 +50,19 @@ int Set(Mask *m,size_t idx,int val)
 	return 1;
 }
 
-int Clear(Mask *m)
+static int Clear(Mask *m)
 {
 	memset(m->data,0,m->length);
 	return 1;
 }
 
-int Finalize(Mask *m)
+static int Finalize(Mask *m)
 {
 	m->Allocator->free(m);
 	return 1;
 }
 
-size_t Size(Mask *m)
+static size_t Size(Mask *m)
 {
 	return (m == NULL) ? 0 : m->length;
 }
