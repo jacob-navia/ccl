@@ -1009,15 +1009,6 @@ static int Reverse(Vector *AL)
 /*                                Iterators                                       */
 /* ------------------------------------------------------------------------------ */
 
-struct VectorIterator {
-	Iterator it;
-	Vector *AL;
-	size_t index;
-	size_t timestamp;
-	unsigned long Flags;
-	void *Current;
-	char ElementBuffer[1];
-};
 
 static void *GetNext(Iterator *it)
 {
@@ -1141,6 +1132,42 @@ static void *GetCurrent(Iterator *it)
 	return ali->Current;
 }
 
+static int ReplaceWithIterator(Iterator *it, void *data,int direction) 
+{
+    struct VectorIterator *ali = (struct VectorIterator *)it;
+	int result;
+	size_t pos;
+	
+	if (it == NULL) {
+		return NullPtrError("Replace");
+	}
+	if (ali->AL->count == 0)
+		return 0;
+    if (ali->timestamp != ali->AL->timestamp) {
+        ali->AL->RaiseError("Replace",CONTAINER_ERROR_OBJECT_CHANGED);
+        return CONTAINER_ERROR_OBJECT_CHANGED;
+    }
+	if (ali->AL->Flags & CONTAINER_READONLY) {
+		ali->AL->RaiseError("Replace",CONTAINER_ERROR_READONLY);
+		return CONTAINER_ERROR_READONLY;
+	}	
+	pos = ali->index;
+	if (direction)
+		GetNext(it);
+	else
+		GetPrevious(it);
+	if (data == NULL)
+		result = EraseAt(ali->AL,pos);
+	else {
+		result = ReplaceAt(ali->AL,pos,data);
+	}
+	if (result >= 0) {
+		ali->timestamp = ali->AL->timestamp;
+	}
+	return result;
+}
+
+
 static void *GetFirst(Iterator *it)
 {
 	struct VectorIterator *ali = (struct VectorIterator *)it;
@@ -1181,6 +1208,7 @@ static Iterator *NewIterator(Vector *AL)
 	result->it.GetCurrent = GetCurrent;
 	result->it.GetLast = GetLast;
 	result->it.Seek = Seek;
+	result->it.Replace = ReplaceWithIterator;
 	result->AL = AL;
 	result->Current = NULL;
 	result->timestamp = AL->timestamp;

@@ -119,6 +119,7 @@ typedef struct _Iterator {
     void *(*GetCurrent)(struct _Iterator *);
     void *(*GetLast)(struct _Iterator *);
     void *(*Seek)(struct _Iterator *,size_t);
+	int   (*Replace)(struct _Iterator *,void *data,int direction);
 } Iterator;
 
 /* Type definition of the compare function */
@@ -867,7 +868,7 @@ typedef struct tagHashTable {
     void *(*GetElement)(const HashTable *HT,const void *Key,size_t klen);
     int (*Search)(HashTable *ht,int (*Comparefn)(void *rec, const void *key,size_t klen,const void *value), void *rec);
     /* erases the given string if found */
-    int (*Erase)(HashTable *HT,void *key,size_t klen);
+    int (*Erase)(HashTable *HT,const void *key,size_t klen);
     /* Frees the memory used by the HashTable */
     int (*Finalize)(HashTable *HT);
     /* Calls the given function for all strings. "Arg" is a used supplied argument */

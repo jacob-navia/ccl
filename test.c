@@ -319,7 +319,8 @@ static int TestDictionary(void)
 	Dictionary *d = iDictionary.Create(sizeof(int *),30);
 	int data[12];
 	size_t count;
-	int *pi;
+	int *pi,sum,r;
+	Iterator *it;
 
 	data[1] = 1;
 	data[2] = 2;
@@ -334,8 +335,17 @@ static int TestDictionary(void)
 	count = iDictionary.Size(d);
 	if (count != 2)
 		Abort();
-	count=iDictionary.Erase(d,"long data");
-	if (count != (unsigned)CONTAINER_ERROR_NOTFOUND)
+	it = iDictionary.NewIterator(d);
+	sum = 0;
+	for (pi = it->GetFirst(it);
+		pi != NULL; pi = it->GetNext(it)) {
+		sum += *pi;
+	}
+	iDictionary.deleteIterator(it);
+	if (sum != 3)
+		Abort();
+	r=iDictionary.Erase(d,"long data");
+	if (r != CONTAINER_ERROR_NOTFOUND)
 		Abort();
 	count = iDictionary.Size(d);
 	if (count != 2)

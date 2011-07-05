@@ -1141,15 +1141,6 @@ static int UseHeap(List *L, ContainerMemoryManager *m)
 /*                                Iterators                                       */
 /* ------------------------------------------------------------------------------ */
 
-struct ListIterator {
-    Iterator it;
-    List *L;
-    size_t index;
-    list_element *Current;
-	list_element *Previous;
-    size_t timestamp;
-    char ElementBuffer[1];
-};
 
 static void *Seek(Iterator *it,size_t idx)
 {
@@ -1277,6 +1268,41 @@ static void *GetCurrent(Iterator *it)
 	}
 	return li->Current->Data;
 }
+static int ReplaceWithIterator(Iterator *it, void *data,int direction) 
+{
+    struct ListIterator *li = (struct ListIterator *)it;
+	int result;
+	size_t pos;
+	
+	if (it == NULL) {
+		return NullPtrError("Replace");
+	}
+	if (li->L->count == 0)
+		return 0;
+	if (li->L->Flags & CONTAINER_READONLY) {
+		li->L->RaiseError("Replace",CONTAINER_ERROR_READONLY);
+		return CONTAINER_ERROR_READONLY;
+	}	
+    if (li->timestamp != li->L->timestamp) {
+        li->L->RaiseError("Replace",CONTAINER_ERROR_OBJECT_CHANGED);
+        return CONTAINER_ERROR_OBJECT_CHANGED;
+    }
+	pos = li->index;
+	if (direction)
+		GetNext(it);
+	else
+		GetPrevious(it);
+	if (data == NULL)
+		result = RemoveAt(li->L,pos);
+	else {
+		result = ReplaceAt(li->L,pos,data);
+	}
+	if (result >= 0) {
+		li->timestamp = li->L->timestamp;
+	}
+	return result;
+}
+
 static void *GetFirst(Iterator *it)
 {
     struct ListIterator *li = (struct ListIterator *)it;
@@ -1338,6 +1364,7 @@ static int initIterator(List *L,void *r)
     result->it.GetFirst = GetFirst;
     result->it.GetCurrent = GetCurrent;
     result->it.Seek = Seek;
+	result->it.Replace = ReplaceWithIterator;
     result->L = L;
     result->timestamp = L->timestamp;
 	result->index = (size_t)-1;

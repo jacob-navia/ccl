@@ -1061,6 +1061,42 @@ static void *GetCurrent(Iterator *it)
 	return ali->current;
 }
 
+static int ReplaceWithIterator(Iterator *it, void *data,int direction) 
+{
+    struct strCollectionIterator *ali = (struct strCollectionIterator *)it;
+	int result;
+	size_t pos;
+	
+	if (it == NULL) {
+		return NullPtrError("Replace");
+	}
+	if (ali->SC->count == 0)
+		return 0;
+    if (ali->timestamp != ali->SC->timestamp) {
+        ali->SC->RaiseError("Replace",CONTAINER_ERROR_OBJECT_CHANGED);
+        return CONTAINER_ERROR_OBJECT_CHANGED;
+    }
+	if (ali->SC->Flags & CONTAINER_READONLY) {
+		ali->SC->RaiseError("Replace",CONTAINER_ERROR_READONLY);
+		return CONTAINER_ERROR_READONLY;
+	}	
+	pos = ali->index;
+	if (direction)
+		GetNext(it);
+	else
+		GetPrevious(it);
+	if (data == NULL)
+		result = RemoveAt(ali->SC,pos);
+	else {
+		result = ReplaceAt(ali->SC,pos,data);
+	}
+	if (result >= 0) {
+		ali->timestamp = ali->SC->timestamp;
+	}
+	return result;
+}
+
+
 static Iterator *NewIterator(ElementType *SC)
 {
 	struct strCollectionIterator *result;
@@ -1079,6 +1115,7 @@ static Iterator *NewIterator(ElementType *SC)
 	result->it.GetFirst = GetFirst;
 	result->it.GetCurrent = GetCurrent;
 	result->it.Seek = Seek;
+	result->it.Replace = ReplaceWithIterator;
 	result->SC = SC;
 	result->timestamp = SC->timestamp;
 	result->current = NULL;
