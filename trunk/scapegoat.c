@@ -1,34 +1,10 @@
 #include "containers.h"
 #include "ccl_internal.h"
 
-/* Node in a balanced binary tree. */
-struct Node {
-    struct Node *up;        /* Parent (NULL for root). */
-    struct Node *down[2];   /* Left child, right child. */
-    char data[1];
-};
 
 static const guid TreeMapGuid = {0xb8fda2f4, 0x2d4b, 0x4033,
 {0xa6,0x49,0x31,0x63,0x48,0x9f,0x27,0x18}
 };
-
-/* A balanced binary tree. */
-struct tagTreeMap {
-    TreeMapInterface *VTable;
-    size_t count;                /* Current node count. */
-    struct Node *root;       /* Tree's root, NULL if empty. */
-    CompareFunction compare;   /* To compare nodes. */
-    ErrorFunction RaiseError;
-    CompareInfo *aux;            /* Auxiliary data. */
-    size_t ElementSize;
-    size_t max_size;            /* Max size since last complete rebalance. */
-    unsigned Flags;
-    unsigned timestamp;
-    ContainerHeap *Heap;
-    ContainerMemoryManager *Allocator;
-    DestructorFunction DestructorFn;
-};
-
 
 #include <limits.h>
 #ifndef _MSC_VER
@@ -609,16 +585,6 @@ static int Erase(TreeMap *tree, void * element,void *ExtraArgs)
     Delete(tree,n);
     return 1;
 }
-#define BST_MAX_HEIGHT 40
-struct TreeMapIterator {
-    Iterator it;
-    TreeMap *bst_table;
-    struct Node *bst_node;
-    size_t timestamp;
-    size_t bst_height;
-    struct Node *bst_stack[BST_MAX_HEIGHT];
-    unsigned long Flags;
-};
 
 /* Returns the next data item in inorder
  within the tree being traversed with |trav|,
@@ -627,8 +593,10 @@ static void *GetNext(Iterator *itrav)
 {
     struct TreeMapIterator *trav = (struct TreeMapIterator *)itrav;
 
-    if (trav->timestamp != trav->bst_table->timestamp)
+    if (trav->timestamp != trav->bst_table->timestamp) {
+		trav->bst_table->RaiseError("GetNext",CONTAINER_ERROR_OBJECT_CHANGED);
     	return NULL;
+	}
     trav->bst_node = bt_next(trav->bst_table, trav->bst_node);
     if (trav->bst_node == NULL)
     	return NULL;
@@ -663,6 +631,51 @@ static void *GetFirst(Iterator *itrav)
     return NULL;
 }
 
+static void *GetCurrent(Iterator *it)
+{
+    struct TreeMapIterator *trav = (struct TreeMapIterator *)it;
+	
+	if (trav->bst_node)
+		return trav->bst_node->data;
+	else return NULL;
+}
+
+static int ReplaceWithIterator(Iterator *it, void *data,int direction) 
+{
+    struct TreeMapIterator *li = (struct TreeMapIterator *)it;
+	int result;
+	struct Node *pos;
+	
+	if (it == NULL) {
+		iError.RaiseError("Replace",CONTAINER_ERROR_BADARG);
+		return CONTAINER_ERROR_BADARG;
+	}
+	if (li->bst_table->count == 0)
+		return 0;
+	if (li->bst_table->Flags & CONTAINER_READONLY) {
+		li->bst_table->RaiseError("Replace",CONTAINER_ERROR_READONLY);
+		return CONTAINER_ERROR_READONLY;
+	}	
+    if (li->timestamp != li->bst_table->timestamp) {
+        li->bst_table->RaiseError("Replace",CONTAINER_ERROR_OBJECT_CHANGED);
+        return CONTAINER_ERROR_OBJECT_CHANGED;
+    }
+	pos = li->bst_node;
+	GetNext(it);
+	if (data == NULL) {
+		Delete(li->bst_table,pos);
+		result = 1;
+	}
+	else {
+		memcpy(pos->data, data, li->bst_table->ElementSize);
+		result = 1;
+	}
+	if (result >= 0) {
+		li->timestamp = li->bst_table->timestamp;
+	}
+	return result;
+}
+
 static Iterator *NewIterator(TreeMap *tree)
 {
     struct TreeMapIterator *result = tree->Allocator->malloc(sizeof(struct TreeMapIterator));
@@ -672,6 +685,8 @@ static Iterator *NewIterator(TreeMap *tree)
     result->it.GetNext = GetNext;
     result->it.GetPrevious = GetPrevious;
     result->it.GetFirst = GetFirst;
+	result->it.GetCurrent = GetCurrent;
+	result->it.Replace = ReplaceWithIterator;
     result->bst_table = tree;
     result->timestamp = tree->timestamp;
     return &result->it;

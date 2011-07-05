@@ -83,18 +83,13 @@ static size_t Sizeof(SequentialContainer *gen)
 	return gen->vTable->Sizeof(gen);
 }
 
-typedef struct tagGenericIterator {
-	Iterator it;
-	SequentialContainer *Gen;
-} GenericIterator;
-
 static Iterator *NewIterator(SequentialContainer *gen)
 {
 	return gen->vTable->NewIterator(gen);
 }
 static int deleteIterator(Iterator *git)
 {
-	GenericIterator *GenIt = (GenericIterator *)git;
+	SequentialIterator *GenIt = (SequentialIterator *)git;
 	SequentialContainer *gen = GenIt->Gen;
 	return gen->vTable->deleteIterator(git);
 }

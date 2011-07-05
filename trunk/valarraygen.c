@@ -1058,11 +1058,46 @@ static void *GetFirst(Iterator *it)
 	return ali->Current;
 }
 
+static int ReplaceWithIterator(Iterator *it, void *pdata,int direction) 
+{
+    struct ValArrayIterator *ali = (struct ValArrayIterator *)it;
+	ElementType *data = (ElementType *)pdata;
+	int result;
+	size_t pos;
+	
+	if (ali->AL->count == 0)
+		return 0;
+    if (ali->timestamp != ali->AL->timestamp) {
+        iError.RaiseError("Replace",CONTAINER_ERROR_OBJECT_CHANGED);
+        return CONTAINER_ERROR_OBJECT_CHANGED;
+    }
+	if (ali->AL->Flags & CONTAINER_READONLY) {
+		iError.RaiseError("Replace",CONTAINER_ERROR_READONLY);
+		return CONTAINER_ERROR_READONLY;
+	}	
+	pos = ali->index;
+	if (direction)
+		GetNext(it);
+	else
+		GetPrevious(it);
+	if (data == NULL)
+		result = EraseAt(ali->AL,pos);
+	else {
+		result = ReplaceAt(ali->AL,pos,*data);
+	}
+	if (result >= 0) {
+		ali->timestamp = ali->AL->timestamp;
+	}
+	return result;
+}
+
+
 static Iterator *NewIterator(ValArray *AL)
 {
 	struct ValArrayIterator *result;
 	
-	result = AL->Allocator->calloc(1,sizeof(struct ValArrayIterator)+ sizeof(ElementType));
+	result = AL->Allocator->calloc(1,
+					   sizeof(struct ValArrayIterator)+ sizeof(ElementType));
 	if (result == NULL) {
 		NoMemory("NewIterator");
 		return NULL;
@@ -1072,6 +1107,7 @@ static Iterator *NewIterator(ValArray *AL)
 	result->it.GetFirst = GetFirst;
 	result->it.GetCurrent = GetCurrent;
 	result->it.GetLast = GetLast;
+	result->it.Replace = ReplaceWithIterator;
 	result->it.Seek = Seek;
 	result->AL = AL;
 	result->Current = NULL;

@@ -3,21 +3,6 @@
 #endif
 #include "containers.h"
 #include "ccl_internal.h"
-struct Dlist {
-    DlistInterface *VTable;
-    size_t count;                    /* in elements units */
-    unsigned Flags;
-    unsigned timestamp;
-    size_t ElementSize;
-    dlist_element *Last;         /* The last item */
-    dlist_element *First;        /* The contents of the Dlist start here */
-    dlist_element *FreeList;
-    CompareFunction Compare;     /* Element comparison function */
-    ErrorFunction RaiseError;        /* Error function */
-    ContainerHeap *Heap;
-    ContainerMemoryManager *Allocator;
-    DestructorFunction DestructorFn;
-};
 
 static const guid DlistGuid = {0xac2525ff, 0x2e2a, 0x4540,
 {0xae,0x70,0xc4,0x7a,0x2,0xf7,0xa,0xed}
@@ -1168,15 +1153,6 @@ static ErrorFunction SetErrorFunction(Dlist *l,ErrorFunction fn)
 /*                                Iterators                                       */
 /* ------------------------------------------------------------------------------ */
 
-struct DListIterator {
-    Iterator it;
-    Dlist *L;
-    size_t index;
-    dlist_element *Current;
-    size_t timestamp;
-    char ElementBuffer[1];
-};
-
 static void *GetNext(Iterator *it)
 {
     struct DListIterator *li = (struct DListIterator *)it;
@@ -1235,6 +1211,43 @@ static void *GetFirst(Iterator *it)
     }	
     return L->First->Data;
 }
+
+static int ReplaceWithIterator(Iterator *it, void *data,int direction) 
+{
+    struct DListIterator *li = (struct DListIterator *)it;
+	int result;
+	size_t pos;
+	
+	if (it == NULL) {
+		iError.RaiseError("Replace",CONTAINER_ERROR_BADARG);
+		return 0;
+	}
+	if (li->L->Flags & CONTAINER_READONLY) {
+		li->L->RaiseError("Replace",CONTAINER_ERROR_READONLY);
+		return CONTAINER_ERROR_READONLY;
+	}	
+	if (li->L->count == 0)
+		return 0;
+    if (li->timestamp != li->L->timestamp) {
+        li->L->RaiseError("Replace",CONTAINER_ERROR_OBJECT_CHANGED);
+        return CONTAINER_ERROR_OBJECT_CHANGED;
+    }
+	pos = li->index;
+	if (direction)
+		GetNext(it);
+	else
+		GetPrevious(it);
+	if (data == NULL)
+		result = EraseAt(li->L,pos);
+	else {
+		result = ReplaceAt(li->L,li->index,data);
+	}
+	if (result >= 0) {
+		li->timestamp = li->L->timestamp;
+	}
+	return result;
+}
+
 
 static void *GetCurrent(Iterator *it)
 {
@@ -1306,6 +1319,7 @@ static Iterator *NewIterator(Dlist *L)
     result->it.GetFirst = GetFirst;
     result->it.GetCurrent = GetCurrent;
     result->it.Seek = Seek;
+	result->it.Replace = ReplaceWithIterator;
     result->L = L;
     result->timestamp = L->timestamp;
     return &result->it;

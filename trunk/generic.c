@@ -76,10 +76,6 @@ static size_t Sizeof(GenericContainer *gen)
 	return gen->vTable->Sizeof(gen);
 }
 
-typedef struct tagGenericIterator {
-	Iterator it;
-	GenericContainer *Gen;
-} GenericIterator;
 
 static Iterator *NewIterator(GenericContainer *gen)
 {

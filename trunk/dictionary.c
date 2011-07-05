@@ -25,7 +25,6 @@
 #include "containers.h"
 #include "ccl_internal.h"
 #include "assert.h"
-
 static unsigned scatter[] = { /* Map characters to random values */
  	3376649973u, 2288603946u, 1954268477u, 2858154129u, 3254987376u,
  	1888560329u, 2079711150u, 1249903931u, 2056019508u, 3475721719u,
@@ -80,29 +79,11 @@ static unsigned scatter[] = { /* Map characters to random values */
  	4293430683u, 1041753686u, 1365246147u, 2681506285u,  500008709u,
  	1129892475u
 };
-
 static const guid DictionaryGuid = {0xa334a9d, 0x897c, 0x4bed,
 {0x92,0xa3,0x2,0xbf,0x86,0xd5,0x2e,0xcf}
 };
 
 
-struct _Dictionary {
-	DictionaryInterface *VTable;
-	size_t count;
-	unsigned Flags;
-	size_t size;
-	ErrorFunction RaiseError;
-	unsigned timestamp;
-	size_t ElementSize;
-	ContainerMemoryManager *Allocator;
-	DestructorFunction DestructorFn;
-	unsigned (*hash)(const char *Key);
-	struct DataList {
-		struct DataList *Next;
-		char *Key;
-		void *Value;
-	} **buckets;
-};
 static Dictionary *Create(size_t elementsize,size_t hint);
 /*------------------------------------------------------------------------
  Procedure:     hash ID:1
@@ -571,7 +552,7 @@ static int InsertIn(Dictionary *dst,Dictionary *src)
 	return 1;
 }
 /*------------------------------------------------------------------------
- Procedure:     Remove ID:1
+ Procedure:     Erase ID:1
  Purpose:       Erases an entry from the dictionary if the entry
                 exists
  Input:         The dictionary and the key to erase
@@ -708,15 +689,6 @@ static strCollection *GetKeys(Dictionary *Dict)
 /*                                Iterators                                       */
 /* ------------------------------------------------------------------------------ */
 
-struct DictionaryIterator {
-	Iterator it;
-	Dictionary *Dict;
-	size_t index;
-	struct DataList *dl;
-	size_t timestamp;
-	unsigned long Flags;
-};
-
 static void *GetNext(Iterator *it)
 {
 	struct DictionaryIterator *d = (struct DictionaryIterator *)it;
@@ -765,6 +737,41 @@ static void *GetFirst(Iterator *it)
 	return GetNext(it);
 }
 
+static int ReplaceWithIterator(Iterator *it, void *data,int direction) 
+{
+    struct DictionaryIterator *li = (struct DictionaryIterator *)it;
+	int result;
+	struct DataList *dl;
+	
+	if (it == NULL) {
+		return NullPtrError("Replace");
+	}
+	if (li->Dict->Flags & CONTAINER_READONLY) {
+		li->Dict->RaiseError("Replace",CONTAINER_ERROR_READONLY);
+		return CONTAINER_ERROR_READONLY;
+	}
+	
+	if (li->Dict->count == 0)
+		return 0;
+    if (li->timestamp != li->Dict->timestamp) {
+        li->Dict->RaiseError("Replace",CONTAINER_ERROR_OBJECT_CHANGED);
+        return CONTAINER_ERROR_OBJECT_CHANGED;
+    }
+	dl = li->dl;
+	GetNext(it);
+	if (data == NULL)
+		result = Erase(li->Dict, dl->Key);
+	else {
+		memcpy(dl->Value,data,li->Dict->ElementSize);
+		result = 1;
+	}
+	if (result >= 0) {
+		li->timestamp = li->Dict->timestamp;
+	}
+	return result;
+}
+
+
 static Iterator *NewIterator(Dictionary *Dict)
 {
 	struct DictionaryIterator *result;
@@ -783,6 +790,7 @@ static Iterator *NewIterator(Dictionary *Dict)
 	result->it.GetPrevious = GetNext;
 	result->it.GetFirst = GetFirst;
 	result->Dict = Dict;
+	result->it.Replace = ReplaceWithIterator;
 	result->timestamp = Dict->timestamp;
 	return &result->it;
 }

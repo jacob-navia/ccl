@@ -25,20 +25,7 @@ Added fixes from Gerome. Oct. 20 2005
 #define STRCOMPAREFUNCTION WStringCompareFn
 #define INTERFACE_TYP WstrCollectionInterface
 #define INTERFACE_OBJECT iWstrCollection
-/* Definition of the String Collection type */
-struct WstrCollection {
-    WstrCollectionInterface *VTable; /* The table of functions */
-    size_t count;                  /* in element size units */
-    unsigned int Flags;             /* Read-only or other flags */
-    CHAR_TYPE **contents;               /* The contents of the collection */
-    size_t capacity;                /* in element_size units */
-	size_t timestamp;
-	ErrorFunction RaiseError;
-	WStringCompareFn strcompare;
-	CompareInfo *StringCompareContext;
-    ContainerMemoryManager *Allocator;
-	DestructorFunction DestructorFn;
-};
+
 
 static const guid strCollectionGuid = {0x64bea19b, 0x243b, 0x487a,
 {0x9a,0xd6,0xcd,0xfe,0xa9,0x37,0x6e,0x89}
