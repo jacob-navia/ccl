@@ -88,10 +88,10 @@ static int Back(Queue *Q,void *result)
 	return iList.CopyElement(Q->Items,idx-1,result);
 }
 
-static List *GetList(Queue *q)
+static List *GetData(Queue *q)
 {
 	if (q == NULL) {
-		iError.RaiseError("iQueue.GetList",CONTAINER_ERROR_BADARG);
+		iError.RaiseError("iQueue.GetData",CONTAINER_ERROR_BADARG);
 		return NULL;
 	}
 	return q->Items;
@@ -109,5 +109,5 @@ QueueInterface iQueue = {
     Finalize,
 	Front,
 	Back,
-	GetList,
+	GetData,
 };

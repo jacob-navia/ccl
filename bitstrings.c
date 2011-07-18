@@ -1278,7 +1278,7 @@ static size_t GetElementSize(BitString *B)
 {
 	return 1;
 }
-static unsigned char *GetBits(BitString *b)
+static unsigned char *GetData(BitString *b)
 {
 	if (b == NULL) {
 		NullPtrError("GetBits");
@@ -1379,7 +1379,7 @@ BitStringInterface iBitString = {
 	Memset,
 	Create,
 	Init,
-	GetBits,
+	GetData,
 	CopyBits,
 	AddRange,
 	GetAllocator,

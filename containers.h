@@ -399,6 +399,7 @@ typedef struct tagstrCollection {
     strCollection *(*Init)(strCollection *result,size_t startsize);
     DestructorFunction (*SetDestructor)(strCollection *v,DestructorFunction fn);
     strCollection *(*InitializeWith)(size_t n, char **data);
+    char **(*GetData)(strCollection *SC);
 //    unsigned char *(*Find)(strCollection *SC,unsigned char *str,CompareInfo *ci);
 } strCollectionInterface;
 
@@ -500,6 +501,7 @@ typedef struct tagWstrCollection {
     WstrCollection *(*Init)(WstrCollection *result,size_t startsize);
     DestructorFunction (*SetDestructor)(WstrCollection *v,DestructorFunction fn);
     WstrCollection *(*InitializeWith)(size_t n,wchar_t **data);
+    wchar_t **(*GetData)(WstrCollection *SC);
 //    wchar_t *Find(WstrCollection *SC,wchar_t *data,CompareInfo *ci);
 } WstrCollectionInterface;
 
@@ -595,7 +597,7 @@ typedef struct _QueueInterface {
     int (*Finalize)(Queue *Q);
     int (*Front)(Queue *Q,void *result);
     int (*Back)(Queue *Q,void *result);
-    List *(*GetList)(Queue *q);
+    List *(*GetData)(Queue *q);
 } QueueInterface;
 
 extern QueueInterface iQueue;
@@ -781,6 +783,7 @@ typedef struct tagVector {
     Vector *(*SelectCopy)(Vector *src,Mask *m);
     int (*Resize)(Vector *AL,size_t newcapacity);
     Vector *(*InitializeWith)(size_t elementSize, size_t n, void *Data);
+    void **(*GetData)(Vector *AL);
 } VectorInterface;
 
 extern VectorInterface iVector;
@@ -1118,7 +1121,7 @@ typedef struct tagBitString {
     /* creates a bit string */
     BitString *(*Create)(size_t bitlen);
     BitString *(*Init)(BitString *BitStr,size_t bitlen);
-    unsigned char *(*GetBits)(BitString *BitStr);
+    unsigned char *(*GetData)(BitString *BitStr);
     int        (*CopyBits)(BitString *bitstr,void *buf);
     int (*AddRange)(BitString *b, size_t bitSize, void *data);
 	ContainerMemoryManager *(*GetAllocator)(BitString *b);
