@@ -2091,6 +2091,22 @@ static ValArray  *SelectCopy(const ValArray *src,const Mask *m)
 }
 
 
+static ElementType *GetData(const ValArray *cb)
+{
+	if (cb == NULL) {
+		iError.RaiseError("GetData",CONTAINER_ERROR_BADARG);
+		return NULL;
+	}
+	if (cb->Flags&CONTAINER_READONLY) {
+		iError.RaiseError("GetData",CONTAINER_ERROR_READONLY);
+		return NULL;
+	}
+	return cb->contents;
+}
+
+
+
+
 ValArrayInterface iValArrayInterface = {
 	Size,
 	GetFlags, 
@@ -2191,4 +2207,5 @@ ValArrayInterface iValArrayInterface = {
 	Fprintf,
 	Select,
 	SelectCopy,
+	GetData,
 };

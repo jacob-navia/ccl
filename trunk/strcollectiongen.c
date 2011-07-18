@@ -1568,6 +1568,19 @@ static DestructorFunction SetDestructor(ElementType *cb,DestructorFunction fn)
 	return oldfn;
 }
 
+static CHAR_TYPE **GetData(ElementType *cb)
+{
+	if (cb == NULL) {
+		NullPtrError("GetData");
+		return NULL;
+	}
+	if (cb->Flags&CONTAINER_READONLY) {
+		cb->RaiseError("GetData",CONTAINER_ERROR_READONLY);
+		return NULL;
+	}
+	return cb->contents;
+}
+
 
 
 INTERFACE_TYP INTERFACE_OBJECT = {
@@ -1626,4 +1639,5 @@ INTERFACE_TYP INTERFACE_OBJECT = {
 	Init,
 	SetDestructor,
 	InitializeWith,
+	GetData,
 };

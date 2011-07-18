@@ -1553,6 +1553,20 @@ static Vector * SelectCopy(Vector *src,Mask *m)
     return result;
 }
 
+static void **GetData(Vector *cb)
+{
+	if (cb == NULL) {
+		NullPtrError("GetData");
+		return NULL;
+	}
+	if (cb->Flags&CONTAINER_READONLY) {
+		cb->RaiseError("GetData",CONTAINER_ERROR_READONLY);
+		return NULL;
+	}
+	return cb->contents;
+}
+
+
 
 VectorInterface iVector = {
 	Size,
@@ -1606,4 +1620,5 @@ VectorInterface iVector = {
 	SelectCopy,
 	ResizeTo,
 	InitializeWith,
+	GetData,
 };
