@@ -261,7 +261,7 @@ static int Clear(ValArray *AL)
 	return 1;
 }
 
-static int Contains(ValArray *AL,ElementType data)
+static int Contains(const ValArray *AL,ElementType data)
 {
 	size_t i,incr=1,start=0,top;
 	ElementType *p;
@@ -317,7 +317,7 @@ static int Equal(const ValArray *AL1, const ValArray *AL2)
 	return 1;
 }
 
-static ValArray *Copy(ValArray *AL)
+static ValArray *Copy(const ValArray *AL)
 {
 	ValArray *result;
 	size_t startsize,es;
@@ -611,7 +611,7 @@ static int Finalize(ValArray *AL)
 	return result;
 }
 
-static ContainerMemoryManager *GetAllocator(ValArray *AL)
+static ContainerMemoryManager *GetAllocator(const ValArray *AL)
 {
 	if (AL == NULL) {
 		return NULL;
@@ -624,7 +624,7 @@ static size_t GetCapacity(const ValArray *AL)
 	return AL->capacity;
 }
 
-static int Mismatch(ValArray *a1, ValArray *a2,size_t *mismatch)
+static int Mismatch(const ValArray *a1, const ValArray *a2,size_t *mismatch)
 {
 	size_t siz1=a1->count,i,siz2=a2->count,incr1=1,incr2=1,start1=0,start2=0;
 	ElementType *p1,*p2;
@@ -1960,7 +1960,7 @@ static int Abs(ValArray *src)
 }
 #endif
 
-static ElementType Accumulate(ValArray *src)
+static ElementType Accumulate(const ValArray *src)
 {
 	size_t start=0,length=src->count,incr=1,i;
 	ElementType result = 0;
@@ -1979,7 +1979,7 @@ static ElementType Accumulate(ValArray *src)
 }
 
 
-static ElementType Product(ValArray *src)
+static ElementType Product(const ValArray *src)
 {
 	size_t start=0,length=src->count,incr=1,i;
 	ElementType result = 1;
@@ -2023,7 +2023,7 @@ static void RaiseError(const char *msg,int code,...)
 	iError.RaiseError(msg,code);
 }
 
-static int Fprintf(ValArray *src,FILE *out,const char *fmt)
+static int Fprintf(const ValArray *src,FILE *out,const char *fmt)
 {
 	size_t start=0,length=src->count,incr=1,i;
 	int result=0,r;
@@ -2104,7 +2104,27 @@ static ElementType *GetData(const ValArray *cb)
 	return cb->contents;
 }
 
+static ElementType Back(const ValArray *cb)
+{
+	ElementType r = 0;
+	if (cb->Flags&CONTAINER_READONLY) {
+		iError.RaiseError("Back",CONTAINER_ERROR_READONLY);
+	}
+	else if (cb->count > 0)
+		r = cb->contents[cb->count-1];
+	return r;
+}
 
+static ElementType Front(const ValArray *cb)
+{
+	ElementType r = 0;
+	if (cb->Flags&CONTAINER_READONLY) {
+		iError.RaiseError("Front",CONTAINER_ERROR_READONLY);
+	}
+	else if (cb->count > 0)
+		r = cb->contents[0];
+	return r;
+}
 
 
 ValArrayInterface iValArrayInterface = {
@@ -2208,4 +2228,6 @@ ValArrayInterface iValArrayInterface = {
 	Select,
 	SelectCopy,
 	GetData,
+	Back,
+	Front,
 };

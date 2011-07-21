@@ -119,7 +119,7 @@ typedef struct _Iterator {
     void *(*GetCurrent)(struct _Iterator *);
     void *(*GetLast)(struct _Iterator *);
     void *(*Seek)(struct _Iterator *,size_t);
-	int   (*Replace)(struct _Iterator *,void *data,int direction);
+    int   (*Replace)(struct _Iterator *,void *data,int direction);
 } Iterator;
 
 /* Type definition of the compare function */
@@ -400,6 +400,8 @@ typedef struct tagstrCollection {
     DestructorFunction (*SetDestructor)(strCollection *v,DestructorFunction fn);
     strCollection *(*InitializeWith)(size_t n, char **data);
     char **(*GetData)(strCollection *SC);
+	char *(*Back)(const strCollection *str);
+	char *(*Front)(const strCollection *str);
 //    unsigned char *(*Find)(strCollection *SC,unsigned char *str,CompareInfo *ci);
 } strCollectionInterface;
 
@@ -502,6 +504,8 @@ typedef struct tagWstrCollection {
     DestructorFunction (*SetDestructor)(WstrCollection *v,DestructorFunction fn);
     WstrCollection *(*InitializeWith)(size_t n,wchar_t **data);
     wchar_t **(*GetData)(WstrCollection *SC);
+	wchar_t *(*Back)(const WstrCollection *SC);
+	wchar_t *(*Front)(const WstrCollection *SC);
 //    wchar_t *Find(WstrCollection *SC,wchar_t *data,CompareInfo *ci);
 } WstrCollectionInterface;
 
@@ -577,6 +581,8 @@ typedef struct tagList {
     ContainerMemoryManager *(*GetAllocator)(List *list);
     DestructorFunction (*SetDestructor)(List *v,DestructorFunction fn);
     List *(*InitializeWith)(size_t elementSize,size_t n,void *data);
+    void *(*Back)(const List *l);
+	void *(*Front)(const List *l);
 } ListInterface;
 
 extern ListInterface iList;
@@ -694,7 +700,8 @@ typedef struct tagDlist {
     DestructorFunction (*SetDestructor)(Dlist *v,DestructorFunction fn);
     Dlist *(*InitializeWith)(size_t elementSize, size_t n,void *data);
     ContainerMemoryManager *(*GetAllocator)(Dlist *l);
-
+    void *(*Back)(const Dlist *l);
+    void *(*Front)(const Dlist *l);
 } DlistInterface;
 
 extern DlistInterface iDlist;
@@ -784,6 +791,8 @@ typedef struct tagVector {
     int (*Resize)(Vector *AL,size_t newcapacity);
     Vector *(*InitializeWith)(size_t elementSize, size_t n, void *Data);
     void **(*GetData)(Vector *AL);
+    void *(*Back)(const Vector *AL);
+    void *(*Front)(const Vector *AL);
 } VectorInterface;
 
 extern VectorInterface iVector;
@@ -863,6 +872,7 @@ typedef struct tagHashTable {
     unsigned (*GetFlags)(const HashTable *HT);
     /* Sets th flags */
     unsigned (*SetFlags)(HashTable *HT,unsigned flags);
+	size_t (*GetElementSize)(const HashTable *HT);
     /* Adds one element. Given string is copied */
     int (*Add)(HashTable *HT,const void *key,size_t klen,const void *Data);
     /* Clears all data and frees the memory */
@@ -1170,11 +1180,11 @@ enum CCL_OPERATIONS{
         CCL_PUSH|CCL_REPLACE|CCL_INSERT|CCL_APPEND|CCL_ADDRANGE)
 #define CCL_ADDITIONS (CCL_ADD|CCL_PUSH|CCL_INSERT|CCL_APPEND|CCL_ADDRANGE)
 #define CCL_DELETIONS (CCL_ERASE|CCL_CLEAR|CCL_FINALIZE|CCL_POP)
-typedef void (*ObserverFunction)(void *ObservedObject,unsigned operation, void *ExtraInfo[]);
+typedef void (*ObserverFunction)(const void *ObservedObject,unsigned operation, void *ExtraInfo[]);
 
 typedef struct tagObserverInterface {
     int (*Subscribe)(void *ObservedObject, ObserverFunction callback, unsigned Operations);
-    int (*Notify)(void *ObservedObject,unsigned operation,void *ExtraInfo1,void *ExtraInfo2);
+    int (*Notify)(const void *ObservedObject,unsigned operation,void *ExtraInfo1,void *ExtraInfo2);
     size_t (*Unsubscribe)(void *ObservedObject,ObserverFunction callback);
 } ObserverInterface;
 extern ObserverInterface iObserver;

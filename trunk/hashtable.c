@@ -277,6 +277,17 @@ static void *GetElement(const HashTable *ht,const void *key, size_t klen)
 		return (void *)((*v)->val);
 	return NULL;
 }
+
+static size_t GetElementSize(const HashTable *l)
+{
+    if (l) {
+        return l->ElementSize;
+    }
+    iError.NullPtrError("GetElementSize");
+    return 0;
+}
+
+
 static HashTable *Copy( const HashTable *orig,Pool *pool)
 {
     HashTable *ht;
@@ -792,6 +803,7 @@ Size,
 	Sizeof,
 GetFlags,
 SetFlags,
+GetElementSize,
 Add,
 Clear,
 GetElement,
