@@ -7,12 +7,12 @@ typedef struct {
     unsigned (*GetFlags)(const ValArray *AL);
     unsigned (*SetFlags)(ValArray *AL,unsigned flags);
     int (*Clear)(ValArray *AL);
-    int (*Contains)(ValArray *AL,ElementType data);
+    int (*Contains)(const ValArray *AL,ElementType data);
     int (*Erase)(ValArray *AL,ElementType elem);
     int (*Finalize)(ValArray *AL);
     int (*Apply)(ValArray *AL,int (*Applyfn)(ElementType element,void * arg),void *arg);
     int (*Equal)(const ValArray *first, const ValArray *second);
-    ValArray *(*Copy)(ValArray *AL);
+    ValArray *(*Copy)(const ValArray *AL);
     ErrorFunction (*SetErrorFunction)(ValArray *AL,ErrorFunction);
     size_t (*Sizeof)(ValArray *AL);
     Iterator *(*NewIterator)(ValArray *AL);
@@ -52,8 +52,8 @@ typedef struct {
     ElementType *(*CopyTo)(ValArray *AL);
     int (*Reverse)(ValArray *AL);
     int (*Append)(ValArray *AL1, ValArray *AL2);
-    int (*Mismatch)(ValArray *a1, ValArray *a2,size_t *mismatch);
-    ContainerMemoryManager *(*GetAllocator)(ValArray *AL);
+    int (*Mismatch)(const ValArray *a1,const ValArray *a2,size_t *mismatch);
+    ContainerMemoryManager *(*GetAllocator)(const ValArray *AL);
     DestructorFunction (*SetDestructor)(ValArray *cb,DestructorFunction fn);
 
     /* ValArray specific functions */
@@ -105,10 +105,12 @@ typedef struct {
     int (*Inverse)(ValArray *src);
 #endif
     int (*ForEach)(ValArray *src,ElementType (*ApplyFn)(ElementType));
-    ElementType (*Accumulate)(ValArray *src);
-    ElementType (*Product)(ValArray *src);
-    int (*Fprintf)(ValArray *src,FILE *out,const char *fmt);
+    ElementType (*Accumulate)(const ValArray *src);
+    ElementType (*Product)(const ValArray *src);
+    int (*Fprintf)(const ValArray *src,FILE *out,const char *fmt);
     int (*Select)(ValArray *src,const Mask *m);
     ValArray *(*SelectCopy)(const ValArray *src,const Mask *m);
     ElementType *(*GetData)(const ValArray *src);
+	ElementType (*Back)(const ValArray *src);
+	ElementType (*Front)(const ValArray *src);	
 } ValArrayInterface;

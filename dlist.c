@@ -1514,6 +1514,36 @@ static ContainerMemoryManager *GetAllocator(Dlist *l)
     return l->Allocator;
 }
 
+static void *Back(const Dlist *l)
+{
+    if (l == NULL) {
+        iError.NullPtrError("Back");
+        return NULL;
+    }
+    if (0 == l->count) {
+        return NULL;
+    }
+    if (l->Flags & CONTAINER_READONLY) {
+        l->RaiseError("iList.Back",CONTAINER_ERROR_READONLY);
+        return NULL;
+    }
+    return l->Last->Data;
+}
+static void *Front(const Dlist *l)
+{
+    if (l == NULL) {
+        iError.NullPtrError("Front");
+        return NULL;
+    }
+    if (0 == l->count) {
+        return NULL;
+    }
+    if (l->Flags & CONTAINER_READONLY) {
+        l->RaiseError("iList.Front",CONTAINER_ERROR_READONLY);
+        return NULL;
+    }
+    return l->First->Data;
+}
 
 DlistInterface iDlist = {
     Size,
@@ -1561,5 +1591,7 @@ DlistInterface iDlist = {
     SetDestructor,
     InitializeWith,
     GetAllocator,
+	Back,
+	Front,
 };
 

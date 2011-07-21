@@ -1566,7 +1566,37 @@ static void **GetData(Vector *cb)
 	return cb->contents;
 }
 
-
+static void *Back(const Vector *v)
+{
+	char *pdata;
+	if (v == NULL) {
+		NullPtrError("Back");
+		return NULL;
+	}
+	if (v->Flags&CONTAINER_READONLY) {
+		v->RaiseError("Back",CONTAINER_ERROR_READONLY);
+		return NULL;
+	}
+	if (v->count == 0)
+		return NULL;
+	pdata = v->contents;
+	pdata += v->ElementSize*(v->count-1);
+	return pdata;
+}
+static void *Front(const Vector *v)
+{
+	if (v == NULL) {
+		NullPtrError("Front");
+		return NULL;
+	}
+	if (v->Flags&CONTAINER_READONLY) {
+		v->RaiseError("Front",CONTAINER_ERROR_READONLY);
+		return NULL;
+	}
+	if (v->count == 0)
+		return NULL;
+	return v->contents;
+}
 
 VectorInterface iVector = {
 	Size,
@@ -1621,4 +1651,6 @@ VectorInterface iVector = {
 	ResizeTo,
 	InitializeWith,
 	GetData,
+	Back,
+	Front,
 };

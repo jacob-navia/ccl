@@ -1581,8 +1581,34 @@ static CHAR_TYPE **GetData(ElementType *cb)
 	return cb->contents;
 }
 
-
-
+static CHAR_TYPE *Back(const ElementType *cb)
+{
+	if (cb == NULL) {
+		NullPtrError("Back");
+		return NULL;
+	}
+	if (cb->Flags&CONTAINER_READONLY) {
+		cb->RaiseError("Back",CONTAINER_ERROR_READONLY);
+		return NULL;
+	}
+	if (cb->count == 0)
+		return NULL;
+	return cb->contents[cb->count-1];
+}	
+static CHAR_TYPE *Front(const ElementType *cb)
+{
+	if (cb == NULL) {
+		NullPtrError("Front");
+		return NULL;
+	}
+	if (cb->Flags&CONTAINER_READONLY) {
+		cb->RaiseError("Front",CONTAINER_ERROR_READONLY);
+		return NULL;
+	}
+	if (cb->count == 0)
+		return NULL;
+	return cb->contents[0];
+}	
 INTERFACE_TYP INTERFACE_OBJECT = {
     GetCount, 
     GetFlags, 
@@ -1640,4 +1666,6 @@ INTERFACE_TYP INTERFACE_OBJECT = {
 	SetDestructor,
 	InitializeWith,
 	GetData,
+	Back,
+	Front,
 };

@@ -4,6 +4,7 @@
 # 
 #---------------------------------------------------
 # Optimized CFLAGS setting
+# Erase __MAC_OSX for non apple systems like linux
 CFLAGS=-Os -Wno-pointer-sign -DUNIX -Wall -D__MAC_OSX
 # Debug CFLAGS setting
 #CFLAGS=-g -Wno-pointer-sign -DUNIX -Wall 

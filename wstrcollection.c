@@ -15,7 +15,7 @@ Added fixes from Gerome. Oct. 20 2005
 #define SNPRINTF swprintf
 #define STRCMP wcscmp
 #define STRICMP wcscasecmp
-#define STRCPY wcscmp
+#define STRCPY wcscpy
 #define STRLEN wcslen
 #define _TCHAR(a) L##a
 #define ElementType WstrCollection

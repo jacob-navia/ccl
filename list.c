@@ -187,8 +187,7 @@ static int Add_nd(List *l,void *elem)
 static int Add(List *l,void *elem)
 {
     int r;
-    if (l == NULL) return NullPtrError("Add");
-    if (elem == NULL) return NullPtrError("Add");
+    if (l == NULL || elem == NULL) return NullPtrError("Add");
     if (l->Flags &CONTAINER_READONLY) return ErrorReadOnly(l,"Add");
     r = Add_nd(l,elem);
     if (r && (l->Flags & CONTAINER_HAS_OBSERVER))
@@ -407,6 +406,37 @@ static void * GetElement(List *l,size_t position)
         position--;
     }
     return rvp->Data;
+}
+
+static void *Back(const List *l)
+{
+    if (l == NULL) {
+        NullPtrError("Back");
+        return NULL;
+    }
+    if (0 == l->count) {
+        return NULL;
+    }
+    if (l->Flags & CONTAINER_READONLY) {
+        l->RaiseError("iList.Back",CONTAINER_ERROR_READONLY);
+        return NULL;
+    }
+    return l->Last->Data;
+}
+static void *Front(const List *l)
+{
+    if (l == NULL) {
+        NullPtrError("Front");
+        return NULL;
+    }
+    if (0 == l->count) {
+        return NULL;
+    }
+    if (l->Flags & CONTAINER_READONLY) {
+        l->RaiseError("iList.Front",CONTAINER_ERROR_READONLY);
+        return NULL;
+    }
+    return l->First->Data;
 }
 
 /*------------------------------------------------------------------------
@@ -969,8 +999,16 @@ static int AddRange(List * AL,size_t n, void *data)
                 int r = Add_nd(AL,p);
                 if (r < 0) {
 			AL->Last = oldLast;
-			if (AL->Last)
+			if (AL->Last) {
+				list_element *removed = oldLast->Next;
+				while (removed) {
+					list_element *tmp = removed->Next;
+					if (AL->Heap) iHeap.AddToFreeList(AL->Heap,removed);
+					else	AL->Allocator->free(removed);
+					removed = tmp;
+				}
 				AL->Last->Next = NULL;
+			}
                         return r;
                 }
                 p += AL->ElementSize;
@@ -1081,7 +1119,7 @@ static int Apply(List *L,int (Applyfn)(void *,void *),void *arg)
     }
     le = L->First;
     if (L->Flags&CONTAINER_READONLY) {
-        pElem = malloc(L->ElementSize);
+        pElem = L->Allocator->malloc(L->ElementSize);
         if (pElem == NULL) {
             L->RaiseError("iList.Apply",CONTAINER_ERROR_NOMEMORY);
             return CONTAINER_ERROR_NOMEMORY;
@@ -1096,7 +1134,7 @@ static int Apply(List *L,int (Applyfn)(void *,void *),void *arg)
         le = le->Next;
     }
     if (pElem)
-        free(pElem);
+        L->Allocator->free(pElem);
     return 1;
 }
 
@@ -1639,4 +1677,6 @@ ListInterface iList = {
 	GetAllocator,
 	SetDestructor,
 	InitializeWith,
+	Back,
+	Front,
 };
