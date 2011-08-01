@@ -232,7 +232,7 @@ static const void *GetElement(const Dictionary *Dict,const char *Key)
 	i = (*Dict->hash)(Key)%Dict->size;
 	for (p = Dict->buckets[i]; p; p = p->Next)
 		if (strcmp((char *)Key, (char *)p->Key) == 0)
-			return p->Value;
+			return Dict->ElementSize ? p->Value : p->Key;
 	return NULL;
 }
 
@@ -247,9 +247,11 @@ static int CopyElement(const Dictionary *Dict,const char *Key,void *outbuf)
 	if (Key == NULL)
 		return BadArgError(Dict,"CopyElement");
 	i = (*Dict->hash)(Key)%Dict->size;
+	
 	for (p = Dict->buckets[i]; p; p = p->Next)
 		if (strcmp((char *)Key, (char *)p->Key) == 0) {
-			memcpy(outbuf,p->Value,Dict->ElementSize);
+			if (outbuf != NULL && Dict->ElementSize != 0) 
+				memcpy(outbuf,p->Value,Dict->ElementSize);
 			return 1;
 		}
 	return 0;
@@ -284,7 +286,8 @@ static int Equal(const Dictionary *d1,const Dictionary *d2)
 		while (p1 && p2) {
 			if (strcmp((char *)p1->Key,(char *)p2->Key))
 				return 0;
-			if (memcmp(p1->Value,p2->Value,d1->ElementSize))
+			if (d1->ElementSize &&
+			    memcmp(p1->Value,p2->Value,d1->ElementSize))
 				return 0;
 			j++;
 			p1 = p1->Next; p2 = p2->Next;
@@ -308,10 +311,11 @@ static int add_nd(Dictionary *Dict,const char *Key,void *Value)
 	size_t i;
 	struct DataList *p;
 	char *tmp;
+	int result = 1;
 
 	i = (*Dict->hash)(Key)%Dict->size;
 	for (p = Dict->buckets[i]; p; p = p->Next) {
-		if (strcmp((char *)Key, (char *)p->Key) == 0)
+		if (strcmp(Key, p->Key) == 0)
 			break;
 	}
 	Dict->timestamp++;
@@ -325,26 +329,33 @@ static int add_nd(Dictionary *Dict,const char *Key,void *Value)
 			if (tmp) Dict->Allocator->free(tmp);
 			return NoMemoryError(Dict,"Add");
 		}
-		p->Value = (void *)(p+1);
-		if (Value)
-		memcpy((void *)p->Value,Value,Dict->ElementSize);
+		if (Value && Dict->ElementSize) {
+			p->Value = (void *)(p+1);
+			memcpy((void *)p->Value,Value,Dict->ElementSize);
+		}
+		else if (Dict->ElementSize == 0)
+			p->Value = tmp;
 		else p->Value = NULL;
-		strcpy((char *)tmp,(char *)Key);
+		strcpy(tmp,Key);
 		p->Key = tmp;
-		i = (*Dict->hash)(Key)%Dict->size;
 		p->Next = Dict->buckets[i];
 		Dict->buckets[i] = p;
 		Dict->count++;
-		return 1;
 	}
-	/* Overwrite the data for an existing element */
-	if (Value)
-		memcpy((void *)p->Value,Value,Dict->ElementSize);
-	else	p->Value = NULL;
-	return 0;
+	else {
+		/* Overwrite the data for an existing element */
+		if (Value && Dict->ElementSize)
+			memcpy((void *)p->Value,Value,Dict->ElementSize);
+		else if (Dict->ElementSize) p->Value = NULL;
+		result = 0;
+	}
+	
+	return result;
 }
 static int Add(Dictionary *Dict,const char *Key,void *Value)
 {
+	int result;
+	
 	if (Dict == NULL) 
 		return NullPtrError("Add");
 	if (Dict->Flags & CONTAINER_READONLY) 
@@ -352,7 +363,10 @@ static int Add(Dictionary *Dict,const char *Key,void *Value)
 	if (Key == NULL) 
 		return BadArgError(Dict,"Add");
 
-	return add_nd(Dict,Key,Value);
+	result = add_nd(Dict,Key,Value);
+	if (result >= 0 && (Dict->Flags & CONTAINER_HAS_OBSERVER))
+        iObserver.Notify(Dict,CCL_ADD,Value,NULL);
+	return result;
 }
 static int Insert(Dictionary *Dict,const char *Key,void *Value)
 {
@@ -364,33 +378,36 @@ static int Insert(Dictionary *Dict,const char *Key,void *Value)
 		return NullPtrError("Add");
 	if (Dict->Flags & CONTAINER_READONLY) 
 		return ReadOnlyError(Dict,"Add");
-	if (Key == NULL || Value == NULL) 
+	if (Key == NULL || (Value == NULL && Dict->ElementSize > 0)) 
 		return BadArgError(Dict,"Add");
 
 	i = (*Dict->hash)(Key)%Dict->size;
 	for (p = Dict->buckets[i]; p; p = p->Next) {
-		if (strcmp((char *)Key, (char *)p->Key) == 0)
+		if (strcmp(Key, p->Key) == 0)
 			break;
 	}
 	if (p)
 		return 0;
-	Dict->timestamp++;
 	/* Allocate both value and key to avoid leaving the
 		container in an invalid state if a second allocation fails */
 	p = Dict->Allocator->malloc(sizeof(*p)+Dict->ElementSize);
-	tmp = Dict->Allocator->malloc(1+strlen((char *)Key));
+	tmp = Dict->Allocator->malloc(1+strlen(Key));
 	if (p == NULL || tmp == NULL) {
 		if (p) Dict->Allocator->free(p);
 		if (tmp) Dict->Allocator->free(tmp);
 		return NoMemoryError(Dict,"Add");
 	}
-    p->Value = (void *)(p+1);
-	memcpy((void *)p->Value,Value,Dict->ElementSize);
-	strcpy((char *)tmp,(char *)Key);
+	if (Dict->ElementSize > 0) { 
+		p->Value = (void *)(p+1);
+		if (Value)
+			memcpy((void *)p->Value,Value,Dict->ElementSize);
+	}
+	strcpy(tmp,Key);
 	p->Key = tmp;
 	p->Next = Dict->buckets[i];
 	Dict->buckets[i] = p;
 	Dict->count++;
+	Dict->timestamp++;
 	return 1;
 }
 static int Replace(Dictionary *Dict,const char *Key,void *Value)
@@ -416,11 +433,14 @@ static int Replace(Dictionary *Dict,const char *Key,void *Value)
 	if (p == NULL) {
 		return CONTAINER_ERROR_NOTFOUND;
 	}
+	if (Dict->ElementSize == 0)
+		return 1;
 	Dict->timestamp++;
 	if (Dict->DestructorFn)
 		Dict->DestructorFn(p->Value);
 	/* Overwrite the data for an existing element */
-	memcpy((void *)p->Value,Value,Dict->ElementSize);
+	if (Value)
+		memcpy((void *)p->Value,Value,Dict->ElementSize);
 	return 1;
 }
 
@@ -511,7 +531,9 @@ static int Apply(Dictionary *Dict,int (*apply)(const char *Key,const void *Value
 	stamp = Dict->timestamp;
 	for (i = 0; i < Dict->size; i++) {
 		for (p = Dict->buckets[i]; p; p = p->Next) {
-			apply(p->Key,p->Value, ExtraArgs);
+			if (Dict->ElementSize)
+				apply(p->Key,p->Value, ExtraArgs);
+			else apply(p->Key,NULL,ExtraArgs);
 			if (Dict->timestamp != stamp)
 				return 0;
 		}
@@ -549,6 +571,8 @@ static int InsertIn(Dictionary *dst,Dictionary *src)
 				return 0;
 		}
 	}
+    if (dst->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(dst,CCL_INSERT_IN,src,NULL);
 	return 1;
 }
 /*------------------------------------------------------------------------
@@ -580,8 +604,11 @@ static int Erase(Dictionary *Dict,const char *Key)
 	for (pp = &Dict->buckets[i]; *pp; pp = &(*pp)->Next) {
 		if (strcmp((char *)Key, (char *)(*pp)->Key) == 0) {
 			struct DataList *p = *pp;
+			if (Dict->Flags & CONTAINER_HAS_OBSERVER)
+				iObserver.Notify(Dict,CCL_ERASE_AT,p->Key,p->Value);
+
 			*pp = p->Next;
-			if (Dict->DestructorFn)
+			if (Dict->DestructorFn && Dict->ElementSize)
 				Dict->DestructorFn(p->Value);
 			Dict->Allocator->free(p->Key);
 			Dict->Allocator->free(p);
@@ -601,12 +628,15 @@ static int Erase(Dictionary *Dict,const char *Key)
 ------------------------------------------------------------------------*/
 static int Clear(Dictionary *Dict)
 {
+	
 	if (Dict == NULL) {
 		return NullPtrError("Clear");
 	}
 	if (Dict->Flags & CONTAINER_READONLY) {
 		return ReadOnlyError(Dict,"Clear");
 	}
+    if (Dict->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(Dict,CCL_CLEAR,NULL,NULL);
 	if (Dict->count > 0) {
 		size_t i;
 		struct DataList *p, *q;
@@ -634,9 +664,12 @@ static int Clear(Dictionary *Dict)
 ------------------------------------------------------------------------*/
 static int Finalize(Dictionary *Dict)
 {
+
 	int r = Clear(Dict);
 	if (0 > r)
 		return r;
+    if (Dict->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(Dict,CCL_FINALIZE,NULL,NULL);
 	Dict->Allocator->free(Dict->buckets);
 	Dict->Allocator->free(Dict);
 	return 1;
@@ -714,7 +747,10 @@ static void *GetNext(Iterator *it)
 	if (d->dl == NULL) {
 		d->dl = Dict->buckets[d->index];
 	}
-	retval = d->dl->Value;
+	if (d->Dict->ElementSize == 0)
+		retval = d->dl->Key;
+	else
+		retval = d->dl->Value;
 	d->dl = d->dl->Next;
 	if (d->dl == NULL) {
 		d->index++;
@@ -740,7 +776,7 @@ static void *GetFirst(Iterator *it)
 static int ReplaceWithIterator(Iterator *it, void *data,int direction) 
 {
     struct DictionaryIterator *li = (struct DictionaryIterator *)it;
-	int result;
+	int result=1;
 	struct DataList *dl;
 	
 	if (it == NULL) {
@@ -761,7 +797,7 @@ static int ReplaceWithIterator(Iterator *it, void *data,int direction)
 	GetNext(it);
 	if (data == NULL)
 		result = Erase(li->Dict, dl->Key);
-	else {
+	else if (li->Dict->ElementSize) {
 		memcpy(dl->Value,data,li->Dict->ElementSize);
 		result = 1;
 	}
@@ -863,7 +899,7 @@ static Dictionary *Copy(Dictionary *src)
 		NoMemoryError(src,"Copy");
 		return NULL;
 	}
-	result->Flags = src->Flags;
+	result->Flags = (src->Flags&~CONTAINER_HAS_OBSERVER);
 	result->hash = src->hash;
 	result->RaiseError = src->RaiseError;
 	for (i=0; i<src->size;i++) {
@@ -873,6 +909,8 @@ static Dictionary *Copy(Dictionary *src)
 			rvp = rvp->Next;
 		}
 	}
+    if (src->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(src,CCL_COPY,result,NULL);
 	return result;
 }
 

@@ -282,7 +282,7 @@ struct strCollection {
     strCollectionInterface *VTable; /* The table of functions */
     size_t count;                  /* in element size units */
     unsigned int Flags;             /* Read-only or other flags */
-	char **contents;               /* The contents of the collection */
+    char **contents;               /* The contents of the collection */
     size_t capacity;                /* in element_size units */
     size_t timestamp;
     ErrorFunction RaiseError;
@@ -299,10 +299,10 @@ struct WstrCollection {
     unsigned int Flags;             /* Read-only or other flags */
     wchar_t **contents;               /* The contents of the collection */
     size_t capacity;                /* in element_size units */
-	size_t timestamp;
-	ErrorFunction RaiseError;
-	WStringCompareFn strcompare;
-	CompareInfo *StringCompareContext;
+    size_t timestamp;
+    ErrorFunction RaiseError;
+    StringCompareFn strcompare;
+    CompareInfo *StringCompareContext;
     ContainerMemoryManager *Allocator;
-	DestructorFunction DestructorFn;
+    DestructorFunction DestructorFn;
 };

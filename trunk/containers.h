@@ -163,7 +163,7 @@ extern HeapInterface iHeap;
 /* This interface comes in two flavors: normal and debug versions           */
 /************************************************************************** */
 typedef struct Pool Pool;
-typedef struct _tagPoolAllocatorInterface {
+typedef struct tagPoolAllocatorInterface {
     Pool  *(*Create)(ContainerMemoryManager *m);
     void  *(*Alloc)(Pool *pool,size_t size);
     void  *(*Calloc)(Pool *pool,size_t n,size_t size);
@@ -173,7 +173,7 @@ typedef struct _tagPoolAllocatorInterface {
 
 extern PoolAllocatorInterface iPool;
 
-typedef struct _tagPoolAllocatorDebugInterface {
+typedef struct tagPoolAllocatorDebugInterface {
     Pool  *(*Create)(const char *file_line);
     void  *(*Alloc)(Pool *pool,size_t size,const char *file_line);
     void  *(*Calloc)(Pool *pool,size_t n,size_t size,const char *file_line);
@@ -217,7 +217,6 @@ extern GenericContainerInterface iGeneric;
 /************************************************************************** */
 typedef struct SequentialContainer SequentialContainer;
 typedef struct tagSequentialContainerInterface {
-
     size_t (*Size)(SequentialContainer *Gen);
     unsigned (*GetFlags)(SequentialContainer *Gen);
     unsigned (*SetFlags)(SequentialContainer *Gen,unsigned flags);
@@ -310,7 +309,7 @@ extern CircularBufferInterface iCircularBuffer;
 typedef struct strCollection strCollection;
 typedef struct _Vector Vector;
 
-typedef int (*StringCompareFn)(const char *s1,const char *s2,CompareInfo *info);
+typedef int (*StringCompareFn)(const void **s1,const void **s2,CompareInfo *info);
 typedef struct tagstrCollection {
 /* -----------------------------------------------This is the generic container part */
     /* Returns the number of elements stored */
@@ -400,8 +399,8 @@ typedef struct tagstrCollection {
     DestructorFunction (*SetDestructor)(strCollection *v,DestructorFunction fn);
     strCollection *(*InitializeWith)(size_t n, char **data);
     char **(*GetData)(strCollection *SC);
-	char *(*Back)(const strCollection *str);
-	char *(*Front)(const strCollection *str);
+    char *(*Back)(const strCollection *str);
+    char *(*Front)(const strCollection *str);
 //    unsigned char *(*Find)(strCollection *SC,unsigned char *str,CompareInfo *ci);
 } strCollectionInterface;
 
@@ -416,7 +415,7 @@ typedef struct WstrCollection WstrCollection;
 
 typedef int (*WStringCompareFn)(const wchar_t *s1,const wchar_t *s2,CompareInfo *info);
 typedef struct tagWstrCollection {
-	/* -----------------------------------------------This is the generic container part */
+    /* -----------------------------------------------This is the generic container part */
     /* Returns the number of elements stored */
     size_t (*Size)(WstrCollection *SC);
     /* Flags for this container */
@@ -448,7 +447,7 @@ typedef struct tagWstrCollection {
     int (*Save)(WstrCollection *SC,FILE *stream, SaveFunction saveFn,void *arg);
     WstrCollection *(*Load)(FILE *stream, ReadFunction readFn,void *arg);
     size_t (*GetElementSize)(const WstrCollection *SC);
-	/* -------------------------------------------This is the Sequential container part */
+    /* -------------------------------------------This is the Sequential container part */
     /* Adds one element at the end. Given string is copied */
     int (*Add)(WstrCollection *SC,wchar_t *newval);
     /* Pushes a string, using the collection as a stack */
@@ -463,7 +462,7 @@ typedef struct tagWstrCollection {
     int (*ReplaceAt)(WstrCollection *SC,size_t idx,wchar_t *newval);
     /*Returns the index of the given string or -1 if not found */
     int (*IndexOf)(WstrCollection *SC,wchar_t *SearchedString,size_t *result);
-	/* ---------------------------------------------This is the specific container part */
+    /* ---------------------------------------------This is the specific container part */
     bool (*Sort)(WstrCollection *SC);
     struct _Vector *(*CastToArray)(WstrCollection *SC);
     size_t (*FindFirst)(WstrCollection *SC,wchar_t *text);
@@ -476,12 +475,12 @@ typedef struct tagWstrCollection {
     WstrCollection *(*CreateFromFile)(const char *fileName);
     WstrCollection *(*Create)(size_t startsize);
     WstrCollection *(*CreateWithAllocator)(size_t startsize,ContainerMemoryManager *allocator);
-	
+    
     /* Adds a NULL terminated table of strings */
     int (*AddRange)(WstrCollection *SC,size_t n,wchar_t **newvalues);
     /* Copies all strings into a NULL terminated vector */
     wchar_t **(*CopyTo)(WstrCollection *SC);
-	
+    
     /* Inserts a string at the position zero. */
     int (*Insert)(WstrCollection *SC,wchar_t *);
     int (*InsertIn)(WstrCollection *source, size_t idx, WstrCollection *newData);
@@ -491,7 +490,7 @@ typedef struct tagWstrCollection {
     size_t (*GetCapacity)(WstrCollection *SC);
     /* Sets the capacity if there are no items in the collection */
     int (*SetCapacity)(WstrCollection *SC,size_t newCapacity);
-    WStringCompareFn (*SetCompareFunction)(WstrCollection *SC,WStringCompareFn);
+    StringCompareFn (*SetCompareFunction)(WstrCollection *SC,StringCompareFn);
     int (*Reverse)(WstrCollection *SC);
     int (*Append)(WstrCollection *,WstrCollection *);
     size_t (*PopBack)(WstrCollection *,wchar_t *result,size_t bufsize);
@@ -504,8 +503,8 @@ typedef struct tagWstrCollection {
     DestructorFunction (*SetDestructor)(WstrCollection *v,DestructorFunction fn);
     WstrCollection *(*InitializeWith)(size_t n,wchar_t **data);
     wchar_t **(*GetData)(WstrCollection *SC);
-	wchar_t *(*Back)(const WstrCollection *SC);
-	wchar_t *(*Front)(const WstrCollection *SC);
+    wchar_t *(*Back)(const WstrCollection *SC);
+    wchar_t *(*Front)(const WstrCollection *SC);
 //    wchar_t *Find(WstrCollection *SC,wchar_t *data,CompareInfo *ci);
 } WstrCollectionInterface;
 
@@ -582,7 +581,7 @@ typedef struct tagList {
     DestructorFunction (*SetDestructor)(List *v,DestructorFunction fn);
     List *(*InitializeWith)(size_t elementSize,size_t n,void *data);
     void *(*Back)(const List *l);
-	void *(*Front)(const List *l);
+    void *(*Front)(const List *l);
 } ListInterface;
 
 extern ListInterface iList;
@@ -591,7 +590,7 @@ extern ListInterface iList;
  * -------------------------------------------------------------------*/
 typedef struct _Queue Queue;
 
-typedef struct _QueueInterface {
+typedef struct tagQueueInterface {
     Queue *(*Create)(size_t elementSize);
     Queue *(*CreateWithAllocator)(size_t elementSize,
                                   ContainerMemoryManager *allocator);
@@ -611,7 +610,7 @@ extern QueueInterface iQueue;
  *                           Double Ended QUEues                      *
  * -------------------------------------------------------------------*/
 typedef struct deque_t Deque;
-typedef struct _DeQueueInterface {
+typedef struct tagDeQueueInterface {
     size_t (*Size)(Deque *Q);
     unsigned (*GetFlags)(Deque *Q);
     unsigned (*SetFlags)(Deque *Q,unsigned newFlags);
@@ -872,7 +871,7 @@ typedef struct tagHashTable {
     unsigned (*GetFlags)(const HashTable *HT);
     /* Sets th flags */
     unsigned (*SetFlags)(HashTable *HT,unsigned flags);
-	size_t (*GetElementSize)(const HashTable *HT);
+    size_t (*GetElementSize)(const HashTable *HT);
     /* Adds one element. Given string is copied */
     int (*Add)(HashTable *HT,const void *key,size_t klen,const void *Data);
     /* Clears all data and frees the memory */
@@ -1039,8 +1038,8 @@ typedef struct tagTreeMapInterface {
     TreeMap *(*Load)(FILE *stream, ReadFunction loadFn,void *arg);
     DestructorFunction (*SetDestructor)(TreeMap *v,DestructorFunction fn);
     TreeMap *(*InitializeWith)(size_t ElementSize, size_t n, void *data);
-	ContainerMemoryManager *(*GetAllocator)(TreeMap *t);
-	
+    ContainerMemoryManager *(*GetAllocator)(TreeMap *t);
+    
 } TreeMapInterface;
 
 extern TreeMapInterface iTreeMap;
@@ -1134,7 +1133,7 @@ typedef struct tagBitString {
     unsigned char *(*GetData)(BitString *BitStr);
     int        (*CopyBits)(BitString *bitstr,void *buf);
     int (*AddRange)(BitString *b, size_t bitSize, void *data);
-	ContainerMemoryManager *(*GetAllocator)(BitString *b);
+    ContainerMemoryManager *(*GetAllocator)(BitString *b);
 } BitStringInterface;
 
 extern BitStringInterface iBitString;

@@ -25,6 +25,7 @@ Added fixes from Gerome. Oct. 20 2005
 #define STRCOMPAREFUNCTION WStringCompareFn
 #define INTERFACE_TYP WstrCollectionInterface
 #define INTERFACE_OBJECT iWstrCollection
+#define NEWLINE L'\n'
 
 
 static const guid strCollectionGuid = {0x64bea19b, 0x243b, 0x487a,
