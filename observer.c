@@ -28,10 +28,10 @@ static int Subscribe(void *ObservedObject, ObserverFunction callback, unsigned f
 		vsize = CHUNK_SIZE;
         }
         for (i=0; i<vsize;i++) {
-                if (ObserverVector[i].ObservedObject==NULL) {
-			pObs = ObserverVector+i;
-			break;
-                }
+            if (ObserverVector[i].ObservedObject==NULL) {
+				pObs = ObserverVector+i;
+				break;
+            }
         }
 	if (i >= vsize) {
         	Observer *tmp = realloc(ObserverVector,(vsize+CHUNK_SIZE)*sizeof(Observer));

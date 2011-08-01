@@ -21,8 +21,6 @@ static int IndexOf(List *AL,void *SearchedElement,void *ExtraArgs,size_t *result
 static int RemoveAt(List *AL,size_t idx);
 #define CONTAINER_LIST_SMALL    2
 #define CHUNK_SIZE    1000
-/* The function Push is identical to Insert */
-#define Push Insert
 static const guid ListGuid = {0x672abd64, 0xe231, 0x486b,
 {0xbc,0x72,0x9b,0x3a,0x88,0x20,0x10,0x35}
 };
@@ -190,7 +188,7 @@ static int Add(List *l,void *elem)
     if (l == NULL || elem == NULL) return NullPtrError("Add");
     if (l->Flags &CONTAINER_READONLY) return ErrorReadOnly(l,"Add");
     r = Add_nd(l,elem);
-    if (r && (l->Flags & CONTAINER_HAS_OBSERVER))
+    if (r > 0 && (l->Flags & CONTAINER_HAS_OBSERVER))
         iObserver.Notify(l,CCL_ADD,elem,NULL);
     return r;
 }
