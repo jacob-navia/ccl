@@ -246,6 +246,8 @@ static int CopyElement(const Dictionary *Dict,const char *Key,void *outbuf)
 	}
 	if (Key == NULL)
 		return BadArgError(Dict,"CopyElement");
+	
+	if (Dict->ElementSize == 0) return 0;
 	i = (*Dict->hash)(Key)%Dict->size;
 	
 	for (p = Dict->buckets[i]; p; p = p->Next)
@@ -853,6 +855,8 @@ static Vector *CastToArray(Dictionary *Dict)
 		NullPtrError("CastToArray");
 		return NULL;
 	}
+	if (Dict->ElementSize == 0)
+		return NULL;
 	result = iVector.Create(Dict->ElementSize,Dict->count);
 
 	for (i=0; i<Dict->size;i++) {
@@ -986,7 +990,7 @@ static Dictionary *InitWithAllocator(Dictionary *Dict,size_t elementsize,size_t 
 {
 	size_t i,allocSiz;
 	static unsigned primes[] = { 509, 509, 1021, 2053, 4093, 8191, 16381, 
-		32771, 65521, 131071, 0 };
+		32771, 65521, 131071, 262147, 524287, 1048573, 0 };
 	for (i = 1; primes[i] < hint && primes[i] > 0; i++)
 		;
 	allocSiz = sizeof (Dictionary);
