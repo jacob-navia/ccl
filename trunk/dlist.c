@@ -443,7 +443,7 @@ static int Finalize(Dlist *l)
     int t;
     unsigned Flags;
 
-    if (l == NULL) return iError.NullPtrError("iDlist.Finalize");
+    if (l == NULL) return CONTAINER_ERROR_BADARG;
     
     Flags = l->Flags;
     t = Clear(l);

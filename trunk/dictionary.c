@@ -1041,12 +1041,13 @@ static Dictionary *InitializeWith(size_t elementSize,size_t n, char **Keys,void 
 	size_t i;
 	char *pValues = Values;
 
-	if (result == NULL) return result;
-	i=0;
-	while (n-- > 0) {
-		add_nd(result,Keys[i],pValues);
-		i++;
-		pValues += elementSize;
+	if (result) {
+		i=0;
+		while (n-- > 0) {
+			add_nd(result,Keys[i],pValues);
+			i++;
+			pValues += elementSize;
+		}
 	}
 	return result;
 }

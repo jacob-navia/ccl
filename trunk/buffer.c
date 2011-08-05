@@ -15,6 +15,7 @@ struct _StreamBuffer {
 
 #define FCLOSE_DESTROYS 8
 
+static int Finalize(StreamBuffer *b);
 static StreamBuffer *CreateWithAllocator(size_t size,ContainerMemoryManager *Allocator)
 {
 	StreamBuffer *result;
@@ -41,6 +42,33 @@ static StreamBuffer *CreateWithAllocator(size_t size,ContainerMemoryManager *All
 static StreamBuffer *Create(size_t size)
 {
 	return CreateWithAllocator(size,CurrentMemoryManager);
+}
+
+static StreamBuffer *CreateFromFile(char *FileName)
+{
+	FILE *f = fopen(FileName,"rb");
+	StreamBuffer *result = NULL;
+	long siz;
+	if (f == NULL) {
+		iError.RaiseError("iBuffer.CreateFromFile",CONTAINER_ERROR_NOENT);
+		return NULL;
+	}
+	else if (fseek(f, 0, SEEK_END)) {
+		goto err;
+	}
+	siz = ftell(f);
+	if (siz < 0) goto err;
+	fseek(f,0,SEEK_SET);
+	result = Create(siz+1);
+	if (result == NULL) goto err;
+	if (siz != fread(result->Data,1,siz,f)) {
+		iError.RaiseError("iBuffer.CreateFromFile",CONTAINER_ERROR_FILE_READ);
+		Finalize(result);
+		result = NULL;
+	}
+err:
+	fclose(f);
+	return result;
 }
 
 static int enlargeBuffer(StreamBuffer *b,size_t chunkSize)
@@ -172,6 +200,7 @@ static int Resize(StreamBuffer *b,size_t newSize)
 StreamBufferInterface iStreamBuffer = {
 Create,
 CreateWithAllocator,
+CreateFromFile,
 Read,
 Write,
 SetPosition,
