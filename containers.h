@@ -269,6 +269,7 @@ typedef struct tagStreamBufferInterface {
     StreamBuffer *(*Create)(size_t startsize);
     StreamBuffer *(*CreateWithAllocator)(size_t startsize, 
                                          ContainerMemoryManager *allocator);
+    StreamBuffer *(*CreateFromFile)(char *FileName);
     size_t (*Read)(StreamBuffer *b, void *data, size_t siz);
     size_t (*Write)(StreamBuffer *b,void *data, size_t siz);
     int (*SetPosition)(StreamBuffer *b,size_t pos);

@@ -747,6 +747,7 @@ static int Clear(TreeMap *tree)
 
 static int Finalize(TreeMap *tree)
 {
+    if (tree == NULL) return CONTAINER_ERROR_BADARG;
     tree->VTable->Clear(tree);
     iHeap.Finalize(tree->Heap);
     tree->Allocator->free(tree);

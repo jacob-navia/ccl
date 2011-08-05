@@ -410,7 +410,7 @@ static int Finalize(ElementType *SC)
     size_t i;
 
     if (SC == NULL) {
-    	return NullPtrError("Finalize");
+    	return CONTAINER_ERROR_BADARG;
     }
     if (SC->Flags & CONTAINER_READONLY) {
     	return ReadOnlyError(SC,"Finalize");
@@ -933,6 +933,8 @@ static void *GetNext(Iterator *it)
     	return NULL;
     }
     SC = sci->SC;
+    if (SC->count == 0)
+	return NULL;
     if (sci->timestamp != SC->timestamp) {
     	SC->RaiseError("GetNext",CONTAINER_ERROR_OBJECT_CHANGED);
     	return NULL;
@@ -954,7 +956,7 @@ static void *GetPrevious(Iterator *it)
     	return NULL;
     }
     SC = ali->SC;
-    if (ali->index >= SC->count || ali->index == 0)
+    if (SC->count == 0 || ali->index >= SC->count || ali->index == 0)
     	return NULL;
     if (ali->timestamp != SC->timestamp) {
     	SC->RaiseError("GetPrevious",CONTAINER_ERROR_OBJECT_CHANGED);

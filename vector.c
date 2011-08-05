@@ -679,7 +679,7 @@ static int Finalize(Vector *AL)
 	int result;
 
 	if (AL == NULL)
-		return NullPtrError("Clear");
+		return CONTAINER_ERROR_BADARG;
 	Flags = AL->Flags;
 	result = Clear(AL);
 	if (result < 0)

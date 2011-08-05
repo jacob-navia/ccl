@@ -113,7 +113,7 @@ static int Clear(BitString *b)
 
 static int Finalize(BitString *b)
 {
-	if (b == NULL) return NullPtrError("Finalize");
+	if (b == NULL) return CONTAINER_ERROR_BADARG;
 	if (b->Flags&CONTAINER_READONLY)
 		return ReadOnlyError("Finalize");
 	b->Allocator->free(b->contents);

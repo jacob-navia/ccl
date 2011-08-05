@@ -365,7 +365,7 @@ static int Finalize(List *l)
     unsigned Flags=0;
 
     if (l) Flags = l->Flags;
-	else return NullPtrError("Finalize");
+	else return CONTAINER_ERROR_BADARG;
     t = Clear(l);
     if (t < 0)
         return t;
