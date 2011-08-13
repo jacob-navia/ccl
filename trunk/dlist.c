@@ -8,10 +8,6 @@ static const guid DlistGuid = {0xac2525ff, 0x2e2a, 0x4540,
 {0xae,0x70,0xc4,0x7a,0x2,0xf7,0xa,0xed}
 };
 
-
-/* The function Push is identical to Insert */
-#define Push Insert
-
 #define CONTAINER_READONLY	1
 #define LIST_HASPOINTER	2
 #define CHUNK_SIZE	1000
@@ -400,12 +396,9 @@ static Dlist *Copy(Dlist *l)
     while (rvp) {
     	newRvp = new_dlink(result,rvp->Data,"iDlist.Copy");
     	if (newRvp == NULL) {
-    		if (l->RaiseError) 
-    			l->RaiseError("iDlist.Copy",CONTAINER_ERROR_NOMEMORY);
-    		else
-    			iError.RaiseError("iDlist.Copy",CONTAINER_ERROR_NOMEMORY);
+    		l->RaiseError("iDlist.Copy",CONTAINER_ERROR_NOMEMORY);
     		iDlist.Finalize(result);
-                	return NULL;
+               	return NULL;
     	}
     	if (result->First == NULL)
     		last = result->First = newRvp;
