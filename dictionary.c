@@ -231,7 +231,7 @@ static const void *GetElement(const Dictionary *Dict,const char *Key)
 	}
 	i = (*Dict->hash)(Key)%Dict->size;
 	for (p = Dict->buckets[i]; p; p = p->Next)
-		if (strcmp((char *)Key, (char *)p->Key) == 0)
+		if (strcmp(Key, p->Key) == 0)
 			return Dict->ElementSize ? p->Value : p->Key;
 	return NULL;
 }
@@ -308,7 +308,7 @@ static int Equal(const Dictionary *d1,const Dictionary *d2)
                 error code
  Errors:        The container must be read/write.
 ------------------------------------------------------------------------*/
-static int add_nd(Dictionary *Dict,const char *Key,void *Value)
+static int add_nd(Dictionary *Dict,const char *Key,void *Value,int is_insert)
 {
 	size_t i;
 	struct DataList *p;
@@ -320,6 +320,7 @@ static int add_nd(Dictionary *Dict,const char *Key,void *Value)
 		if (strcmp(Key, p->Key) == 0)
 			break;
 	}
+	if (p && is_insert) return 0;
 	Dict->timestamp++;
 	if (p == NULL) {
 		/* Allocate both value and key to avoid leaving the
@@ -365,52 +366,26 @@ static int Add(Dictionary *Dict,const char *Key,void *Value)
 	if (Key == NULL) 
 		return BadArgError(Dict,"Add");
 
-	result = add_nd(Dict,Key,Value);
+	result = add_nd(Dict,Key,Value,0);
 	if (result >= 0 && (Dict->Flags & CONTAINER_HAS_OBSERVER))
         iObserver.Notify(Dict,CCL_ADD,Value,NULL);
 	return result;
 }
 static int Insert(Dictionary *Dict,const char *Key,void *Value)
 {
-	size_t i;
-	struct DataList *p;
-	char *tmp;
-
+	int result;
+	
 	if (Dict == NULL) 
-		return NullPtrError("Add");
+		return NullPtrError("Insert");
 	if (Dict->Flags & CONTAINER_READONLY) 
-		return ReadOnlyError(Dict,"Add");
+		return ReadOnlyError(Dict,"Insert");
 	if (Key == NULL || (Value == NULL && Dict->ElementSize > 0)) 
-		return BadArgError(Dict,"Add");
+		return BadArgError(Dict,"Insert");
 
-	i = (*Dict->hash)(Key)%Dict->size;
-	for (p = Dict->buckets[i]; p; p = p->Next) {
-		if (strcmp(Key, p->Key) == 0)
-			break;
-	}
-	if (p)
-		return 0;
-	/* Allocate both value and key to avoid leaving the
-		container in an invalid state if a second allocation fails */
-	p = Dict->Allocator->malloc(sizeof(*p)+Dict->ElementSize);
-	tmp = Dict->Allocator->malloc(1+strlen(Key));
-	if (p == NULL || tmp == NULL) {
-		if (p) Dict->Allocator->free(p);
-		if (tmp) Dict->Allocator->free(tmp);
-		return NoMemoryError(Dict,"Add");
-	}
-	if (Dict->ElementSize > 0) { 
-		p->Value = (void *)(p+1);
-		if (Value)
-			memcpy((void *)p->Value,Value,Dict->ElementSize);
-	}
-	strcpy(tmp,Key);
-	p->Key = tmp;
-	p->Next = Dict->buckets[i];
-	Dict->buckets[i] = p;
-	Dict->count++;
-	Dict->timestamp++;
-	return 1;
+	result = add_nd(Dict,Key,Value,1);
+	if (result >= 0 && (Dict->Flags & CONTAINER_HAS_OBSERVER))
+        iObserver.Notify(Dict,CCL_INSERT,Value,NULL);
+	return result;
 }
 static int Replace(Dictionary *Dict,const char *Key,void *Value)
 {
@@ -437,6 +412,8 @@ static int Replace(Dictionary *Dict,const char *Key,void *Value)
 	}
 	if (Dict->ElementSize == 0)
 		return 1;
+	if (Dict->Flags & CONTAINER_HAS_OBSERVER)
+		iObserver.Notify(Dict,CCL_REPLACE,p->Value,Value);
 	Dict->timestamp++;
 	if (Dict->DestructorFn)
 		Dict->DestructorFn(p->Value);
@@ -566,7 +543,7 @@ static int InsertIn(Dictionary *dst,Dictionary *src)
 	stamp = src->timestamp;
 	for (i = 0; i < src->size; i++) {
 		for (p = src->buckets[i]; p; p = p->Next) {
-			r = add_nd(dst,p->Key,p->Value);
+			r = add_nd(dst,p->Key,p->Value,0);
 			if (r < 0)
 				return r;
 			if (src->timestamp != stamp)
@@ -984,8 +961,6 @@ static ContainerMemoryManager *GetAllocator(Dictionary *AL)
  Output:        A pointer to a newly allocated table
  Errors:        If no more memory is available returns NULL
  ------------------------------------------------------------------------*/
-#undef roundup
-#define roundup(x,n) (((x)+((n)-1))&(~((n)-1)))
 static Dictionary *InitWithAllocator(Dictionary *Dict,size_t elementsize,size_t hint,ContainerMemoryManager *allocator)
 {
 	size_t i,allocSiz;
@@ -1044,7 +1019,7 @@ static Dictionary *InitializeWith(size_t elementSize,size_t n, char **Keys,void 
 	if (result) {
 		i=0;
 		while (n-- > 0) {
-			add_nd(result,Keys[i],pValues);
+			add_nd(result,Keys[i],pValues,0);
 			i++;
 			pValues += elementSize;
 		}

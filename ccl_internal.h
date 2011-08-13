@@ -14,6 +14,7 @@
 */
 int GetLine(char **LinePointer,int *n, FILE *stream,ContainerMemoryManager *mm);
 int WGetLine(wchar_t **LinePointer,int *n, FILE *stream,ContainerMemoryManager *mm);
+/* GUIDs used to mark saved container files */
 typedef struct {
     uint32_t Data1;
     uint16_t Data2;
@@ -21,12 +22,18 @@ typedef struct {
     unsigned char Data4[8];
 } guid;
 
+/*----------------------------------------------------------------------------*/
+/* Definition of the Mask type                                                */
+/*----------------------------------------------------------------------------*/
 struct _Mask {
     size_t length;
     ContainerMemoryManager *Allocator;
     char data[MINIMUM_ARRAY_INDEX];
 };
 
+/*----------------------------------------------------------------------------*/
+/* Definition of the Generic container type                                   */
+/*----------------------------------------------------------------------------*/
 struct _GenericContainer {
     struct tagGenericContainerInterface *vTable;
     size_t count;             /* number of elements in the container */
