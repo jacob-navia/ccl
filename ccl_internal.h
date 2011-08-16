@@ -1,3 +1,4 @@
+#ifndef __CCL_INTERNAL_H__
 #ifdef NO_C99
 /* No flexible arrays */
 #define MINIMUM_ARRAY_INDEX     1
@@ -122,6 +123,72 @@ struct ListIterator {
 	list_element *Previous;
     size_t timestamp;
     char ElementBuffer[1];
+};
+
+/*----------------------------------------------------------------------------*/
+/* Definition of the stringlist and stringlist element type                               */
+/*----------------------------------------------------------------------------*/
+typedef struct _stringlist_element {
+    struct _stringlist_element *Next;
+    char Data[MINIMUM_ARRAY_INDEX];
+} stringlist_element;
+
+struct _StringList {
+    iStringListInterface *VTable;      /* Methods table */
+    size_t count;               /* in elements units */
+    unsigned Flags;
+    unsigned timestamp;         /* Changed at each modification */
+    size_t ElementSize;         /* Size (in bytes) of each element */
+    stringlist_element *Last;         /* The last item */
+    stringlist_element *First;        /* The contents of the list start here */
+    CompareFunction Compare;    /* Element comparison function */
+    ErrorFunction RaiseError;   /* Error function */
+    ContainerHeap *Heap;
+    ContainerMemoryManager *Allocator;
+    DestructorFunction DestructorFn;
+};
+
+struct StringListIterator {
+    Iterator it;
+    StringList *L;
+    size_t index;
+    stringlist_element *Current;
+    stringlist_element *Previous;
+    size_t timestamp;
+    char *ElementBuffer;
+};
+
+/*----------------------------------------------------------------------------*/
+/* Definition of the wstringlist and wstringlist element type                               */
+/*----------------------------------------------------------------------------*/
+typedef struct _wstringlist_element {
+    struct _wstringlist_element *Next;
+    wchar_t Data[MINIMUM_ARRAY_INDEX];
+} wstringlist_element;
+
+struct _WStringList {
+    iWStringListInterface *VTable;      /* Methods table */
+    size_t count;               /* in elements units */
+    unsigned Flags;
+    unsigned timestamp;         /* Changed at each modification */
+    size_t ElementSize;         /* Size (in bytes) of each element */
+    wstringlist_element *Last;         /* The last item */
+    wstringlist_element *First;        /* The contents of the list start here */
+    CompareFunction Compare;    /* Element comparison function */
+    ErrorFunction RaiseError;   /* Error function */
+    ContainerHeap *Heap;
+    ContainerMemoryManager *Allocator;
+    DestructorFunction DestructorFn;
+};
+
+struct WStringListIterator {
+    Iterator it;
+    WStringList *L;
+    size_t index;
+    wstringlist_element *Current;
+    wstringlist_element *Previous;
+    size_t timestamp;
+    wchar_t *ElementBuffer;
 };
 
 
@@ -313,3 +380,4 @@ struct WstrCollection {
     ContainerMemoryManager *Allocator;
     DestructorFunction DestructorFn;
 };
+#endif

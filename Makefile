@@ -4,10 +4,9 @@
 # 
 #---------------------------------------------------
 # Optimized CFLAGS setting
-# Erase __MAC_OSX for non apple systems like linux
-CFLAGS=-Os -Wno-pointer-sign -DUNIX -Wall -D__MAC_OSX
+#CFLAGS=-Os -Wno-pointer-sign -DUNIX -Wall -D__MAC_OSX
 # Debug CFLAGS setting
-#CFLAGS=-g -Wno-pointer-sign -DUNIX -Wall 
+CFLAGS=-g -Wno-pointer-sign -DUNIX -Wall 
 SRC=	vector.c bloom.c containererror.c dlist.c qsortex.c heap.c \
 	deque.c hashtable.c malloc_debug.c containers.h ccl_internal.h \
 	stdint.h pool.c pooldebug.c redblacktree.c scapegoat.c smallpool.c ccl_internal.h \
@@ -15,7 +14,8 @@ SRC=	vector.c bloom.c containererror.c dlist.c qsortex.c heap.c \
 	containers.h ccl_internal.h redblacktree.c fgetline.c generic.c queue.c buffer.c observer.c \
 	valarraydouble.c valarraysize_t.c valarrayint.c valarraylongdouble.c valarraygen.c \
 	valarrayshort.c valarrayfloat.c valarrayuint.c valarraylonglong.c \
-	valarrayulonglong.c sequential.c iMask.c wstrcollection.c strcollectiongen.c .
+	valarrayulonglong.c sequential.c iMask.c wstrcollection.c strcollectiongen.c \
+	stringlistgen.c stringlistgen.h stringlist.c stringlist.h wstringlist.h 
 DOCS=
 MAKEFILES=Makefile Makefile.lcc Makefile.msvc
 
@@ -25,10 +25,10 @@ OBJS=vector.o containererror.o dlist.o qsortex.o bitstrings.o generic.o \
     buffer.o observer.o valarraydouble.o valarrayint.o valarraysize_t.o \
     valarraylongdouble.o valarrayshort.o valarrayfloat.o valarrayuint.o \
     valarraylonglong.o valarrayulonglong.o memorymanager.o sequential.o \
-    iMask.o deque.o hashtable.o wstrcollection.o
+    iMask.o deque.o hashtable.o wstrcollection.o stringlist.o wstringlist.o
 
 dotest:	libccl.a test.o
-	gcc -o dotest $(CFLAGS) test.c libccl.a -lm
+	gcc -o dotest -g $(CFLAGS) test.c libccl.a -lm
 libccl.a:	$(OBJS) containers.h ccl_internal.h ccl_internal.h
 	ar r libccl.a $(OBJS)
 clean:
@@ -67,3 +67,5 @@ iMask.o:	iMask.c containers.h ccl_internal.h
 scapegoat.o:	scapegoat.c containers.h ccl_internal.h
 wstrcollection.o:	wstrcollection.c strcollectiongen.c containers.h ccl_internal.h
 strcollection.o:       strcollection.c strcollectiongen.c containers.h ccl_internal.h
+stringlist.o:	stringlist.c stringlistgen.c containers.h ccl_internal.h stringlist.h stringlistgen.h
+wstringlist.o:	wstringlist.c stringlistgen.c stringlistgen.h wstringlist.h containers.h ccl_internal.h
