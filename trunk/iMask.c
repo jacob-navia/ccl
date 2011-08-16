@@ -16,8 +16,9 @@ static Mask *CreateFromMask(size_t n,char *data)
 
 static Mask *Copy(Mask *src)
 {
+	Mask *result;
 	if (src == NULL) return NULL;
-	Mask *result = src->Allocator->malloc(src->length+sizeof(Mask));
+	result = src->Allocator->malloc(src->length+sizeof(Mask));
 	if (result == NULL) {
 		iError.RaiseError("iMask.Copy",CONTAINER_ERROR_NOMEMORY);
 		return NULL;

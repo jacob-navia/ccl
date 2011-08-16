@@ -586,6 +586,8 @@ typedef struct tagList {
 } ListInterface;
 
 extern ListInterface iList;
+#include "stringlist.h"
+#include "wstringlist.h"
 /* -------------------------------------------------------------------
  *                           QUEUES
  * -------------------------------------------------------------------*/

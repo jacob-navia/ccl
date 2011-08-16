@@ -67,10 +67,11 @@ static Deque * Create(size_t elementsize)
 static int Finalize(Deque * d) 
 {
     unsigned Flags;
+    int r;
 
     if (d == NULL) return iError.NullPtrError("iDeque.Finalize");
     Flags = d->Flags;
-    int r = iDeque.Clear(d);
+    r = iDeque.Clear(d);
     if (r < 0) return r;
     if (Flags & CONTAINER_HAS_OBSERVER)
         iObserver.Notify(d,CCL_FINALIZE,NULL,NULL);
