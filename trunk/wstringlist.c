@@ -5,7 +5,7 @@
 #define STRCPY wcscpy
 #define STRLEN wcslen
 #define iSTRINGLIST iWStringListInterface
-#define LIST_ELEMENT wstringlist_element
+#define LIST_ELEMENT wStringlistElement
 #define StringListGuid WStringListGuid
 #define LIST_TYPE WStringList
 #define LIST_TYPEIterator WStringListIterator

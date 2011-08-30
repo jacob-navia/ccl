@@ -41,7 +41,7 @@ static void *newHeapObject(ContainerHeap *l)
 		/* Allocate an array of pointers that will hold the blocks
 		of CHUNK_SIZE list items
 		*/
-		siz = sizeof(list_element *)*CHUNK_SIZE;
+		siz = sizeof(ListElement *)*CHUNK_SIZE;
 		l->Heap = l->Allocator->malloc(siz);
 		if (l->Heap == NULL) {
 			return NULL;
@@ -53,7 +53,7 @@ static void *newHeapObject(ContainerHeap *l)
 		memset(l->Heap,0,siz);
 	}
 	if (l->FreeList) {
-		list_element *le = l->FreeList;
+		ListElement *le = l->FreeList;
 		l->FreeList = le->Next;
 		return le;
 	}
@@ -62,7 +62,7 @@ static void *newHeapObject(ContainerHeap *l)
 		l->CurrentBlock++;
 		if (l->CurrentBlock == l->BlockCount) {
 			/* The array of block pointers is full. Allocate CHUNK_SIZE blocks more */
-			siz = (l->BlockCount+CHUNK_SIZE)*sizeof(list_element *);
+			siz = (l->BlockCount+CHUNK_SIZE)*sizeof(ListElement *);
 			result = l->Allocator->realloc(l->Heap,siz);
 			if (result == NULL) {
 				return NULL;
@@ -70,7 +70,7 @@ static void *newHeapObject(ContainerHeap *l)
 			l->MemoryUsed+= siz;
 			l->Heap = (char **)result;
 			/* Position pointer at the start of the new area */
-			result += l->BlockCount*sizeof(list_element *);
+			result += l->BlockCount*sizeof(ListElement *);
 			/* Zero the new pointers */
 			memset(result,0,siz);
 			l->BlockCount += CHUNK_SIZE;
@@ -94,7 +94,7 @@ static void *newHeapObject(ContainerHeap *l)
 
 static void AddToFreeList(ContainerHeap *heap,void *element)
 {
-	list_element *le = (list_element *)element;
+	ListElement *le = (ListElement *)element;
 	le->Next = heap->FreeList;
 	heap->FreeList = le;
 }
