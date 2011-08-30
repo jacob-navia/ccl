@@ -15,8 +15,8 @@ the proposed interface COULD be done.
 #ifndef INT_MAX
 #define INT_MAX (((unsigned)-1) >> 1)
 #endif
-static int IndexOf(LIST_TYPE *AL,CHARTYPE *SearchedElement,void *ExtraArgs,size_t *result);
-static int RemoveAt(LIST_TYPE *AL,size_t idx);
+static int IndexOf_nd(LIST_TYPE *AL,CHARTYPE *SearchedElement,void *ExtraArgs,size_t *result);
+static int RemoveAt_nd(LIST_TYPE *AL,size_t idx);
 static LIST_TYPE *CreateWithAllocator(ContainerMemoryManager *allocator);
 static LIST_TYPE *Create(void);
 static int Finalize(LIST_TYPE *l);
@@ -41,7 +41,7 @@ static int NullPtrError(char *fnName)
 }
 
 /*------------------------------------------------------------------------
- Procedure:     new_link ID:1
+ Procedure:     NewLink ID:1
  Purpose:       Allocation of a new list element. If the element
                 size is zero, we have an heterogenous
                 list, and we allocate just a pointer to the data
@@ -57,7 +57,7 @@ static int NullPtrError(char *fnName)
  Output:        A pointer to the new list element (can be NULL)
  Errors:        If there is no memory returns NULL
 ------------------------------------------------------------------------*/
-static LIST_ELEMENT *new_link(LIST_TYPE *li,CHARTYPE *data,const char *fname)
+static LIST_ELEMENT *NewLink(LIST_TYPE *li,CHARTYPE *data,const char *fname)
 {
     LIST_ELEMENT *result;
 	size_t len = STRLEN(data)+1;
@@ -95,7 +95,7 @@ static int Contains(LIST_TYPE *l,CHARTYPE *data)
             iError.NullPtrError("iStringList.Contains");
         return CONTAINER_ERROR_BADARG;
     }
-    return (IndexOf(l,data,NULL,&idx) < 0) ? 0 : 1;
+    return (IndexOf_nd(l,data,NULL,&idx) < 0) ? 0 : 1;
 }
 
 /*------------------------------------------------------------------------
@@ -162,7 +162,7 @@ static int Add_nd(LIST_TYPE *l,CHARTYPE *elem)
 {
     LIST_ELEMENT *newl;
 
-    newl = new_link(l,elem,"iStringList.Add");
+    newl = NewLink(l,elem,"iStringList.Add");
     if (newl == 0)
         return CONTAINER_ERROR_NOMEMORY;
     if (l->count ==  0) {
@@ -322,7 +322,7 @@ static LIST_TYPE *Copy(LIST_TYPE *l)
     result->RaiseError = l->RaiseError;
     elem = l->First;
     while (elem) {
-        newElem = new_link(result,elem->Data,"iStringList.Copy");
+        newElem = NewLink(result,elem->Data,"iStringList.Copy");
         if (newElem == NULL) {
             l->RaiseError("iStringList.Copy",CONTAINER_ERROR_NOMEMORY);
             Finalize(result);
@@ -621,7 +621,7 @@ static int PushFront(LIST_TYPE *l,CHARTYPE *pdata)
     if (l->Flags & CONTAINER_READONLY) {
         return ErrorReadOnly(l,"PushFront");
     }
-    rvp = new_link(l,pdata,"Insert");
+    rvp = NewLink(l,pdata,"Insert");
     if (rvp == NULL)
         return CONTAINER_ERROR_NOMEMORY;
     rvp->Next = l->First;
@@ -745,7 +745,7 @@ static int InsertAt(LIST_TYPE *l,size_t pos,CHARTYPE *pdata)
         return Add_nd(l,pdata);
     }
 
-    elem = new_link(l,pdata,"iStringList.InsertAt");
+    elem = NewLink(l,pdata,"iStringList.InsertAt");
     if (elem == NULL) {
         l->RaiseError("iStringList.InsertAt",CONTAINER_ERROR_NOMEMORY);
         return CONTAINER_ERROR_NOMEMORY;
@@ -772,23 +772,70 @@ static int InsertAt(LIST_TYPE *l,size_t pos,CHARTYPE *pdata)
 
 static int Erase(LIST_TYPE *l, CHARTYPE *elem)
 {
-    size_t idx;
-    int i;
+    size_t position;
+    LIST_ELEMENT *rvp,*previous;
+    int r;
+    CompareFunction fn;
+    CompareInfo ci;
 
     if (l == NULL) {
         return NullPtrError("Erase");
     }
     if (elem == NULL) {
-        l->RaiseError("iStringList.Erase",CONTAINER_ERROR_BADARG);
+        l->RaiseError("iList.Erase",CONTAINER_ERROR_BADARG);
         return CONTAINER_ERROR_BADARG;
     }
+    if (l->Flags & CONTAINER_READONLY)
+        return ErrorReadOnly(l,"Erase");
     if (l->count == 0) {
         return CONTAINER_ERROR_NOTFOUND;
     }
-    i = IndexOf(l,elem,NULL,&idx);
-    if (i < 0)
-        return i;
-    return RemoveAt(l,idx);
+    position = 0;
+    rvp = l->First;
+    previous = NULL;
+    fn = l->Compare;
+    ci.ContainerLeft = l;
+    ci.ContainerRight = NULL;
+    ci.ExtraArgs = NULL;
+    while (rvp) {
+        r = fn(&rvp->Data,elem,&ci);
+        if (r == 0) {
+            if (l->Flags & CONTAINER_HAS_OBSERVER)
+                iObserver.Notify(l,CCL_ERASE_AT,rvp,(void *)position);
+
+            if (position == 0) {
+                if (l->count == 1) {
+                    l->First = l->Last = NULL;
+                }
+                else {
+                    l->First = l->First->Next;
+                }
+            }
+            else if (position == l->count - 1) {
+                previous->Next = NULL;
+                l->Last = previous;
+            }
+            else {
+                previous->Next = rvp->Next;
+            }
+
+            if (l->DestructorFn)
+                l->DestructorFn(&rvp->Data);
+
+            if (l->Heap)
+                iHeap.AddToFreeList(l->Heap,rvp);
+            else {
+                l->Allocator->free(rvp);
+            }
+            l->count--;
+            l->timestamp++;
+            return 1;
+        }
+        previous = rvp;
+        rvp = rvp->Next;
+        position++;
+    }
+    return CONTAINER_ERROR_NOTFOUND;
 }
 
 static int EraseRange(LIST_TYPE *l,size_t start,size_t end)
@@ -830,20 +877,10 @@ static int EraseRange(LIST_TYPE *l,size_t start,size_t end)
     return 1;
 }
 
-static int RemoveAt(LIST_TYPE *l,size_t position)
+static int RemoveAt_nd(LIST_TYPE *l,size_t position)
 {
     LIST_ELEMENT *rvp,*last,*removed;
 
-    if (l == NULL) {
-        return NullPtrError("RemoveAt");
-    }
-    if (position >= l->count) {
-        l->RaiseError("iStringListRemoveAt",CONTAINER_ERROR_INDEX);
-        return CONTAINER_ERROR_INDEX;
-    }
-    if (l->Flags & CONTAINER_READONLY) {
-        return ErrorReadOnly(l,"RemoveAt");
-    }
     rvp = l->First;
     if (position == 0) {
         removed = l->First;
@@ -882,7 +919,20 @@ static int RemoveAt(LIST_TYPE *l,size_t position)
     return 1;
 }
 
-
+static int RemoveAt(LIST_TYPE *l,size_t position)
+{
+    if (l == NULL) {
+        return NullPtrError("RemoveAt");
+    }
+    if (position >= l->count) {
+        l->RaiseError("iStringListRemoveAt",CONTAINER_ERROR_INDEX);
+        return CONTAINER_ERROR_INDEX;
+    }
+    if (l->Flags & CONTAINER_READONLY) {
+        return ErrorReadOnly(l,"RemoveAt");
+    }
+	return RemoveAt_nd(l,position);
+}	
 static int Append(LIST_TYPE *l1,LIST_TYPE *l2)
 {
 
@@ -996,20 +1046,13 @@ static int AddRange(LIST_TYPE * AL,size_t n, CHARTYPE **data)
 /* Searches a StringList for a given data item
    Returns a positive integer if found, negative if the end is reached
 */
-static int IndexOf(LIST_TYPE *l,CHARTYPE *ElementToFind,void *ExtraArgs,size_t *result)
+static int IndexOf_nd(LIST_TYPE *l,CHARTYPE *ElementToFind,void *ExtraArgs,size_t *result)
 {
     LIST_ELEMENT *rvp;
     int r,i=0;
     CompareFunction fn;
     CompareInfo ci;
 
-    if (l == NULL || ElementToFind == NULL) {
-        if (l)
-            l->RaiseError("iStringList.IndexOf",CONTAINER_ERROR_BADARG);
-        else
-            NullPtrError("IndexOf");
-        return CONTAINER_ERROR_BADARG;
-    }
     rvp = l->First;
     fn = l->Compare;
     ci.ContainerLeft = l;
@@ -1027,6 +1070,18 @@ static int IndexOf(LIST_TYPE *l,CHARTYPE *ElementToFind,void *ExtraArgs,size_t *
     }
     return CONTAINER_ERROR_NOTFOUND;
 }
+
+static int IndexOf(LIST_TYPE *l,CHARTYPE *ElementToFind,void *ExtraArgs,size_t *result)
+{
+    if (l == NULL || ElementToFind == NULL) {
+        if (l)
+            l->RaiseError("iStringList.IndexOf",CONTAINER_ERROR_BADARG);
+        else
+            NullPtrError("IndexOf");
+        return CONTAINER_ERROR_BADARG;
+    }
+	return IndexOf_nd(l,ElementToFind,ExtraArgs,result);
+}	
 
 static int lcompar (const void *elem1, const void *elem2,CompareInfo *ExtraArgs)
 {
@@ -1307,7 +1362,7 @@ static int ReplaceWithIterator(Iterator *it, void *data,int direction)
 	else
 		GetPrevious(it);
 	if (data == NULL)
-		result = RemoveAt(li->L,pos);
+		result = RemoveAt_nd(li->L,pos);
 	else {
 		result = ReplaceAt(li->L,pos,data);
 	}
