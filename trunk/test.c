@@ -496,6 +496,7 @@ int main(void)
 {
 #if 1
 	int errors=0;
+	CurrentMemoryManager = &iDebugMalloc;
 	errors += testBloomFilter();
     teststrCollection();
 	errors += testVector();

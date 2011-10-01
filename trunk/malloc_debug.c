@@ -79,6 +79,7 @@ static void *Realloc(void *ptr,size_t newsize)
         	return NULL;
 	}
 	newsize = ALIGN_DEFAULT(newsize);
+	oldsize -= 3*sizeof(size_t);
 	if (oldsize == newsize)
 		return ptr;
 	ip++;
