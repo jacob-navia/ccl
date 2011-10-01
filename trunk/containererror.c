@@ -20,6 +20,8 @@ struct Error {
 	{CONTAINER_ERROR_INCOMPATIBLE,  "Incompatible element sizes"},
 	{CONTAINER_ERROR_WRONGFILE,		"Not a container stream"},
 	{CONTAINER_ERROR_NOTIMPLEMENTED,"Function not implemented for this container type"},
+	{CONTAINER_ERROR_BADPOINTER,    "Debug_malloc: BAD POINTER******"},
+	{CONTAINER_ERROR_BUFFEROVERFLOW,"Debug_malloc: BUFFER OVERFLOW******"},
 	{0,"Unknown error"},
 };
 
