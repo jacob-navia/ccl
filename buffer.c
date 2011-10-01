@@ -93,8 +93,8 @@ static size_t Write(StreamBuffer *b,void *data, size_t siz)
 		iError.RaiseError("iStreamBuffer.Write",CONTAINER_ERROR_BADARG);
 		return 0;
 	}
-	if (b->Cursor + siz > b->Size) {
-		int r = enlargeBuffer(b,siz);
+	if ((b->Cursor + siz) >= b->Size) {
+		int r = enlargeBuffer(b,b->Size+siz);
 		if (r < 0)
 			return 0;
 	}
