@@ -994,10 +994,10 @@ static int Append(List *l1,List *l2)
 
 static int Reverse(List *l)
 {
-    ListElement *New,*current,*old;
+    ListElement *Previous,*current,*old;
 
     if (l == NULL) {
-        iError.RaiseError("Reverse",CONTAINER_ERROR_BADARG);
+        iError.RaiseError("iList.Reverse",CONTAINER_ERROR_BADARG);
         return CONTAINER_ERROR_BADARG;
     }
     if (l->Flags & CONTAINER_READONLY) {
@@ -1008,16 +1008,15 @@ static int Reverse(List *l)
         return 1;
     old = l->First;
     l->Last = l->First;
-    New = NULL;
+    Previous = NULL;
     while (old) {
         current = old;
         old = old->Next;
-        current->Next = New;
-        New = current;
+        current->Next = Previous;
+        Previous = current;
     }
-    l->First = New;
-    if (l->Last)
-        l->Last->Next = NULL;
+    l->First = Previous;
+    l->Last->Next = NULL;
     l->timestamp++;
     return 1;
 }

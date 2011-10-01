@@ -248,7 +248,7 @@ static int Add(ElementType *SC,CHAR_TYPE *newval)
 
     if (SC->Flags & CONTAINER_READONLY)
         return ReadOnlyError(SC,"Add");
-    if (SC->count >= SC->capacity) {
+    if ((SC->count+1) >= SC->capacity) {
     	int r = Resize(SC);
         if (r <= 0)
             return r;
@@ -422,7 +422,7 @@ static int Finalize(ElementType *SC)
         SC->Allocator->free(SC->contents[i]);
     }
     SC->Allocator->free(SC->contents);
-    CurrentMemoryManager->free(SC);
+    SC->Allocator->free(SC);
     return 1;
 }
 
@@ -490,7 +490,7 @@ static int InsertAt(ElementType *SC,size_t idx,CHAR_TYPE *newval)
     if (idx >= SC->count) {
         return IndexError(SC,"InsertAt");
     }
-    if (SC->count >= SC->capacity) {
+    if ((SC->count+1) >= SC->capacity) {
         int r = Resize(SC);
     	if (r <= 0)
             return r;
@@ -1430,7 +1430,7 @@ static ElementType *InitWithAllocator(ElementType *result,size_t startsize,Conta
     memset(result,0,sizeof(ElementType));
     result->VTable = &iElementType;
     if (startsize > 0) {
-        result->contents = CurrentMemoryManager->malloc(startsize*sizeof(char *));
+        result->contents = allocator->malloc(startsize*sizeof(char *));
         if (result->contents == NULL) {
             iError.RaiseError("istrCollection.Create",CONTAINER_ERROR_NOMEMORY);
             return NULL;
