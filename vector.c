@@ -84,7 +84,7 @@ static unsigned GetFlags(const Vector *AL)
 }
 static unsigned SetFlags(Vector *AL,unsigned newval)
 {
-	int oldval;
+	unsigned oldval;
 	if (AL == NULL) {
 		NullPtrError("SetFlags");
 		return 0;
@@ -355,7 +355,7 @@ static Vector *Copy(Vector *AL)
 	}
 	memset(result,0,sizeof(*result));
 	startsize = AL->count;
-	if (startsize <= 0)
+	if (startsize == 0)
 		startsize = DEFAULT_START_SIZE;
 	es = startsize * AL->ElementSize;
 	result->contents = AL->Allocator->malloc(es);
@@ -882,7 +882,7 @@ static ErrorFunction SetErrorFunction(Vector *AL,ErrorFunction fn)
 
 	if (AL == NULL) {
 		iError.NullPtrError("SetErrorFunction");
-		return 0;
+		return NULL;
 	}
 	old = AL->RaiseError;
 	if (fn) AL->RaiseError = fn;
@@ -1226,19 +1226,19 @@ static int deleteIterator(Iterator * it)
 	return 1;
 }
 
-static size_t DefaultSaveFunction(const void *element,void *arg, FILE *Outfile)
+static int DefaultSaveFunction(const void *element,void *arg, FILE *Outfile)
 {
 	const unsigned char *str = element;
 	size_t len = *(size_t *)arg;
 
-	return fwrite(str,1,len,Outfile);
+	return len == fwrite(str,1,len,Outfile);
 }
 
-static size_t DefaultLoadFunction(void *element,void *arg, FILE *Infile)
+static int DefaultLoadFunction(void *element,void *arg, FILE *Infile)
 {
 	size_t len = *(size_t *)arg;
 
-	return fread(element,1,len,Infile);
+	return len == fread(element,1,len,Infile);
 }
 
 static int Save(Vector *AL,FILE *stream, SaveFunction saveFn,void *arg)
@@ -1257,9 +1257,9 @@ static int Save(Vector *AL,FILE *stream, SaveFunction saveFn,void *arg)
 		saveFn = DefaultSaveFunction;
 		arg = &AL->ElementSize;
 	}
-	if (fwrite(&VectorGuid,sizeof(guid),1,stream) <= 0)
+	if (fwrite(&VectorGuid,sizeof(guid),1,stream) == 0)
 		return EOF;
-	if (fwrite(AL,1,sizeof(Vector),stream) <= 0)
+	if (fwrite(AL,1,sizeof(Vector),stream) == 0)
 		return EOF;
 	for (i=0; i< AL->count; i++) {
 		char *p = AL->contents;
@@ -1343,13 +1343,13 @@ static Vector *Load(FILE *stream, ReadFunction loadFn,void *arg)
 		loadFn = DefaultLoadFunction;
 		arg = &AL.ElementSize;
 	}
-	if (fread(&Guid,sizeof(guid),1,stream) <= 0)
+	if (fread(&Guid,sizeof(guid),1,stream) == 0)
 		return NULL;
 	if (memcmp(&Guid,&VectorGuid,sizeof(guid))) {
 		iError.RaiseError("iVector.Load",CONTAINER_ERROR_WRONGFILE);
 		return NULL;
 	}
-	if (fread(&AL,1,sizeof(Vector),stream) <= 0)
+	if (fread(&AL,1,sizeof(Vector),stream) == 0)
 		return NULL;
 	result = Create(AL.ElementSize,AL.count);
 	if (result) {
@@ -1383,7 +1383,7 @@ static Vector *CreateWithAllocator(size_t elementsize,size_t startsize,Container
 		return NULL;
 	}
 	memset(result,0,sizeof(*result));
-	if (startsize <= 0)
+	if (startsize == 0)
 		startsize = DEFAULT_START_SIZE;
 	es = startsize * elementsize;
 	result->contents = allocator->malloc(es);
@@ -1451,7 +1451,7 @@ static Vector *Init(Vector *result,size_t elementsize,size_t startsize)
 	size_t es;
 	
 	memset(result,0,sizeof(*result));
-	if (startsize <= 0)
+	if (startsize == 0)
 		startsize = DEFAULT_START_SIZE;
 	es = startsize * elementsize;
 	result->contents = CurrentMemoryManager->malloc(es);

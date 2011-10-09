@@ -186,7 +186,7 @@ static int Mismatch(ElementType *a1,ElementType *a2,size_t *mismatch)
 ------------------------------------------------------------------------*/
 static unsigned SetFlags(ElementType *SC,unsigned newval)
 {
-    int oldval;
+    unsigned oldval;
     
     if (SC == NULL) {
     	NullPtrError("SetFlags");
@@ -918,7 +918,7 @@ struct strCollectionIterator {
     Iterator it;
     ElementType *SC;
     size_t index;
-    size_t timestamp;
+    unsigned timestamp;
     unsigned long Flags;
     CHAR_TYPE *current;
 };
@@ -1096,21 +1096,22 @@ static int SaveHeader(ElementType *SC,FILE *stream)
     return (int)fwrite(SC,1,sizeof(ElementType),stream);
 }
 
-static size_t DefaultSaveFunction(const void *element,void *arg, FILE *Outfile)
+static int DefaultSaveFunction(const void *element,void *arg, FILE *Outfile)
 {
     const CHAR_TYPE *str = (const CHAR_TYPE *)element;
     size_t len = STRLEN(str);
 
     if (encode_ule128(Outfile, len) <= 0)
-    	return (size_t)EOF;
-    return fwrite(str,1,len+1,Outfile);
+    	return EOF;
+    len++;
+    return len == fwrite(str,1,len,Outfile);
 }
 
-static size_t DefaultLoadFunction(void *element,void *arg, FILE *Infile)
+static int DefaultLoadFunction(void *element,void *arg, FILE *Infile)
 {
     size_t len = *(size_t *)arg;
 
-    return fread(element,1,len,Infile);
+    return len == fread(element,1,len,Infile);
 }
 
 static int Save(ElementType *SC,FILE *stream, SaveFunction saveFn,void *arg)
@@ -1125,7 +1126,7 @@ static int Save(ElementType *SC,FILE *stream, SaveFunction saveFn,void *arg)
     }
     if (saveFn == NULL)
     	saveFn = DefaultSaveFunction;
-    if (fwrite(&strCollectionGuid,sizeof(guid),1,stream) <= 0)
+    if (fwrite(&strCollectionGuid,sizeof(guid),1,stream) == 0)
     	return EOF;
     if (SaveHeader(SC,stream) <= 0)
     	return EOF;
@@ -1138,7 +1139,7 @@ static int Save(ElementType *SC,FILE *stream, SaveFunction saveFn,void *arg)
 
 static ElementType *Load(FILE *stream, ReadFunction readFn,void *arg)
 {
-    size_t i,len;
+    size_t i,len=0;
     ElementType *result,SC;
     guid Guid;
 
@@ -1150,7 +1151,7 @@ static ElementType *Load(FILE *stream, ReadFunction readFn,void *arg)
     	readFn = DefaultLoadFunction;
     	arg = &len;
     }
-    if (fread(&Guid,sizeof(guid),1,stream) <= 0) {
+    if (fread(&Guid,sizeof(guid),1,stream) == 0) {
     	iError.RaiseError("istrCollection.Load",CONTAINER_ERROR_FILE_READ);
     	return NULL;
     }
@@ -1158,7 +1159,7 @@ static ElementType *Load(FILE *stream, ReadFunction readFn,void *arg)
     	iError.RaiseError("istrCollection.Load",CONTAINER_ERROR_WRONGFILE);
     	return NULL;
     }
-    if (fread(&SC,1,sizeof(ElementType),stream) <= 0) {
+    if (fread(&SC,1,sizeof(ElementType),stream) == 0) {
     	iError.RaiseError("istrCollection.Load",CONTAINER_ERROR_FILE_READ);
     	return NULL;
     }
@@ -1296,13 +1297,13 @@ static int WriteToFile(ElementType *SC, char *fileName)
     }
     nl[0] = NEWLINE;
     for (i=0; i<SC->count;i++) {
-    	if (SC->contents[i][0] && fwrite(SC->contents[i],1,strlen((char *)SC->contents[i]),f) <= 0) {
+    	if (SC->contents[i][0] && fwrite(SC->contents[i],1,strlen((char *)SC->contents[i]),f) == 0) {
 writeerror:
     		iError.RaiseError("istrCollection.WriteToFile",CONTAINER_ERROR_FILE_WRITE);
     		result = CONTAINER_ERROR_FILE_WRITE;
     		break;
     	}
-    	if (fwrite(nl,1,sizeof(CHAR_TYPE),f) <= 0)
+    	if (fwrite(nl,1,sizeof(CHAR_TYPE),f) == 0)
     		goto writeerror;
     }
     if (i == SC->count && i > 0)

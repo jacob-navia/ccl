@@ -72,7 +72,7 @@ struct VectorIterator {
 	Iterator it;
 	Vector *AL;
 	size_t index;
-	size_t timestamp;
+	unsigned timestamp;
 	unsigned long Flags;
 	void *Current;
 	char ElementBuffer[1];
@@ -87,7 +87,7 @@ struct _BitString {
     size_t count;                  /* number of elements in the array */
     BIT_TYPE *contents;               /* The contents of the collection */
     size_t capacity;                /* allocated space in the contents vector */
-    unsigned long timestamp;
+    unsigned timestamp;
     unsigned int Flags;             /* Read-only or other flags */
     ContainerMemoryManager *Allocator;
 } ;
@@ -121,7 +121,7 @@ struct ListIterator {
     size_t index;
     ListElement *Current;
 	ListElement *Previous;
-    size_t timestamp;
+    unsigned  timestamp;
     char ElementBuffer[1];
 };
 
@@ -154,7 +154,7 @@ struct StringListIterator {
     size_t index;
     StringlistElement *Current;
     StringlistElement *Previous;
-    size_t timestamp;
+    unsigned timestamp;
     char *ElementBuffer;
 };
 
@@ -187,7 +187,7 @@ struct WStringListIterator {
     size_t index;
     wStringlistElement *Current;
     wStringlistElement *Previous;
-    size_t timestamp;
+    unsigned timestamp;
     wchar_t *ElementBuffer;
 };
 
@@ -222,7 +222,7 @@ struct DListIterator {
     Dlist *L;
     size_t index;
     dlist_element *Current;
-    size_t timestamp;
+    unsigned timestamp;
     char ElementBuffer[1];
 };
 /*----------------------------------------------------------------------------*/
@@ -250,7 +250,7 @@ struct DictionaryIterator {
 	Dictionary *Dict;
 	size_t index;
 	struct DataList *dl;
-	size_t timestamp;
+	unsigned timestamp;
 	unsigned long Flags;
 };
 
@@ -304,7 +304,7 @@ struct HashTableIterator {
 	Iterator it;
 	HashTable *ht;
 	HashIndex hi;
-	size_t timestamp;
+	unsigned timestamp;
 	unsigned long Flags;
 	HashIndex *Current;
 };
@@ -341,7 +341,7 @@ struct TreeMapIterator {
     Iterator it;
     TreeMap *bst_table;
     struct Node *bst_node;
-    size_t timestamp;
+    unsigned timestamp;
     size_t bst_height;
     struct Node *bst_stack[BST_MAX_HEIGHT];
     unsigned long Flags;
@@ -358,7 +358,7 @@ struct strCollection {
     unsigned int Flags;             /* Read-only or other flags */
     char **contents;               /* The contents of the collection */
     size_t capacity;                /* in element_size units */
-    size_t timestamp;
+    unsigned timestamp;
     ErrorFunction RaiseError;
     StringCompareFn strcompare;
     CompareInfo *StringCompareContext;
@@ -373,7 +373,7 @@ struct WstrCollection {
     unsigned int Flags;             /* Read-only or other flags */
     wchar_t **contents;               /* The contents of the collection */
     size_t capacity;                /* in element_size units */
-    size_t timestamp;
+    unsigned timestamp;
     ErrorFunction RaiseError;
     StringCompareFn strcompare;
     CompareInfo *StringCompareContext;

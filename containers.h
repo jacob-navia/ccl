@@ -129,8 +129,8 @@ typedef struct tagCompareInfo {
     void *ContainerRight;
 } CompareInfo;
 typedef int (*CompareFunction)(const void *elem1, const void *elem2,CompareInfo *ExtraArgs);
-typedef size_t (*SaveFunction)(const void *element, void *arg, FILE *OutputStream);
-typedef size_t (*ReadFunction)(void *element, void *arg, FILE *InputStream);
+typedef int (*SaveFunction)(const void *element, void *arg, FILE *OutputStream);
+typedef int (*ReadFunction)(void *element, void *arg, FILE *InputStream);
 
 typedef struct tagErrorInfo {
     int ErrorCode;

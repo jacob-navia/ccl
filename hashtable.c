@@ -552,19 +552,19 @@ static unsigned SetFlags(HashTable *AL,unsigned newval)
     AL->Flags = newval;
     return oldval;
 }
-static size_t DefaultSaveFunction(const void *element,void *arg, FILE *Outfile)
+static int DefaultSaveFunction(const void *element,void *arg, FILE *Outfile)
 {
     size_t *pLength = arg;
     size_t len = *pLength;
 
-    return fwrite(element,1,len,Outfile);
+    return len == fwrite(element,1,len,Outfile);
 }
 
-static size_t DefaultLoadFunction(void *element,void *arg, FILE *Infile)
+static int DefaultLoadFunction(void *element,void *arg, FILE *Infile)
 {
     size_t len = *(size_t *)arg;
 
-    return fread(element,1,len,Infile);
+    return len == fread(element,1,len,Infile);
 }
 
 static int Save(HashTable *HT,FILE *stream, SaveFunction saveFn,void *arg)
@@ -714,7 +714,6 @@ static void *GetFirst(Iterator *it)
     d->Current = hi;
     if (hi == NULL)
         return NULL;
-    d->Current = hi;
     return hi->this->val;
 }
 

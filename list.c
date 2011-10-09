@@ -1072,7 +1072,8 @@ static int AddRange(List * AL,size_t n, void *data)
 static int IndexOf_nd(List *l,void *ElementToFind,void *ExtraArgs,size_t *result)
 {
     ListElement *rvp;
-    int r,i=0;
+    int r;
+    size_t i=0;
     CompareFunction fn;
     CompareInfo ci;
 
@@ -1444,7 +1445,7 @@ static int initIterator(List *L,void *r)
     struct ListIterator *result=(struct ListIterator *)r;
     
     if (L == NULL) {
-        return sizeof(struct ListIterator);
+        return (int)sizeof(struct ListIterator);
     }
     result->it.GetNext = GetNext;
     result->it.GetPrevious = GetPrevious;
@@ -1472,7 +1473,7 @@ static int deleteIterator(Iterator *it)
     return 1;
 }
 
-static size_t DefaultSaveFunction(const void *element,void *arg, FILE *Outfile)
+static int DefaultSaveFunction(const void *element,void *arg, FILE *Outfile)
 {
     const unsigned char *str = element;
     size_t len = *(size_t *)arg;
@@ -1496,10 +1497,10 @@ static int Save(List *L,FILE *stream, SaveFunction saveFn,void *arg)
         arg = &L->ElementSize;
     }
 
-    if (fwrite(&ListGuid,sizeof(guid),1,stream) <= 0)
+    if (fwrite(&ListGuid,sizeof(guid),1,stream) == 0)
         return EOF;
 
-    if (fwrite(L,1,sizeof(List),stream) <= 0)
+    if (fwrite(L,sizeof(List),1,stream) == 0)
         return EOF;
     rvp = L->First;
     for (i=0; i< L->count; i++) {
@@ -1512,11 +1513,11 @@ static int Save(List *L,FILE *stream, SaveFunction saveFn,void *arg)
     return 1;
 }
 
-static size_t DefaultLoadFunction(void *element,void *arg, FILE *Infile)
+static int DefaultLoadFunction(void *element,void *arg, FILE *Infile)
 {
     size_t len = *(size_t *)arg;
 
-    return fread(element,1,len,Infile);
+    return len == fread(element,1,len,Infile);
 }
 
 static List *Load(FILE *stream, ReadFunction loadFn,void *arg)
@@ -1535,7 +1536,7 @@ static List *Load(FILE *stream, ReadFunction loadFn,void *arg)
         loadFn = DefaultLoadFunction;
         arg = &elemSize;
     }
-    if (fread(&Guid,sizeof(guid),1,stream) <= 0) {
+    if (fread(&Guid,sizeof(guid),1,stream) == 0) {
         iError.RaiseError("iList.Load",CONTAINER_ERROR_FILE_READ);
         return NULL;
     }
@@ -1543,12 +1544,12 @@ static List *Load(FILE *stream, ReadFunction loadFn,void *arg)
         iError.RaiseError("iList.Load",CONTAINER_ERROR_WRONGFILE);
         return NULL;
     }
-    if (fread(&L,1,sizeof(List),stream) <= 0) {
+    if (fread(&L,1,sizeof(List),stream) == 0) {
         iError.RaiseError("iList.Load",CONTAINER_ERROR_FILE_READ);
         return NULL;
     }
     elemSize = L.ElementSize;
-    buf = malloc(L.ElementSize);
+    buf = calloc(1,L.ElementSize);
     if (buf == NULL) {
         iError.RaiseError("iList.Load",CONTAINER_ERROR_NOMEMORY);
         return NULL;
@@ -1603,16 +1604,15 @@ static List *CreateWithAllocator(size_t elementsize,ContainerMemoryManager *allo
 {
     List *result;
 
-    if (elementsize == 0 || elementsize >= INT_MAX) {
+    if (elementsize == 0 || (int)elementsize >= INT_MAX) {
         NullPtrError("Create");
         return NULL;
     }
-    result = allocator->malloc(sizeof(List));
+    result = allocator->calloc(1,sizeof(List));
     if (result == NULL) {
         iError.RaiseError("iList.Create",CONTAINER_ERROR_NOMEMORY);
         return NULL;
     }
-    memset(result,0,sizeof(List));
     result->ElementSize = elementsize;
     result->VTable = &iList;
     result->Compare = DefaultListCompareFunction;

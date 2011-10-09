@@ -304,7 +304,7 @@ static int AddRange(Dlist * AL,size_t n, void *data)
 ------------------------------------------------------------------------*/
 static unsigned SetFlags(Dlist *l,unsigned newval)
 {
-    int result;
+    unsigned result;
 
     if (l == NULL) {
     	iError.NullPtrError("iDlist.Size");
@@ -1379,7 +1379,7 @@ static int deleteIterator(Iterator *it)
     L->Allocator->free(it);
     return 1;
 }
-static size_t DefaultSaveFunction(const void *element,void *arg, FILE *Outfile)
+static int DefaultSaveFunction(const void *element,void *arg, FILE *Outfile)
 {
     const unsigned char *str = element;
     size_t len = *(size_t *)arg;
@@ -1403,9 +1403,9 @@ static int Save(Dlist *L,FILE *stream, SaveFunction saveFn,void *arg)
     	saveFn = DefaultSaveFunction;
     	arg = &L->ElementSize;
     }
-    if (fwrite(&DlistGuid,sizeof(guid),1,stream) <= 0)
+    if (fwrite(&DlistGuid,sizeof(guid),1,stream) == 0)
     	return EOF;
-    if (fwrite(L,1,sizeof(Dlist),stream) <= 0)
+    if (fwrite(L,1,sizeof(Dlist),stream) == 0)
     	return EOF;
     rvp = L->First;
     for (i=0; i< L->count; i++) {
@@ -1418,7 +1418,7 @@ static int Save(Dlist *L,FILE *stream, SaveFunction saveFn,void *arg)
     return 1;
 }
 
-static size_t DefaultLoadFunction(void *element,void *arg, FILE *Infile)
+static int DefaultLoadFunction(void *element,void *arg, FILE *Infile)
 {
     size_t len = *(size_t *)arg;
 
@@ -1441,7 +1441,7 @@ static Dlist *Load(FILE *stream, ReadFunction loadFn,void *arg)
     	loadFn = DefaultLoadFunction;
     	arg = &L.ElementSize;
     }
-    if (fread(&Guid,sizeof(guid),1,stream) <= 0) {
+    if (fread(&Guid,sizeof(guid),1,stream) == 0) {
     	iError.RaiseError("iDlist.Load",CONTAINER_ERROR_FILE_READ);
     	return NULL;
     }
@@ -1449,7 +1449,7 @@ static Dlist *Load(FILE *stream, ReadFunction loadFn,void *arg)
     	iError.RaiseError("iDlist.Load",CONTAINER_ERROR_WRONGFILE);
     	return NULL;
     }
-    if (fread(&L,1,sizeof(Dlist),stream) <= 0) {
+    if (fread(&L,1,sizeof(Dlist),stream) == 0) {
     	return NULL;
     }
     buf = malloc(L.ElementSize);
