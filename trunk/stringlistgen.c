@@ -1468,7 +1468,7 @@ static int deleteIterator(Iterator *it)
     return 1;
 }
 
-static size_t DefaultSaveFunction(const void *element,void *arg, FILE *Outfile)
+static int DefaultSaveFunction(const void *element,void *arg, FILE *Outfile)
 {
     const unsigned char *str = element;
     size_t len = STRLEN(element);
@@ -1508,7 +1508,7 @@ static int Save(LIST_TYPE *L,FILE *stream, SaveFunction saveFn,void *arg)
     return 1;
 }
 
-static size_t DefaultLoadFunction(void *element,void *arg, FILE *Infile)
+static int DefaultLoadFunction(void *element,void *arg, FILE *Infile)
 {
     size_t len=0;
 

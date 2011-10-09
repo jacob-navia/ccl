@@ -659,7 +659,7 @@ static ErrorFunction SetErrorFunction(Dictionary *Dict,ErrorFunction fn)
     ErrorFunction old;
     if (Dict == NULL) {
         NullPtrError("SetErrorFunction");
-        return 0;
+        return NULL;
     }
     old = Dict->RaiseError;
     if (fn)
@@ -848,6 +848,7 @@ static int Save(Dictionary *Dict,FILE *stream, SaveFunction saveFn,void *arg)
 {
     Vector *al;
     strCollection *sc;
+    int result = 1;
 
     if (Dict == NULL) {
         return NullPtrError("Save");
@@ -855,15 +856,17 @@ static int Save(Dictionary *Dict,FILE *stream, SaveFunction saveFn,void *arg)
     if (stream == NULL) {
         return BadArgError(Dict,"Save");
     }
+    if (fwrite(&DictionaryGuid,sizeof(guid),1,stream) == 0) {
+        return EOF;
+    }
     al = CastToArray(Dict);
     sc = GetKeys(Dict);
-    if (fwrite(&DictionaryGuid,sizeof(guid),1,stream) <= 0)
-        return EOF;
-    if (istrCollection.Save(sc,stream,NULL,NULL) < 0)
-        return EOF;
-    if (iVector.Save(al,stream,saveFn,arg) < 0)
-        return EOF;
-    return 0;
+    if ((istrCollection.Save(sc,stream,NULL,NULL) < 0) ||
+        (iVector.Save(al,stream,saveFn,arg) < 0))
+        result = EOF;
+    istrCollection.Finalize(sc);
+    iVector.Finalize(al);
+    return result;
 }
 static Dictionary *Copy(Dictionary *src)
 {
@@ -907,7 +910,7 @@ static Dictionary *Load(FILE *stream, ReadFunction readFn, void *arg)
         NullPtrError("Load");
         return NULL;
     }
-    if (fread(&Guid,sizeof(guid),1,stream) <= 0) {
+    if (fread(&Guid,sizeof(guid),1,stream) == 0) {
         iError.RaiseError("iDictionary.Load",CONTAINER_ERROR_FILE_READ);
         return NULL;
     }

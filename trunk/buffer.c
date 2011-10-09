@@ -48,7 +48,7 @@ static StreamBuffer *CreateFromFile(char *FileName)
 {
 	FILE *f = fopen(FileName,"rb");
 	StreamBuffer *result = NULL;
-	long siz;
+	size_t siz;
 	if (f == NULL) {
 		iError.RaiseError("iBuffer.CreateFromFile",CONTAINER_ERROR_NOENT);
 		return NULL;

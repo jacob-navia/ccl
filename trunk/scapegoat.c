@@ -827,12 +827,12 @@ static TreeMap *InitializeWith(size_t ElementSize, size_t n, void *data)
 	return result;
 }
 
-static size_t DefaultSaveFunction(const void *element,void *arg, FILE *Outfile)
+static int DefaultSaveFunction(const void *element,void *arg, FILE *Outfile)
 {
     const unsigned char *str = element;
     size_t len = *(size_t *)arg;
 
-    return fwrite(str,1,len,Outfile);
+    return len == fwrite(str,1,len,Outfile);
 }
 
 static int Save(TreeMap *src,FILE *stream, SaveFunction saveFn,void *arg)
@@ -867,7 +867,7 @@ static int Save(TreeMap *src,FILE *stream, SaveFunction saveFn,void *arg)
     return 1;
 }
 
-static size_t DefaultLoadFunction(void *element,void *arg, FILE *Infile)
+static int DefaultLoadFunction(void *element,void *arg, FILE *Infile)
 {
     size_t len = *(size_t *)arg;
 
