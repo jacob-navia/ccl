@@ -1384,7 +1384,7 @@ static int DefaultSaveFunction(const void *element,void *arg, FILE *Outfile)
     const unsigned char *str = element;
     size_t len = *(size_t *)arg;
 
-    return fwrite(str,1,len,Outfile);
+    return len == fwrite(str,1,len,Outfile);
 }
 
 static int Save(Dlist *L,FILE *stream, SaveFunction saveFn,void *arg)
@@ -1422,7 +1422,7 @@ static int DefaultLoadFunction(void *element,void *arg, FILE *Infile)
 {
     size_t len = *(size_t *)arg;
 
-    return fread(element,1,len,Infile);
+    return len == fread(element,1,len,Infile);
 }
 
 static Dlist *Load(FILE *stream, ReadFunction loadFn,void *arg)

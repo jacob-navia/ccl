@@ -329,7 +329,7 @@ static ValArray *Copy(const ValArray *AL)
 	}
 	memset(result,0,sizeof(*result));
 	startsize = (AL->Slice == NULL) ? AL->count : AL->Slice->length;
-	if (startsize <= 0)
+	if (startsize == 0)
 		startsize = DEFAULT_START_SIZE;
 	es = startsize * sizeof(ElementType);
 	result->contents = AL->Allocator->malloc(es);
@@ -957,7 +957,7 @@ struct ValArrayIterator {
 	Iterator it;
 	ValArray *AL;
 	size_t index;
-	size_t timestamp;
+	unsigned timestamp;
 	unsigned long Flags;
 	ElementType *Current;
 	ElementType ElementBuffer;
@@ -1125,9 +1125,9 @@ static int deleteIterator(Iterator * it)
 
 static int Save(ValArray *AL,FILE *stream)
 {
-	if (fwrite(&ValArrayGuid,sizeof(guid),1,stream) <= 0)
+	if (fwrite(&ValArrayGuid,sizeof(guid),1,stream) == 0)
 		return EOF;
-	if (fwrite(AL,sizeof(ValArray),1,stream) <= 0)
+	if (fwrite(AL,sizeof(ValArray),1,stream) == 0)
 		return EOF;
 	if (fwrite(AL->contents,sizeof(ElementType),AL->count,stream) != AL->count)
 		return EOF;
@@ -1190,13 +1190,13 @@ static ValArray *Load(FILE *stream)
 	ValArray *result,AL;
 	guid Guid;
 	
-	if (fread(&Guid,sizeof(guid),1,stream) <= 0)
+	if (fread(&Guid,sizeof(guid),1,stream) == 0)
 		return NULL;
 	if (memcmp(&Guid,&ValArrayGuid,sizeof(guid))) {
 		iError.RaiseError("iValArray.Load",CONTAINER_ERROR_WRONGFILE);
 		return NULL;
 	}
-	if (fread(&AL,1,sizeof(ValArray),stream) <= 0)
+	if (fread(&AL,1,sizeof(ValArray),stream) == 0)
 		return NULL;
 	result = Create(AL.count);
 	if (result) {
@@ -1224,7 +1224,7 @@ static ValArray *CreateWithAllocator(size_t startsize,ContainerMemoryManager *al
 		return NULL;
 	}
 	memset(result,0,sizeof(*result));
-	if (startsize <= 0)
+	if (startsize == 0)
 		startsize = DEFAULT_START_SIZE;
 	es = startsize * sizeof(ElementType);
 	result->contents = allocator->malloc(es);
@@ -1263,7 +1263,7 @@ static ValArray *Init(ValArray *result,size_t startsize)
 	size_t es;
 	
 	memset(result,0,sizeof(*result));
-	if (startsize <= 0)
+	if (startsize == 0)
 		startsize = DEFAULT_START_SIZE;
 	es = startsize * sizeof(ElementType);
 	result->contents = CurrentMemoryManager->malloc(es);

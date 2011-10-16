@@ -1478,7 +1478,7 @@ static int DefaultSaveFunction(const void *element,void *arg, FILE *Outfile)
     const unsigned char *str = element;
     size_t len = *(size_t *)arg;
 
-    return fwrite(str,1,len,Outfile);
+    return len == fwrite(str,1,len,Outfile);
 }
 
 static int Save(List *L,FILE *stream, SaveFunction saveFn,void *arg)
