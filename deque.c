@@ -421,11 +421,12 @@ static int Save(Deque *d,FILE *stream, SaveFunction saveFn,void *arg)
     size_t i;
     DequeNode tmp = d->head;
 
-    if (fwrite(d,1,sizeof(Deque),stream) <= 0)
+    if (fwrite(d,1,sizeof(Deque),stream) == 0)
     	return EOF;
     if (saveFn == NULL) {
     	for (i=0; i<d->count; i++) {
-    		fwrite(tmp->Data,1,d->ElementSize,stream);
+    		if (0 == fwrite(tmp->Data,1,d->ElementSize,stream))
+			return EOF;
     		tmp = tmp->Next;
     	}
     }
@@ -446,7 +447,7 @@ static Deque *Load(FILE *stream, ReadFunction loadFn,void *arg)
     char *buf;
     Deque D,*d;
 
-    if (fread(&D,1,sizeof(Deque),stream) <= 0)
+    if (fread(&D,1,sizeof(Deque),stream) == 0)
     	return NULL;
     d = Create(D.ElementSize);
     if (d == NULL)
@@ -459,7 +460,7 @@ static Deque *Load(FILE *stream, ReadFunction loadFn,void *arg)
     }
     for (i=0; i<D.count;i++) {
     	if (loadFn == NULL) {
-    		if (fread(buf,1,D.ElementSize,stream) <= 0)
+    		if (fread(buf,1,D.ElementSize,stream) == 0)
     			break;
     	}
     	else {
@@ -497,7 +498,7 @@ struct DequeIterator {
     Deque *D;
     size_t index;
     DequeNode Current;
-    size_t timestamp;
+    unsigned timestamp;
     char ElementBuffer[1];
 };
 
@@ -541,6 +542,7 @@ static void *GetPrevious(Iterator *it)
     		i++;
     	}
     }
+    if (rvp == NULL) return NULL;
     li->Current = rvp;
     return rvp->Data;
 }

@@ -1475,7 +1475,7 @@ static int DefaultSaveFunction(const void *element,void *arg, FILE *Outfile)
     int r = fwrite(&len,1,sizeof(size_t),Outfile);
     if (r <= 0)
         return r;
-    return fwrite(str,1,len,Outfile);
+    return len == fwrite(str,1,len,Outfile);
 }
 
 static int Save(LIST_TYPE *L,FILE *stream, SaveFunction saveFn,void *arg)
@@ -1493,10 +1493,10 @@ static int Save(LIST_TYPE *L,FILE *stream, SaveFunction saveFn,void *arg)
         saveFn = DefaultSaveFunction;
     }
 
-    if (fwrite(&StringListGuid,sizeof(guid),1,stream) <= 0)
+    if (fwrite(&StringListGuid,sizeof(guid),1,stream) == 0)
         return EOF;
 
-    if (fwrite(L,1,sizeof(LIST_TYPE),stream) <= 0)
+    if (fwrite(L,1,sizeof(LIST_TYPE),stream) == 0)
         return EOF;
     rvp = L->First;
     for (i=0; i< L->count; i++) {
@@ -1508,12 +1508,6 @@ static int Save(LIST_TYPE *L,FILE *stream, SaveFunction saveFn,void *arg)
     return 1;
 }
 
-static int DefaultLoadFunction(void *element,void *arg, FILE *Infile)
-{
-    size_t len=0;
-
-    return fread(element,1,len,Infile);
-}
 
 static LIST_TYPE *Load(FILE *stream, ReadFunction loadFn,void *arg)
 {
@@ -1527,9 +1521,6 @@ static LIST_TYPE *Load(FILE *stream, ReadFunction loadFn,void *arg)
         NullPtrError("Load");
         return NULL;
     }
-    if (loadFn == NULL) {
-        loadFn = DefaultLoadFunction;
-    }
     if (fread(&Guid,sizeof(guid),1,stream) <= 0) {
         iError.RaiseError("iStringList.Load",CONTAINER_ERROR_FILE_READ);
         return NULL;
@@ -1538,7 +1529,7 @@ static LIST_TYPE *Load(FILE *stream, ReadFunction loadFn,void *arg)
         iError.RaiseError("iStringList.Load",CONTAINER_ERROR_WRONGFILE);
         return NULL;
     }
-    if (fread(&L,1,sizeof(LIST_TYPE),stream) <= 0) {
+    if (fread(&L,1,sizeof(LIST_TYPE),stream) == 0) {
         iError.RaiseError("iStringList.Load",CONTAINER_ERROR_FILE_READ);
         return NULL;
     }

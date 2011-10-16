@@ -871,7 +871,7 @@ static int DefaultLoadFunction(void *element,void *arg, FILE *Infile)
 {
     size_t len = *(size_t *)arg;
 
-    return fread(element,1,len,Infile);
+    return len == fread(element,1,len,Infile);
 }
 
 static TreeMap *Load(FILE *stream, ReadFunction loadFn,void *arg)
