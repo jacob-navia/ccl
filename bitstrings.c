@@ -49,7 +49,7 @@ static int doerrorCall(const char *fnName,int code)
 {
 	char buf[256];
 
-	sprintf(buf,"iBitString.%s",fnName);
+	snprintf(buf,sizeof(buf),"iBitString.%s",fnName);
 	iError.RaiseError(buf,code);
 	return code;
 }
