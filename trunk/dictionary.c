@@ -114,7 +114,7 @@ static int doerrorCall(ErrorFunction err,const char *fnName,int code)
 {
     char buf[256];
 
-    sprintf(buf,"iDictionary.%s",fnName);
+    snprintf(buf,sizeof(buf),"iDictionary.%s",fnName);
     err(buf,code);
     return code;
 }
@@ -137,9 +137,9 @@ static int NoMemoryError(Dictionary *SC,const char *fnName)
     return doerrorCall(SC->RaiseError,fnName,CONTAINER_ERROR_NOMEMORY);
 }
 
-static unsigned int hash(const char *key)
+static size_t hash(const char *key)
 {
-    unsigned int Hash = 0;
+    size_t Hash = 0;
     const unsigned char *p;
 
     /*
@@ -967,7 +967,7 @@ static ContainerMemoryManager *GetAllocator(Dictionary *AL)
 static Dictionary *InitWithAllocator(Dictionary *Dict,size_t elementsize,size_t hint,ContainerMemoryManager *allocator)
 {
     size_t i,allocSiz;
-    static unsigned primes[] = { 509, 509, 1021, 2053, 4093, 8191, 16381,
+    static size_t primes[] = { 509, 509, 1021, 2053, 4093, 8191, 16381,
         32771, 65521, 131071, 262147, 524287, 1048573, 0 };
     for (i = 1; primes[i] < hint && primes[i] > 0; i++)
         ;
@@ -1041,6 +1041,19 @@ static DestructorFunction SetDestructor(Dictionary *cb,DestructorFunction fn)
     return oldfn;
 }
 
+static HashFunction SetHashFunction(Dictionary *d,HashFunction newFn)
+{
+    HashFunction old;
+    if (d == NULL) {
+        return hash;
+    }
+    if (newFn == NULL)
+        return d->hash;
+    old = d->hash;
+    d->hash = newFn;
+    return old;
+}
+
 DictionaryInterface iDictionary = {
     Size,
     GetFlags,
@@ -1075,4 +1088,5 @@ DictionaryInterface iDictionary = {
     GetAllocator,
     SetDestructor,
     InitializeWith,
+    SetHashFunction,
 };

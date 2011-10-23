@@ -29,7 +29,7 @@ static int ErrorReadOnly(List *L,char *fnName)
 {
     char buf[512];
     
-    sprintf(buf,"iList.%s",fnName);
+    snprintf(buf,sizeof(buf),"iList.%s",fnName);
     L->RaiseError(buf,CONTAINER_ERROR_READONLY);
     return CONTAINER_ERROR_READONLY;
 }
@@ -38,7 +38,7 @@ static int NullPtrError(char *fnName)
 {
     char buf[512];
     
-    sprintf(buf,"iList.%s",fnName);
+    snprintf(buf,sizeof(buf),"iList.%s",fnName);
     return iError.NullPtrError(buf);
 }
 

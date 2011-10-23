@@ -25,7 +25,7 @@ static HashIndex *next(HashIndex *hi);
 static int NullPtrError(const char *fnName)
 {
     char buf[256];
-    sprintf(buf,"iHashTable.%s",fnName);
+    snprintf(buf,sizeof(buf),"iHashTable.%s",fnName);
     iError.RaiseError(buf,CONTAINER_ERROR_BADARG);
     return CONTAINER_ERROR_BADARG;
 }
@@ -94,9 +94,9 @@ static HashTable *Init(HashTable *ht,size_t ElementSize)
     iError.RaiseError("iHashTable.Init",CONTAINER_ERROR_NOTIMPLEMENTED);
     return NULL;
 }
-static HashFunction SetHashFunction(HashTable *ht, HashFunction Hash)
+static GeneralHashFunction SetHashFunction(HashTable *ht, GeneralHashFunction Hash)
 {
-    HashFunction old = ht->Hash;
+    GeneralHashFunction old = ht->Hash;
     if (Hash)
         ht->Hash = Hash;
     return old;

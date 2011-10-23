@@ -238,7 +238,7 @@ struct _Dictionary {
 	size_t ElementSize;
 	ContainerMemoryManager *Allocator;
 	DestructorFunction DestructorFn;
-	unsigned (*hash)(const char *Key);
+	HashFunction hash;
 	struct DataList {
 		struct DataList *Next;
 		char *Key;
@@ -285,19 +285,19 @@ typedef struct _HashIndex {
  * collision rate.
  */
 struct _HashTable {
-	HashTableInterface *VTable;
+    HashTableInterface *VTable;
     Pool          *pool;
     HashEntry   **array;
     HashIndex     iterator;  /* For hash_first(NULL, ...) */
     unsigned int   count, max;
-    HashFunction   Hash;
+    GeneralHashFunction   Hash;
     HashEntry     *free;  /* List of recycled entries */
-	unsigned       Flags;
-	ErrorFunction  RaiseError;
-	unsigned       timestamp;
-	size_t         ElementSize;
-	ContainerMemoryManager *Allocator;
-	DestructorFunction DestructorFn;
+    unsigned       Flags;
+    ErrorFunction  RaiseError;
+    unsigned       timestamp;
+    size_t         ElementSize;
+    ContainerMemoryManager *Allocator;
+    DestructorFunction DestructorFn;
 };
 
 struct HashTableIterator {

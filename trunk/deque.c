@@ -537,7 +537,7 @@ static void *GetPrevious(Iterator *it)
     i=0;
     li->index--;
     if (li->index > 0) {
-    	while (rvp && i < li->index) {
+    	while (rvp != NULL && i < li->index) {
     		rvp = rvp->Next;
     		i++;
     	}

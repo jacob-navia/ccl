@@ -62,7 +62,7 @@ static int doerrorCall(ErrorFunction err,const char *fnName,int code)
 {
     char buf[256];
 
-    sprintf(buf,"iDictionary.%s",fnName);
+    snprintf(buf,sizeof(buf),"iDictionary.%s",fnName);
     err(buf,code);
     return code;
 }

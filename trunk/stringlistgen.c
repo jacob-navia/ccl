@@ -1613,7 +1613,7 @@ static LIST_TYPE *CreateWithAllocator(ContainerMemoryManager *allocator)
     return result;
 }
 
-static LIST_TYPE *Create()
+static LIST_TYPE *Create(void)
 {
     return CreateWithAllocator(CurrentMemoryManager);
 }

@@ -12,7 +12,7 @@ static int NullPtrError(const char *fnName)
 {
 	char buf[512];
 
-	sprintf(buf,"iVector.%s",fnName);
+	snprintf(buf,sizeof(buf),"iVector.%s",fnName);
 	return iError.NullPtrError(buf);
 }
 

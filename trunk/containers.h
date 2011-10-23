@@ -64,6 +64,7 @@ typedef enum { FALSE,TRUE}  bool;
 
 typedef void (*ErrorFunction)(const char *,int,...);
 typedef int (*DestructorFunction)(void *);
+typedef size_t (*HashFunction)(const char *); /* For the dictionary container */
 
 typedef struct tagError {
     ErrorFunction RaiseError;
@@ -856,12 +857,13 @@ typedef struct tagDictionary {
     ContainerMemoryManager *(*GetAllocator)(Dictionary *Dict);
     DestructorFunction (*SetDestructor)(Dictionary *v,DestructorFunction fn);	
     Dictionary *(*InitializeWith)(size_t elementSize,size_t n, char **Keys,void *Values);
+    HashFunction (*SetHashFunction)(Dictionary *d,HashFunction newFn);
 } DictionaryInterface;
 
 extern DictionaryInterface iDictionary;
 /* ----------------------------------Hash table interface -----------------------*/
 typedef struct _HashTable HashTable;
-typedef unsigned int (*HashFunction)(const char *char_key, size_t *klen);
+typedef unsigned int (*GeneralHashFunction)(const char *char_key, size_t *klen);
 
 typedef struct tagHashTable {
     /* Construction */
@@ -894,7 +896,7 @@ typedef struct tagHashTable {
     int (*Resize)(HashTable *HT,size_t newSize);
     int (*Replace)(HashTable *HT,const void *key, size_t klen,const void *val);
     HashTable *(*Copy)(const HashTable *Orig,Pool *pool);
-    HashFunction (*SetHashFunction)(HashTable *ht, HashFunction hf);
+    GeneralHashFunction (*SetHashFunction)(HashTable *ht, GeneralHashFunction hf);
     /* Copy hash table base into overlay. If duplicates, table "base" wins*/
     HashTable *(*Overlay)(Pool *p, const HashTable *overlay, const HashTable *base);
     /*
