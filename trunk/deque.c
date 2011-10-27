@@ -478,6 +478,7 @@ static Deque *Load(FILE *stream, ReadFunction loadFn,void *arg)
 
 static ErrorFunction SetErrorFunction(Deque *l,ErrorFunction fn)
 {
+    if (l == NULL) return iError.RaiseError;
     ErrorFunction old;
     old = l->RaiseError;
     l->RaiseError = (fn) ? fn : iError.EmptyErrorFunction;

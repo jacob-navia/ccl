@@ -1179,8 +1179,7 @@ static ErrorFunction SetErrorFunction(LIST_TYPE *l,ErrorFunction fn)
 {
     ErrorFunction old;
     if (l == NULL) {
-        NullPtrError("SetErrorFunction");
-        return NULL;
+        return iError.RaiseError;
     }
     old = l->RaiseError;
     if (fn)

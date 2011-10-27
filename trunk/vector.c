@@ -881,8 +881,7 @@ static ErrorFunction SetErrorFunction(Vector *AL,ErrorFunction fn)
 	ErrorFunction old;
 
 	if (AL == NULL) {
-		iError.NullPtrError("SetErrorFunction");
-		return NULL;
+		return iError.RaiseError;
 	}
 	old = AL->RaiseError;
 	if (fn) AL->RaiseError = fn;

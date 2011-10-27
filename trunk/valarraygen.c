@@ -761,6 +761,7 @@ static ErrorFunction SetErrorFunction(ValArray *AL,ErrorFunction fn)
 {
 	ErrorFunction old;
 	
+	if (AL == NULL) return iError.RaiseError;
 	old = iValArrayInterface.RaiseError;
 	if (fn) iValArrayInterface.RaiseError = fn;
 	return old;

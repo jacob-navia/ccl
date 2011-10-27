@@ -734,6 +734,7 @@ static int Apply(BinarySearchTree *tree, int (*Applyfn)(const void *data,void *a
 static ErrorFunction SetErrorFunction(BinarySearchTree *ST,ErrorFunction fn)
 {
 	ErrorFunction old;
+	if (ST == NULL) return iError.RaiseError;
 	old = ST->RaiseError;
 	ST->RaiseError = (fn) ? fn : iError.EmptyErrorFunction;
 	return old;

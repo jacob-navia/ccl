@@ -1133,8 +1133,7 @@ static ErrorFunction SetErrorFunction(Dlist *l,ErrorFunction fn)
     ErrorFunction old;
 
     if (l == NULL) {
-    	iError.NullPtrError("iDlist.SetErrorFunction");
-    	return NULL;
+    	return iError.RaiseError;
     }
     old = l->RaiseError;
     if (fn)

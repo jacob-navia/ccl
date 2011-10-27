@@ -527,6 +527,7 @@ static int Apply(HashTable *ht,int (*Applyfn)(void *Key,size_t klen,void *data,v
 static ErrorFunction SetErrorFunction(HashTable *ht,ErrorFunction fn)
 {
     ErrorFunction old;
+    if (ht == NULL) return iError.RaiseError;
     old = ht->RaiseError;
     ht->RaiseError = (fn) ? fn : iError.EmptyErrorFunction;
     return old;

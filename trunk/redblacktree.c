@@ -65,7 +65,9 @@ static int DefaultCompareFunction(const void *arg1, const void *arg2, CompareInf
 
 static ErrorFunction SetErrorFunction(RedBlackTree *RBT,ErrorFunction fn)
 {
-	ErrorFunction old = RBT->RaiseError;
+	ErrorFunction old;
+	if (RBT == NULL) return iError.RaiseError;
+	old = RBT->RaiseError;
 	RBT->RaiseError = (fn) ? fn : iError.EmptyErrorFunction;
 	return old;
 }

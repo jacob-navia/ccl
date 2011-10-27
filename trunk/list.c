@@ -1191,13 +1191,9 @@ static int Apply(List *L,int (Applyfn)(void *,void *),void *arg)
 static ErrorFunction SetErrorFunction(List *l,ErrorFunction fn)
 {
     ErrorFunction old;
-    if (l == NULL) {
-        NullPtrError("SetErrorFunction");
-        return NULL;
-    }
+    if (l == NULL) { return iError.RaiseError; }
     old = l->RaiseError;
-    if (fn)
-        l->RaiseError = fn;
+    if (fn) l->RaiseError = fn;
     return old;
 }
 
