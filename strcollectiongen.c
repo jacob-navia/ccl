@@ -868,8 +868,7 @@ static ErrorFunction SetErrorFunction(ElementType *SC,ErrorFunction fn)
 {
     ErrorFunction old;
     if (SC == NULL) {
-    	NullPtrError("SetErrorFunction");
-    	return NULL;
+    	return iError.RaiseError;
     }
     old = SC->RaiseError;
     if (fn)

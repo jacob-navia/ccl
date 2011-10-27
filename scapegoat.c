@@ -710,6 +710,7 @@ static CompareFunction SetCompareFunction(TreeMap *l,CompareFunction fn)
 static ErrorFunction SetErrorFunction(TreeMap *tree,ErrorFunction fn)
 {
     ErrorFunction old;
+    if (tree == NULL) return iError.RaiseError;
     old = tree->RaiseError;
     tree->RaiseError = (fn) ? fn : iError.EmptyErrorFunction;
     return old;

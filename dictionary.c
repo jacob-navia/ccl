@@ -657,13 +657,9 @@ static int Finalize(Dictionary *Dict)
 static ErrorFunction SetErrorFunction(Dictionary *Dict,ErrorFunction fn)
 {
     ErrorFunction old;
-    if (Dict == NULL) {
-        NullPtrError("SetErrorFunction");
-        return NULL;
-    }
+    if (Dict == NULL) { return iError.RaiseError; }
     old = Dict->RaiseError;
-    if (fn)
-        Dict->RaiseError = fn;
+    if (fn) Dict->RaiseError = fn;
     return old;
 }
 
