@@ -1603,7 +1603,7 @@ static Mask *FCompare(const ValArray *left,const ValArray *right, Mask *bytearra
 {
 	size_t left_len = left->count,left_incr = 1,left_start=0;
 	size_t right_len = right->count,right_incr=1,right_start = 0;
-	size_t siz,i,j,k;
+	size_t i,j,k;
 	ElementType delta,difference,x1,x2;
 	
 	if (left->Slice) {
@@ -1620,7 +1620,6 @@ static Mask *FCompare(const ValArray *left,const ValArray *right, Mask *bytearra
 		ErrorIncompatible("Compare");
 		return NULL;
 	}
-	siz = left_len * sizeof(ElementType);
 	if (bytearray == NULL) {
 		NoMemory("Compare");
 		return NULL;

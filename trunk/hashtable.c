@@ -582,9 +582,9 @@ static int Save(HashTable *HT,FILE *stream, SaveFunction saveFn,void *arg)
         saveFn = DefaultSaveFunction;
         arg = &HT->ElementSize;
     }
-    if (fwrite(&HashTableGuid,sizeof(guid),1,stream) <= 0)
+    if (fwrite(&HashTableGuid,sizeof(guid),1,stream) == 0)
         return EOF;
-    if (fwrite(HT,1,sizeof(HashTable),stream) <= 0)
+    if (fwrite(HT,1,sizeof(HashTable),stream) == 0)
         return EOF;
 
     hix.ht    = HT;
@@ -622,7 +622,7 @@ static HashTable *Load(FILE *stream, ReadFunction readFn,void *arg)
         arg = &HT.ElementSize;
     }
 
-    if (fread(&Guid,sizeof(guid),1,stream) <= 0) {
+    if (fread(&Guid,sizeof(guid),1,stream) == 0) {
         iError.RaiseError("iHashTable.Load",CONTAINER_ERROR_FILE_READ);
         return NULL;
     }
@@ -630,7 +630,7 @@ static HashTable *Load(FILE *stream, ReadFunction readFn,void *arg)
         iError.RaiseError("iHashTable.Load",CONTAINER_ERROR_WRONGFILE);
         return NULL;
     }
-    if (fread(&HT,1,sizeof(HashTable),stream) <= 0) {
+    if (fread(&HT,1,sizeof(HashTable),stream) == 0) {
         iError.RaiseError("HashTable.Load",CONTAINER_ERROR_FILE_READ);
         return NULL;
     }
@@ -658,10 +658,10 @@ static HashTable *Load(FILE *stream, ReadFunction readFn,void *arg)
             keybuf = tmp;
             keybuflen = len;
         }
-        if (fread(keybuf,1,len,stream) <= 0) {
+        if (fread(keybuf,1,len,stream) == 0) {
             goto err;
         }
-        if (readFn(valbuf,arg,stream) <= 0) {
+        if (readFn(valbuf,arg,stream) == 0) {
             goto err;
         }
         iHashTable.Add(result,keybuf,len,valbuf);

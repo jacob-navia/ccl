@@ -596,6 +596,36 @@ static int RemoveAt(ElementType *SC,size_t idx)
     return 1;
 }
 
+static int RemoveRange(ElementType *SC,size_t start, size_t end)
+{
+	size_t i;
+	if (SC == NULL)
+		return NullPtrError("RemoveRange");
+	if (SC->count == 0)
+		return 0;
+	if (end > SC->count)
+		end = SC->count;
+	if (start >= end)
+		return IndexError(SC,"RemoveRange");
+	if (SC->DestructorFn) {
+		for (i=start; i<end; i++) {
+			SC->DestructorFn(SC->contents[i]);
+			SC->Allocator->free(SC->contents[i]);
+		}
+	}
+	else {
+		for (i=start; i<end; i++) {
+			SC->Allocator->free(SC->contents[i]);
+		}
+	}
+	if (end < SC->count)
+	memmove(SC->contents+start,
+		SC->contents+end,
+		(SC->count-end)*sizeof(char *));
+	SC->count -= end - start;
+	return 1;
+}
+
 static int Erase(ElementType *SC,CHAR_TYPE *str)
 {
     size_t i;
@@ -1633,4 +1663,5 @@ INTERFACE_TYP INTERFACE_OBJECT = {
     GetData,
     Back,
     Front,
+    RemoveRange,
 };
