@@ -1240,9 +1240,9 @@ static int Save(BitString *bitstr,FILE *stream, SaveFunction saveFn,void *arg)
 	if (stream == NULL || bitstr == NULL) {
 		return NullPtrError("Load");
 	}
-	if (fwrite(bitstr,1,sizeof(BitString),stream) <= 0)
+	if (fwrite(bitstr,1,sizeof(BitString),stream) == 0)
 		return EOF;
-	if (fwrite(bitstr->contents, 1,BYTES_FROM_BITS(bitstr->count), stream) <= 0)
+	if (fwrite(bitstr->contents, 1,BYTES_FROM_BITS(bitstr->count), stream) == 0)
 		return EOF;
 	return 0;
 }
@@ -1255,14 +1255,14 @@ static BitString *Load(FILE *stream, ReadFunction readFn,void *arg)
 		NullPtrError("Load");
 		return NULL;
 	}
-	if (fread(&tmp,1,sizeof(BitString),stream) <= 0)
+	if (fread(&tmp,1,sizeof(BitString),stream) == 0)
 		return NULL;
 	r = Create(tmp.count);
 	if (r == NULL)
 		return NULL;
 	r->count = tmp.count;
 	r->Flags = tmp.Flags;
-	if (fread(r->contents,1,BYTES_FROM_BITS(r->count),stream) <= 0) {
+	if (fread(r->contents,1,BYTES_FROM_BITS(r->count),stream) == 0) {
 		iError.RaiseError("Bitstring.Load",CONTAINER_ERROR_FILE_READ);
 		return NULL;
 	}

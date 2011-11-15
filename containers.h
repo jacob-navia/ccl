@@ -403,6 +403,7 @@ typedef struct tagstrCollection {
     char **(*GetData)(strCollection *SC);
     char *(*Back)(const strCollection *str);
     char *(*Front)(const strCollection *str);
+    int (*RemoveRange)(strCollection *SC,size_t start,size_t end);
 //    unsigned char *(*Find)(strCollection *SC,unsigned char *str,CompareInfo *ci);
 } strCollectionInterface;
 
@@ -507,6 +508,7 @@ typedef struct tagWstrCollection {
     wchar_t **(*GetData)(WstrCollection *SC);
     wchar_t *(*Back)(const WstrCollection *SC);
     wchar_t *(*Front)(const WstrCollection *SC);
+    int (*RemoveRange)(WstrCollection *SC,size_t start,size_t end); 
 //    wchar_t *Find(WstrCollection *SC,wchar_t *data,CompareInfo *ci);
 } WstrCollectionInterface;
 

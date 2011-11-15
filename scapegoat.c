@@ -850,12 +850,12 @@ static int Save(TreeMap *src,FILE *stream, SaveFunction saveFn,void *arg)
     if (saveFn == NULL) {
     	saveFn = DefaultSaveFunction;
     }
-    if (fwrite(&TreeMapGuid,sizeof(guid),1,stream) <= 0)
+    if (fwrite(&TreeMapGuid,sizeof(guid),1,stream) == 0)
         return EOF;
     if (arg == NULL) {
     	arg = &src->ElementSize;
     }
-    if (fwrite(src,1,sizeof(TreeMap),stream) <= 0)
+    if (fwrite(src,1,sizeof(TreeMap),stream) == 0)
         return EOF;
     rvp = bt_first(src);
     while (rvp) {
@@ -891,7 +891,7 @@ static TreeMap *Load(FILE *stream, ReadFunction loadFn,void *arg)
         loadFn = DefaultLoadFunction;
         arg = &elemSize;
     }
-    if (fread(&Guid,sizeof(guid),1,stream) <= 0) {
+    if (fread(&Guid,sizeof(guid),1,stream) == 0) {
         iError.RaiseError("Load",CONTAINER_ERROR_FILE_READ);
         return NULL;
     }
@@ -899,7 +899,7 @@ static TreeMap *Load(FILE *stream, ReadFunction loadFn,void *arg)
         iError.RaiseError("Load",CONTAINER_ERROR_WRONGFILE);
         return NULL;
     }
-    if (fread(&L,1,sizeof(TreeMap),stream) <= 0) {
+    if (fread(&L,1,sizeof(TreeMap),stream) == 0) {
         iError.RaiseError("Load",CONTAINER_ERROR_FILE_READ);
         return NULL;
     }
@@ -918,7 +918,7 @@ static TreeMap *Load(FILE *stream, ReadFunction loadFn,void *arg)
     result->Flags = L.Flags;
     r = 1;
     for (i=0; i < L.count; i++) {
-        if (loadFn(buf,arg,stream) <= 0) {
+        if (loadFn(buf,arg,stream) == 0) {
     		r = CONTAINER_ERROR_FILE_READ;
             break;
         }

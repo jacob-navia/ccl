@@ -1520,7 +1520,7 @@ static LIST_TYPE *Load(FILE *stream, ReadFunction loadFn,void *arg)
         NullPtrError("Load");
         return NULL;
     }
-    if (fread(&Guid,sizeof(guid),1,stream) <= 0) {
+    if (fread(&Guid,sizeof(guid),1,stream) == 0) {
         iError.RaiseError("iStringList.Load",CONTAINER_ERROR_FILE_READ);
         return NULL;
     }
