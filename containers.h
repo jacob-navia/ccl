@@ -798,6 +798,7 @@ typedef struct tagVector {
     void **(*GetData)(Vector *AL);
     void *(*Back)(const Vector *AL);
     void *(*Front)(const Vector *AL);
+    int (*RemoveRange)(Vector *SC,size_t start,size_t end);
 } VectorInterface;
 
 extern VectorInterface iVector;

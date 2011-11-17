@@ -614,6 +614,45 @@ static int EraseAt(Vector *AL,size_t idx)
 	return 1;
 }
 
+static int RemoveRange(Vector *AL,size_t start, size_t end)
+{
+	size_t i;
+	if (AL == NULL)
+		return NullPtrError("RemoveRange");
+	if (AL->count == 0)
+		return 0;
+	if (end > AL->count)
+		end = AL->count;
+	if (start == end) return 0;
+	if (start >= AL->count) {
+		iError.RaiseError("RemoveRange",CONTAINER_ERROR_INDEX);
+		return CONTAINER_ERROR_INDEX;
+	}
+	if (AL->DestructorFn) {
+		char *p = AL->contents;
+		for (i=start; i<end; i++) {
+			AL->DestructorFn(p);
+			AL->Allocator->free(p);
+			p += AL->ElementSize;
+		}
+	}
+	else {
+		char *p = AL->contents;
+		for (i=start; i<end; i++) {
+			AL->Allocator->free(p);
+			p += AL->ElementSize;
+                }
+        }
+        if (end < AL->count)
+        memmove(AL->contents+start,
+                AL->contents+end,
+                (AL->count-end)*AL->ElementSize);
+        AL->count -= end - start;
+        AL->timestamp++;
+        return 1;
+}
+
+
 static int Remove(Vector *AL,void *str)
 {
 	size_t idx;
@@ -1652,4 +1691,5 @@ VectorInterface iVector = {
 	GetData,
 	Back,
 	Front,
+	RemoveRange,
 };
