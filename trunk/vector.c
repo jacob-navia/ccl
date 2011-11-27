@@ -617,6 +617,8 @@ static int EraseAt(Vector *AL,size_t idx)
 static int RemoveRange(Vector *AL,size_t start, size_t end)
 {
 	size_t i;
+	char *p;
+
 	if (AL == NULL)
 		return NullPtrError("RemoveRange");
 	if (AL->count == 0)
@@ -628,8 +630,8 @@ static int RemoveRange(Vector *AL,size_t start, size_t end)
 		iError.RaiseError("RemoveRange",CONTAINER_ERROR_INDEX);
 		return CONTAINER_ERROR_INDEX;
 	}
+	p = AL->contents;
 	if (AL->DestructorFn) {
-		char *p = AL->contents;
 		for (i=start; i<end; i++) {
 			AL->DestructorFn(p);
 			AL->Allocator->free(p);
@@ -637,16 +639,13 @@ static int RemoveRange(Vector *AL,size_t start, size_t end)
 		}
 	}
 	else {
-		char *p = AL->contents;
 		for (i=start; i<end; i++) {
 			AL->Allocator->free(p);
 			p += AL->ElementSize;
                 }
         }
         if (end < AL->count)
-        memmove(AL->contents+start,
-                AL->contents+end,
-                (AL->count-end)*AL->ElementSize);
+        	memmove(p+start, p+end, (AL->count-end)*AL->ElementSize);
         AL->count -= end - start;
         AL->timestamp++;
         return 1;

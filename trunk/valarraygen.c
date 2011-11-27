@@ -542,6 +542,36 @@ static int EraseAt(ValArray *AL,size_t idx)
 	return 1;
 }
 
+static int RemoveRange(ValArray *AL,size_t start, size_t end)
+{
+        if (AL->count == 0)
+                return 0;
+	if (AL->Slice) {
+		size_t sliceEnd = AL->Slice->start + AL->Slice->length;
+		start += AL->Slice->start;
+		if (start >= sliceEnd)
+			return 0;
+		end += AL->Slice->start;
+		if (end > sliceEnd)
+			end = sliceEnd;
+	}
+        if (end > AL->count)
+                end = AL->count;
+        if (start == end) return 0;
+        if (start >= AL->count) {
+                iError.RaiseError("RemoveRange",CONTAINER_ERROR_INDEX);
+                return CONTAINER_ERROR_INDEX;
+        }
+        if (end < AL->count)
+        memmove(AL->contents+start,
+                AL->contents+end,
+                (AL->count-end)*sizeof(ElementType));
+        AL->count -= end - start;
+        AL->timestamp++;
+        return 1;
+}
+
+
 static int Erase(ValArray *AL,ElementType data)
 {
 	size_t idx;
@@ -2230,4 +2260,5 @@ ValArrayInterface iValArrayInterface = {
 	GetData,
 	Back,
 	Front,
+	RemoveRange,
 };

@@ -605,7 +605,8 @@ static int RemoveRange(ElementType *SC,size_t start, size_t end)
 		return 0;
 	if (end > SC->count)
 		end = SC->count;
-	if (start >= end)
+	if (start == end) return 0;
+	if (start >= SC->count)
 		return IndexError(SC,"RemoveRange");
 	if (SC->DestructorFn) {
 		for (i=start; i<end; i++) {
