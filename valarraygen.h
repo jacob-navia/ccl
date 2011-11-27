@@ -113,4 +113,5 @@ typedef struct {
     ElementType *(*GetData)(const ValArray *src);
 	ElementType (*Back)(const ValArray *src);
 	ElementType (*Front)(const ValArray *src);	
+    int (*RemoveRange)(ValArray *src,size_t start,size_t end);
 } ValArrayInterface;
