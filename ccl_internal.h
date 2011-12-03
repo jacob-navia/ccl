@@ -1,10 +1,14 @@
 #ifndef __CCL_INTERNAL_H__
+#define __CCL_INTERNAL_H__
 #ifdef NO_C99
 /* No flexible arrays */
 #define MINIMUM_ARRAY_INDEX     1
 #else
 /* Use C99 features */
 #define MINIMUM_ARRAY_INDEX
+#endif
+#ifdef SPARC32 // old sparcs are missing this protptype
+int snprintf(char *restrict s, size_t n, const char *restrict format, ...);
 #endif
 
 /* This macro supposes that n is a power of two */
@@ -97,6 +101,9 @@ struct _BitString {
 /*----------------------------------------------------------------------------*/
 typedef struct _ListElement {
     struct _ListElement *Next;
+#ifdef SPARC32
+    void *alignment;
+#endif
     char Data[MINIMUM_ARRAY_INDEX];
 } ListElement;
 
@@ -316,6 +323,9 @@ struct HashTableIterator {
 struct Node {
     struct Node *up;        /* Parent (NULL for root). */
     struct Node *down[2];   /* Left child, right child. */
+#ifdef SPARC32
+    double alignment;
+#endif
     char data[1];
 };
 
