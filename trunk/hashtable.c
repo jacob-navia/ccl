@@ -759,8 +759,13 @@ static int ReplaceWithIterator(Iterator *it, void *data,int direction)
 
 static Iterator *NewIterator(HashTable *ht)
 {
-    struct HashTableIterator *result =
-        ht->Allocator->malloc(sizeof(struct HashTableIterator));
+    struct HashTableIterator *result;
+
+    if (ht == NULL) {
+        iError.RaiseError("InitIterator",CONTAINER_ERROR_BADARG);
+        return NULL;
+    }
+    result = ht->Allocator->malloc(sizeof(struct HashTableIterator));
     if (result == NULL)
         return NULL;
     result->it.GetNext = GetNext;
@@ -773,6 +778,26 @@ static Iterator *NewIterator(HashTable *ht)
     result->ht = ht;
     return &result->it;
 }
+
+static int InitIterator(HashTable *ht,void *buf)
+{
+    struct HashTableIterator *result;
+    if (ht == NULL || buf == NULL) {
+        iError.RaiseError("InitIterator",CONTAINER_ERROR_BADARG);
+        return CONTAINER_ERROR_BADARG;
+    }
+    result = buf;
+    result->it.GetNext = GetNext;
+    result->it.GetPrevious = GetNext;
+    result->it.GetFirst = GetFirst;
+    result->it.GetCurrent = GetCurrent;
+    result->it.Replace = ReplaceWithIterator;
+    result->timestamp = ht->timestamp;
+    result->Current = NULL;
+    result->ht = ht;
+    return 1;
+}
+
 
 static size_t SizeofIterator(HashTable *ht)
 {
@@ -824,6 +849,7 @@ SetHashFunction,
 Overlay,
 Merge,
 NewIterator,
+InitIterator,
 deleteIterator,
 SizeofIterator,
 Save,

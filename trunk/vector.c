@@ -1253,6 +1253,30 @@ static Iterator *NewIterator(Vector *AL)
 	return &result->it;
 }
 
+static int InitIterator(Vector *AL,void *buf)
+{
+        struct VectorIterator *result;
+
+        if (AL == NULL || buf == NULL) {
+                NullPtrError("NewIterator");
+                return CONTAINER_ERROR_BADARG;
+        }
+        result = buf;
+        result->it.GetNext = GetNext;
+        result->it.GetPrevious = GetPrevious;
+        result->it.GetFirst = GetFirst;
+        result->it.GetCurrent = GetCurrent;
+        result->it.GetLast = GetLast;
+        result->it.Seek = Seek;
+        result->it.Replace = ReplaceWithIterator;
+        result->AL = AL;
+        result->Current = NULL;
+        result->timestamp = AL->timestamp;
+        result->index = -1;
+        return 1;
+}
+
+
 static int deleteIterator(Iterator * it)
 {
 	struct VectorIterator *ali = (struct VectorIterator *)it;
@@ -1637,7 +1661,7 @@ static void *Front(const Vector *v)
 
 static size_t SizeofIterator(Vector *v)
 {
-	return sizeof(struct VectorIterator);
+	return sizeof(struct VectorIterator)+v->ElementSize;
 }
 
 VectorInterface iVector = {
@@ -1654,6 +1678,7 @@ VectorInterface iVector = {
 	SetErrorFunction,
 	Sizeof,
 	NewIterator,
+	InitIterator,
 	deleteIterator,
 	SizeofIterator,
 	Save,

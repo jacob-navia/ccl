@@ -81,6 +81,19 @@ static Iterator *NewIterator(GenericContainer *gen)
 {
 	return gen->vTable->NewIterator(gen);
 }
+
+
+static size_t SizeofIterator(GenericContainer *gen)
+{
+	return gen->vTable->SizeofIterator(gen);
+}
+static int InitIterator(GenericContainer *gen,void *buf)
+{
+        return gen->vTable->InitIterator(gen,buf);
+}
+
+
+
 static int deleteIterator(Iterator *git)
 {
 	GenericIterator *GenIt = (GenericIterator *)git;
@@ -107,7 +120,9 @@ Copy,
 SetErrorFunction,
 Sizeof,
 NewIterator,
+InitIterator,
 deleteIterator,
+SizeofIterator,
 Save,
 };
 

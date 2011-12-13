@@ -1229,6 +1229,19 @@ static Iterator *NewIterator(BitString *bitstr)
 	return &result->it;
 }
 
+static int InitIterator(BitString *bitstr,void *buf)
+{
+        struct BitstringIterator *result = buf;
+        result->it.GetNext = GetNext;
+        result->it.GetPrevious = GetNext;
+        result->it.GetFirst = GetFirst;
+        result->it.GetCurrent = GetCurrent;
+        result->Bits = bitstr;
+        result->timestamp = bitstr->timestamp;
+        return 1;
+}
+
+
 static int deleteIterator(Iterator * it)
 {
 	struct BitstringIterator *bi = (struct BitstringIterator *)it;
@@ -1339,6 +1352,7 @@ BitStringInterface iBitString = {
 	SetErrorFunction,
 	Sizeof,
 	NewIterator,
+        InitIterator,
 	deleteIterator,
 	Save,
 	Load,

@@ -1109,8 +1109,7 @@ static Iterator *NewIterator(ValArray *AL)
 {
 	struct ValArrayIterator *result;
 	
-	result = AL->Allocator->calloc(1,
-					   sizeof(struct ValArrayIterator)+ sizeof(ElementType));
+	result = AL->Allocator->calloc(1,sizeof(struct ValArrayIterator)+sizeof(ElementType));
 	if (result == NULL) {
 		NoMemory("NewIterator");
 		return NULL;
@@ -1128,6 +1127,25 @@ static Iterator *NewIterator(ValArray *AL)
 	result->index = -1;
 	return &result->it;
 }
+
+static int InitIterator(ValArray *AL,void *buf)
+{
+        struct ValArrayIterator *result = buf;
+
+        result->it.GetNext = GetNext;
+        result->it.GetPrevious = GetPrevious;
+        result->it.GetFirst = GetFirst;
+        result->it.GetCurrent = GetCurrent;
+        result->it.GetLast = GetLast;
+        result->it.Replace = ReplaceWithIterator;
+        result->it.Seek = Seek;
+        result->AL = AL;
+        result->Current = NULL;
+        result->timestamp = AL->timestamp;
+        result->index = -1;
+        return 1;
+}
+
 
 static int deleteIterator(Iterator * it)
 {
@@ -2140,7 +2158,7 @@ static ElementType Front(const ValArray *cb)
 
 static size_t SizeofIterator(ValArray *cb)
 {
-	return sizeof (struct ValArrayIterator);
+	return sizeof (struct ValArrayIterator) + sizeof(ElementType);
 }
 
 ValArrayInterface iValArrayInterface = {
@@ -2157,6 +2175,7 @@ ValArrayInterface iValArrayInterface = {
 	SetErrorFunction,
 	Sizeof,
 	NewIterator,
+	InitIterator,
 	deleteIterator,
 	SizeofIterator,
 	Save,

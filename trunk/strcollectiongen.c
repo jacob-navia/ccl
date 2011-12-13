@@ -1087,10 +1087,6 @@ static Iterator *NewIterator(ElementType *SC)
 {
     struct strCollectionIterator *result;
 
-    if (SC == NULL) {
-    	NullPtrError("NewIterator");
-    	return NULL;
-    }
     result  = SC->Allocator->malloc(sizeof(struct strCollectionIterator));
     if (result == NULL) {
     	NoMemoryError(SC,"NewIterator");
@@ -1107,6 +1103,22 @@ static Iterator *NewIterator(ElementType *SC)
     result->current = NULL;
     return &result->it;
 }
+static int InitIterator(ElementType *SC,void *buf)
+{
+    struct strCollectionIterator *result=buf;
+
+    result->it.GetNext = GetNext;
+    result->it.GetPrevious = GetPrevious;
+    result->it.GetFirst = GetFirst;
+    result->it.GetCurrent = GetCurrent;
+    result->it.Seek = Seek;
+    result->it.Replace = ReplaceWithIterator;
+    result->SC = SC;
+    result->timestamp = SC->timestamp;
+    result->current = NULL;
+    return 1;
+}
+
 
 static int deleteIterator(Iterator *it)
 {
@@ -1623,6 +1635,7 @@ INTERFACE_TYP INTERFACE_OBJECT = {
     SetErrorFunction,
     Sizeof,
     NewIterator,
+    InitIterator,
     deleteIterator,
     SizeofIterator,
     Save,

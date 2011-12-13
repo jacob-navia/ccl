@@ -692,6 +692,20 @@ static Iterator *NewIterator(TreeMap *tree)
     return &result->it;
 }
 
+static int InitIterator(TreeMap *tree,void *buf)
+{
+    struct TreeMapIterator *result = buf;
+    memset(result,0,sizeof(struct TreeMapIterator));
+    result->it.GetNext = GetNext;
+    result->it.GetPrevious = GetPrevious;
+    result->it.GetFirst = GetFirst;
+        result->it.GetCurrent = GetCurrent;
+        result->it.Replace = ReplaceWithIterator;
+    result->bst_table = tree;
+    result->timestamp = tree->timestamp;
+    return 1;
+}
+
 static int deleteIterator(Iterator *it)
 {
     struct TreeMapIterator *itbb = (struct TreeMapIterator *)it;
@@ -972,6 +986,7 @@ TreeMapInterface iTreeMap = {
     SetErrorFunction,
     Sizeof,
     NewIterator,
+    InitIterator,
     deleteIterator,
     SizeofIterator,
     Save,

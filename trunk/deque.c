@@ -580,6 +580,20 @@ static Iterator *NewIterator(Deque *L)
     result->timestamp = L->timestamp;
     return &result->it;
 }
+
+static int InitIterator(Deque *L,void *buf)
+{
+    struct DequeIterator *result = buf;
+    result->it.GetNext = GetNext;
+    result->it.GetPrevious = GetPrevious;
+    result->it.GetFirst = GetFirst;
+    result->it.GetCurrent = GetCurrent;
+    result->D = L;
+    result->timestamp = L->timestamp;
+    return 1;
+}
+
+
 static int deleteIterator(Iterator *it)
 {
     struct DequeIterator *li;
@@ -626,6 +640,7 @@ DequeInterface iDeque = {
     SetErrorFunction,
     Sizeof,
     NewIterator,
+    InitIterator,
     deleteIterator,
     SizeofIterator,
     Save,

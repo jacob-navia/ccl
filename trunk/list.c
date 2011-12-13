@@ -1441,7 +1441,7 @@ static Iterator *NewIterator(List *L)
     result->Current = NULL;
     return &result->it;
 }
-static int initIterator(List *L,void *r)
+static int InitIterator(List *L,void *r)
 {
     struct ListIterator *result=(struct ListIterator *)r;
     
@@ -1693,6 +1693,7 @@ ListInterface iList = {
     SetErrorFunction,
     Sizeof,
     NewIterator,
+    InitIterator,
     deleteIterator,
     SizeofIterator,
     Save,
@@ -1724,7 +1725,6 @@ ListInterface iList = {
     Init,
     InitWithAllocator,
     SetAllocator,
-    initIterator,
     GetAllocator,
     SetDestructor,
     InitializeWith,
