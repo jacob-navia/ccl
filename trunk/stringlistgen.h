@@ -16,6 +16,7 @@ typedef struct _INTERNAL_INTERFACE_NAME {
     size_t (*Sizeof)(EXTERNAL_NAME *l);
     Iterator *(*NewIterator)(EXTERNAL_NAME *L);
     int (*deleteIterator)(Iterator *);
+    size_t (*SizeofIterator)(EXTERNAL_NAME *l);
     int (*Save)(EXTERNAL_NAME *L,FILE *stream, SaveFunction saveFn,void *arg);
     EXTERNAL_NAME *(*Load)(FILE *stream, ReadFunction loadFn,void *arg);
     size_t (*GetElementSize)(EXTERNAL_NAME *l);

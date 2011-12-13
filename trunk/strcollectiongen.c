@@ -1604,7 +1604,11 @@ static CHAR_TYPE *Front(const ElementType *cb)
     if (cb->count == 0)
     	return NULL;
     return cb->contents[0];
-}	
+}
+static size_t SizeofIterator(ElementType *gnored)
+{
+	return sizeof(struct strCollectionIterator);
+}
 INTERFACE_TYP INTERFACE_OBJECT = {
     GetCount, 
     GetFlags, 
@@ -1620,6 +1624,7 @@ INTERFACE_TYP INTERFACE_OBJECT = {
     Sizeof,
     NewIterator,
     deleteIterator,
+    SizeofIterator,
     Save,
     Load,
     GetElementSize,

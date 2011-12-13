@@ -1,6 +1,7 @@
 /* -------------------------------------------------------------------
-        StringList                StringList routines sample implementation
-                        -----------------------------------
+        StringList                
+        StringList routines sample implementation
+        -----------------------------------------
 This routines handle the StringList container class. This is a very general implementation
 and efficiency considerations aren't yet primordial. StringLists can have elements
 of any size. This implement single linked StringLists.
@@ -1663,6 +1664,10 @@ static DestructorFunction SetDestructor(LIST_TYPE *cb,DestructorFunction fn)
         cb->DestructorFn = fn;
     return oldfn;
 }
+static size_t SizeofIterator(LIST_TYPE *l)
+{
+	return sizeof(struct LIST_TYPEIterator);
+}
 iSTRINGLIST INTERFACE = {
     Size,
     GetFlags,
@@ -1678,6 +1683,7 @@ iSTRINGLIST INTERFACE = {
     Sizeof,
     NewIterator,
     deleteIterator,
+    SizeofIterator,
     Save,
     Load,
     GetElementSize,

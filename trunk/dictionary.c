@@ -1050,6 +1050,11 @@ static HashFunction SetHashFunction(Dictionary *d,HashFunction newFn)
     return old;
 }
 
+static size_t SizeofIterator(Dictionary *b)
+{
+	return sizeof(struct DictionaryIterator);
+}
+
 DictionaryInterface iDictionary = {
     Size,
     GetFlags,
@@ -1065,6 +1070,7 @@ DictionaryInterface iDictionary = {
     Sizeof,
     NewIterator,
     deleteIterator,
+    SizeofIterator,
     Save,
     Load,
     GetElementSize,

@@ -774,6 +774,11 @@ static Iterator *NewIterator(HashTable *ht)
     return &result->it;
 }
 
+static size_t SizeofIterator(HashTable *ht)
+{
+	return sizeof(struct HashTableIterator);
+}
+
 static int deleteIterator(Iterator *it)
 {
 #if 0
@@ -820,6 +825,7 @@ Overlay,
 Merge,
 NewIterator,
 deleteIterator,
+SizeofIterator,
 Save,
 Load,
 SetDestructor,

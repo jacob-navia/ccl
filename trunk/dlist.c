@@ -1537,6 +1537,11 @@ static void *Front(const Dlist *l)
     return l->First->Data;
 }
 
+static size_t SizeofIterator(Dlist *l)
+{
+	return sizeof(struct DListIterator);
+}
+
 DlistInterface iDlist = {
     Size,
     GetFlags,
@@ -1552,6 +1557,7 @@ DlistInterface iDlist = {
     Sizeof,
     NewIterator,
     deleteIterator,
+    SizeofIterator,
     Save,
     Load,
     GetElementSize,
