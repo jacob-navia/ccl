@@ -806,6 +806,25 @@ static Iterator *NewIterator(Dictionary *Dict)
     return &result->it;
 }
 
+static int InitIterator(Dictionary *Dict,void *buf)
+{
+    struct DictionaryIterator *result = buf;
+
+    if (Dict == NULL || buf == NULL) {
+        NullPtrError("NewIterator");
+        return CONTAINER_ERROR_BADARG;
+    }
+
+    result->it.GetNext = GetNext;
+    result->it.GetPrevious = GetNext;
+    result->it.GetFirst = GetFirst;
+    result->Dict = Dict;
+    result->it.Replace = ReplaceWithIterator;
+    result->timestamp = Dict->timestamp;
+    return 1;
+}
+
+
 static int deleteIterator(Iterator *it)
 {
     struct DictionaryIterator *d = (struct DictionaryIterator *)it;
@@ -1069,6 +1088,7 @@ DictionaryInterface iDictionary = {
     SetErrorFunction,
     Sizeof,
     NewIterator,
+    InitIterator,
     deleteIterator,
     SizeofIterator,
     Save,

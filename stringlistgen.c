@@ -1435,7 +1435,7 @@ static Iterator *NewIterator(LIST_TYPE *L)
     result->Current = NULL;
     return &result->it;
 }
-static int initIterator(LIST_TYPE *L,void *r)
+static int InitIterator(LIST_TYPE *L,void *r)
 {
     struct LIST_TYPEIterator *result=(struct LIST_TYPEIterator *)r;
     
@@ -1713,7 +1713,7 @@ iSTRINGLIST INTERFACE = {
     Init,
     InitWithAllocator,
     SetAllocator,
-    initIterator,
+    InitIterator,
     GetAllocator,
     SetDestructor,
     InitializeWith,

@@ -87,11 +87,23 @@ static Iterator *NewIterator(SequentialContainer *gen)
 {
 	return gen->vTable->NewIterator(gen);
 }
+static int InitIterator(SequentialContainer *gen,void *buf)
+{
+        return gen->vTable->InitIterator(gen,buf);
+}
+
 static int deleteIterator(Iterator *git)
 {
 	SequentialIterator *GenIt = (SequentialIterator *)git;
 	SequentialContainer *gen = GenIt->Gen;
 	return gen->vTable->deleteIterator(git);
+}
+
+static size_t SizeofIterator(SequentialContainer *git)
+{
+	SequentialIterator *GenIt = (SequentialIterator *)git;
+        SequentialContainer *gen = GenIt->Gen;
+        return gen->vTable->SizeofIterator(git);
 }
 
 static int Save(SequentialContainer *gen, FILE *stream,SaveFunction saveFn,void *arg)
@@ -178,7 +190,9 @@ Copy,
 SetErrorFunction,
 Sizeof,
 NewIterator,
+InitIterator,
 deleteIterator,
+SizeofIterator,
 Save,	
 Add,
 GetElement,

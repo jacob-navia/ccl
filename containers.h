@@ -206,7 +206,9 @@ typedef struct tagGenericContainerInterface {
     ErrorFunction (*SetErrorFunction)(GenericContainer *Gen,ErrorFunction fn);
     size_t (*Sizeof)(GenericContainer *Gen);
     Iterator *(*NewIterator)(GenericContainer *Gen);
+    int (*InitIterator)(GenericContainer *Gen,void *buf);
     int (*deleteIterator)(Iterator *);
+    size_t (*SizeofIterator)(GenericContainer *Gen);
     int (*Save)(GenericContainer *Gen,FILE *stream, SaveFunction saveFn,void *arg);
 } GenericContainerInterface;
 extern GenericContainerInterface iGeneric;
@@ -231,7 +233,9 @@ typedef struct tagSequentialContainerInterface {
     ErrorFunction (*SetErrorFunction)(SequentialContainer *Gen,ErrorFunction fn);
     size_t (*Sizeof)(SequentialContainer *Gen);
     Iterator *(*NewIterator)(SequentialContainer *Gen);
+    int (*InitIterator)(SequentialContainer *Gen,void *buf);
     int (*deleteIterator)(Iterator *);
+    size_t (*SizeofIterator)(SequentialContainer *Gen);
     int (*Save)(SequentialContainer *Gen,FILE *stream, SaveFunction saveFn,void *arg);
 
 
@@ -340,6 +344,7 @@ typedef struct tagstrCollection {
     /* Memory used by the string collection object and its data */
     size_t (*Sizeof)(strCollection *SC);
     Iterator *(*NewIterator)(strCollection *SC);
+    int (*InitIterator)(strCollection *SC,void *buf);
     int (*deleteIterator)(Iterator *);
     size_t (*SizeofIterator)(strCollection *l);
     /* Writes the string collection in binary form to a stream */
@@ -446,6 +451,7 @@ typedef struct tagWstrCollection {
     /* Memory used by the string collection object and its data */
     size_t (*Sizeof)(WstrCollection *SC);
     Iterator *(*NewIterator)(WstrCollection *SC);
+    int (*InitIterator)(WstrCollection *SC,void *buf);
     int (*deleteIterator)(Iterator *);
     size_t (*SizeofIterator)(WstrCollection *);
     /* Writes the string collection in binary form to a stream */
@@ -540,6 +546,7 @@ typedef struct tagList {
     ErrorFunction (*SetErrorFunction)(List *L,ErrorFunction); /* Set/unset the error function */
     size_t (*Sizeof)(List *l);
     Iterator *(*NewIterator)(List *L);
+    int (*InitIterator)(List *L,void *buf);
     int (*deleteIterator)(Iterator *);
     size_t (*SizeofIterator)(List *);
     int (*Save)(List *L,FILE *stream, SaveFunction saveFn,void *arg);
@@ -583,7 +590,6 @@ typedef struct tagList {
     List *(*Init)(List *aList,size_t element_size);
     List *(*InitWithAllocator)(List *aList,size_t element_size,ContainerMemoryManager *allocator);
     List *(*SetAllocator)(List *l, ContainerMemoryManager  *allocator);
-    int (*InitIterator)(List *list,void *storage);
     ContainerMemoryManager *(*GetAllocator)(List *list);
     DestructorFunction (*SetDestructor)(List *v,DestructorFunction fn);
     List *(*InitializeWith)(size_t elementSize,size_t n,void *data);
@@ -633,6 +639,7 @@ typedef struct tagDeQueueInterface {
     ErrorFunction (*SetErrorFunction)(Deque *d,ErrorFunction); 
     size_t (*Sizeof)(Deque *d);
     Iterator *(*NewIterator)(Deque *Deq);
+    int (*InitIterator)(Deque *dc,void *buf);
     int (*deleteIterator)(Iterator *);
     size_t (*SizeofIterator)(Deque *);
     int (*Save)(Deque *d,FILE *stream, SaveFunction saveFn,void *arg);
@@ -673,6 +680,7 @@ typedef struct tagDlist {
     ErrorFunction (*SetErrorFunction)(Dlist *L,ErrorFunction);
     size_t (*Sizeof)(Dlist *dl);
     Iterator *(*NewIterator)(Dlist *);
+    int (*InitIterator)( Dlist *,void *buf);
     int (*deleteIterator)(Iterator *);
     size_t (*SizeofIterator)(Dlist *);
     int (*Save)(Dlist *L,FILE *stream, SaveFunction saveFn,void *arg);
@@ -746,6 +754,7 @@ typedef struct tagVector {
     ErrorFunction (*SetErrorFunction)(Vector *AL,ErrorFunction);
     size_t (*Sizeof)(Vector *AL);
     Iterator *(*NewIterator)(Vector *AL);
+    int (*InitIterator)(Vector *V,void *buf);
     int (*deleteIterator)(Iterator *);
     size_t (*SizeofIterator)(Vector *);
     /* Writes the vector in binary form to a stream */
@@ -840,6 +849,7 @@ typedef struct tagDictionary {
     ErrorFunction (*SetErrorFunction)(Dictionary *Dict,ErrorFunction fn);
     size_t (*Sizeof)(Dictionary *dict);
     Iterator *(*NewIterator)(Dictionary *dict);
+    int (*InitIterator)(Dictionary *dict,void *buf);
     int (*deleteIterator)(Iterator *);
     size_t (*SizeofIterator)(Dictionary *);
     int (*Save)(Dictionary *Dict,FILE *stream, SaveFunction saveFn,void *arg);
@@ -884,7 +894,7 @@ typedef struct tagHashTable {
     size_t (*Sizeof)(const HashTable *HT);
     /* Get the flags */
     unsigned (*GetFlags)(const HashTable *HT);
-    /* Sets th flags */
+    /* Sets the flags */
     unsigned (*SetFlags)(HashTable *HT,unsigned flags);
     size_t (*GetElementSize)(const HashTable *HT);
     /* Adds one element. Given string is copied */
@@ -922,6 +932,7 @@ typedef struct tagHashTable {
                                          const void *data),
                         const void *data);
     Iterator *(*NewIterator)(HashTable *);
+    int (*InitIterator)(HashTable *SC,void *buf);
     int (*deleteIterator)(Iterator *);
     size_t (*SizeofIterator)(HashTable *ht);
     int (*Save)(HashTable *HT,FILE *stream, SaveFunction saveFn,void *arg);
@@ -1036,6 +1047,7 @@ typedef struct tagTreeMapInterface {
     ErrorFunction (*SetErrorFunction)(TreeMap *ST, ErrorFunction fn);
     size_t (*Sizeof)(TreeMap *ST);
     Iterator *(*NewIterator)(TreeMap *);
+    int (*InitIterator)(TreeMap *,void *buf);
     int (*deleteIterator)(Iterator *);
     size_t (*SizeofIterator)(TreeMap *);
     int (*Save)(TreeMap *src,FILE *stream, SaveFunction saveFn,void *arg);
@@ -1091,6 +1103,7 @@ typedef struct tagBitString {
     ErrorFunction *(*SetErrorFunction)(BitString *,ErrorFunction fn);
     size_t     (*Sizeof)(BitString *b);
     Iterator  *(*NewIterator)(BitString *);
+    int (*InitIterator)(BitString *,void *);
     int (*deleteIterator)(Iterator *);
     int        (*Save)(BitString *bitstr,FILE *stream, SaveFunction saveFn,void *arg);
     BitString *(*Load)(FILE *stream, ReadFunction saveFn,void *arg);

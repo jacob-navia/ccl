@@ -1292,6 +1292,18 @@ static void *Seek(Iterator *it,size_t idx)
     return li->Current;
 }
 
+static void doinit(struct DListIterator *result,Dlist *L)
+{
+    result->it.GetNext = GetNext;
+    result->it.GetPrevious = GetPrevious;
+    result->it.GetFirst = GetFirst;
+    result->it.GetCurrent = GetCurrent;
+    result->it.Seek = Seek;
+	result->it.Replace = ReplaceWithIterator;
+    result->L = L;
+    result->timestamp = L->timestamp;
+}
+
 
 static Iterator *NewIterator(Dlist *L)
 {
@@ -1306,16 +1318,24 @@ static Iterator *NewIterator(Dlist *L)
     	L->RaiseError("iDlist.NewIterator",CONTAINER_ERROR_NOMEMORY);
     	return NULL;
     }
-    result->it.GetNext = GetNext;
-    result->it.GetPrevious = GetPrevious;
-    result->it.GetFirst = GetFirst;
-    result->it.GetCurrent = GetCurrent;
-    result->it.Seek = Seek;
-	result->it.Replace = ReplaceWithIterator;
-    result->L = L;
-    result->timestamp = L->timestamp;
+    doinit(result,L);
     return &result->it;
 }
+
+static int InitIterator(Dlist *L,void *buf)
+{
+    struct DListIterator *result;
+    
+    if (L == NULL) {
+    	iError.NullPtrError("iDlist.NewIterator");
+    	return CONTAINER_ERROR_BADARG;
+    }
+    result = buf;
+    doinit(result,L);
+    return 1;
+}
+
+
 static int Append(Dlist *l1, Dlist *l2)
 {
 
@@ -1556,6 +1576,7 @@ DlistInterface iDlist = {
     SetErrorFunction,
     Sizeof,
     NewIterator,
+    InitIterator,
     deleteIterator,
     SizeofIterator,
     Save,

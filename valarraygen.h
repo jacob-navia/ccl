@@ -16,6 +16,7 @@ typedef struct {
     ErrorFunction (*SetErrorFunction)(ValArray *AL,ErrorFunction);
     size_t (*Sizeof)(ValArray *AL);
     Iterator *(*NewIterator)(ValArray *AL);
+    int (*InitIterator)(ValArray *AL,void *buf);
     int (*deleteIterator)(Iterator *);
     size_t (*SizeofIterator)(ValArray *);
     int (*Save)(ValArray *AL,FILE *stream);
