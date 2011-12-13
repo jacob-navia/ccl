@@ -698,6 +698,11 @@ static int deleteIterator(Iterator *it)
     itbb->bst_table->Allocator->free(it);
     return 1;
 }
+
+static size_t SizeofIterator(TreeMap *tree)
+{
+	return sizeof(struct TreeMapIterator);
+}
 static CompareFunction SetCompareFunction(TreeMap *l,CompareFunction fn)
 {
     CompareFunction oldfn = l->compare;
@@ -968,6 +973,7 @@ TreeMapInterface iTreeMap = {
     Sizeof,
     NewIterator,
     deleteIterator,
+    SizeofIterator,
     Save,
     Add,
 	AddRange,

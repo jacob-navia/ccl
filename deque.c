@@ -606,6 +606,11 @@ static DestructorFunction SetDestructor(Deque *cb,DestructorFunction fn)
     return oldfn;
 }
 
+size_t SizeofIterator(Deque *l)
+{
+	return sizeof(struct DequeIterator);
+}
+
 
 DequeInterface iDeque = {
     GetCount,
@@ -622,6 +627,7 @@ DequeInterface iDeque = {
     Sizeof,
     NewIterator,
     deleteIterator,
+    SizeofIterator,
     Save,
     Load,
     Add,

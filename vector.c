@@ -1635,6 +1635,11 @@ static void *Front(const Vector *v)
 	return v->contents;
 }
 
+static size_t SizeofIterator(Vector *v)
+{
+	return sizeof(struct VectorIterator);
+}
+
 VectorInterface iVector = {
 	Size,
 	GetFlags, 
@@ -1650,6 +1655,7 @@ VectorInterface iVector = {
 	Sizeof,
 	NewIterator,
 	deleteIterator,
+	SizeofIterator,
 	Save,
 	Load,
 	GetElementSize,

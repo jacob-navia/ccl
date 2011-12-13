@@ -1206,6 +1206,11 @@ static size_t Sizeof(List *l)
     return sizeof(List) + l->ElementSize * l->count + l->count *sizeof(ListElement);
 }
 
+static size_t SizeofIterator(List *l)
+{
+	return sizeof(struct ListIterator);
+}
+
 static int UseHeap(List *L, ContainerMemoryManager *m)
 {
     if (L == NULL) {
@@ -1689,6 +1694,7 @@ ListInterface iList = {
     Sizeof,
     NewIterator,
     deleteIterator,
+    SizeofIterator,
     Save,
     Load,
     GetElementSize,
