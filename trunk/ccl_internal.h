@@ -133,7 +133,7 @@ struct ListIterator {
 };
 
 /*----------------------------------------------------------------------------*/
-/* Definition of the stringlist and stringlist element type                               */
+/* Definition of the stringlist and stringlist element type                   */
 /*----------------------------------------------------------------------------*/
 typedef struct _StringlistElement {
     struct _StringlistElement *Next;
@@ -166,7 +166,7 @@ struct StringListIterator {
 };
 
 /*----------------------------------------------------------------------------*/
-/* Definition of the wstringlist and wstringlist element type                               */
+/* Definition of the wstringlist and wstringlist element type                 */
 /*----------------------------------------------------------------------------*/
 typedef struct _wStringlistElement {
     struct _wStringlistElement *Next;
