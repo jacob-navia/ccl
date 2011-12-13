@@ -341,6 +341,7 @@ typedef struct tagstrCollection {
     size_t (*Sizeof)(strCollection *SC);
     Iterator *(*NewIterator)(strCollection *SC);
     int (*deleteIterator)(Iterator *);
+    size_t (*SizeofIterator)(strCollection *l);
     /* Writes the string collection in binary form to a stream */
     int (*Save)(strCollection *SC,FILE *stream, SaveFunction saveFn,void *arg);
     strCollection *(*Load)(FILE *stream, ReadFunction readFn,void *arg);
@@ -446,6 +447,7 @@ typedef struct tagWstrCollection {
     size_t (*Sizeof)(WstrCollection *SC);
     Iterator *(*NewIterator)(WstrCollection *SC);
     int (*deleteIterator)(Iterator *);
+    size_t (*SizeofIterator)(WstrCollection *);
     /* Writes the string collection in binary form to a stream */
     int (*Save)(WstrCollection *SC,FILE *stream, SaveFunction saveFn,void *arg);
     WstrCollection *(*Load)(FILE *stream, ReadFunction readFn,void *arg);
@@ -539,6 +541,7 @@ typedef struct tagList {
     size_t (*Sizeof)(List *l);
     Iterator *(*NewIterator)(List *L);
     int (*deleteIterator)(Iterator *);
+    size_t (*SizeofIterator)(List *);
     int (*Save)(List *L,FILE *stream, SaveFunction saveFn,void *arg);
     List *(*Load)(FILE *stream, ReadFunction loadFn,void *arg);
     size_t (*GetElementSize)(List *l);
@@ -591,6 +594,7 @@ typedef struct tagList {
 extern ListInterface iList;
 #include "stringlist.h"
 #include "wstringlist.h"
+#include "intlist.h"
 /* -------------------------------------------------------------------
  *                           QUEUES
  * -------------------------------------------------------------------*/
@@ -631,6 +635,7 @@ typedef struct tagDeQueueInterface {
     size_t (*Sizeof)(Deque *d);
     Iterator *(*NewIterator)(Deque *Deq);
     int (*deleteIterator)(Iterator *);
+    size_t (*SizeofIterator)(Deque *);
     int (*Save)(Deque *d,FILE *stream, SaveFunction saveFn,void *arg);
     Deque *(*Load)(FILE *stream, ReadFunction readFn,void *arg);
     /* Deque specific functions */
@@ -670,6 +675,7 @@ typedef struct tagDlist {
     size_t (*Sizeof)(Dlist *dl);
     Iterator *(*NewIterator)(Dlist *);
     int (*deleteIterator)(Iterator *);
+    size_t (*SizeofIterator)(Dlist *);
     int (*Save)(Dlist *L,FILE *stream, SaveFunction saveFn,void *arg);
     Dlist *(*Load)(FILE *stream, ReadFunction loadFn,void *arg);
     size_t (*GetElementSize)(Dlist *dl);
@@ -742,6 +748,7 @@ typedef struct tagVector {
     size_t (*Sizeof)(Vector *AL);
     Iterator *(*NewIterator)(Vector *AL);
     int (*deleteIterator)(Iterator *);
+    size_t (*SizeofIterator)(Vector *);
     /* Writes the vector in binary form to a stream */
     int (*Save)(Vector *AL,FILE *stream, SaveFunction saveFn,void *arg);
     Vector *(*Load)(FILE *stream, ReadFunction readFn,void *arg);
@@ -835,6 +842,7 @@ typedef struct tagDictionary {
     size_t (*Sizeof)(Dictionary *dict);
     Iterator *(*NewIterator)(Dictionary *dict);
     int (*deleteIterator)(Iterator *);
+    size_t (*SizeofIterator)(Dictionary *);
     int (*Save)(Dictionary *Dict,FILE *stream, SaveFunction saveFn,void *arg);
     Dictionary * (*Load)(FILE *stream, ReadFunction readFn, void *arg);
     size_t (*GetElementSize)(Dictionary *d);
@@ -916,6 +924,7 @@ typedef struct tagHashTable {
                         const void *data);
     Iterator *(*NewIterator)(HashTable *);
     int (*deleteIterator)(Iterator *);
+    size_t (*SizeofIterator)(HashTable *ht);
     int (*Save)(HashTable *HT,FILE *stream, SaveFunction saveFn,void *arg);
     HashTable *(*Load)(FILE *stream, ReadFunction readFn, void *arg);
     DestructorFunction (*SetDestructor)(HashTable *v,DestructorFunction fn);
@@ -1029,6 +1038,7 @@ typedef struct tagTreeMapInterface {
     size_t (*Sizeof)(TreeMap *ST);
     Iterator *(*NewIterator)(TreeMap *);
     int (*deleteIterator)(Iterator *);
+    size_t (*SizeofIterator)(TreeMap *);
     int (*Save)(TreeMap *src,FILE *stream, SaveFunction saveFn,void *arg);
     int (*Add)(TreeMap *ST, void *Data,void *ExtraArgs); /* Adds one element. Given data is copied */
     int (*AddRange)(TreeMap *ST,size_t n, void *Data,void *ExtraArgs);
