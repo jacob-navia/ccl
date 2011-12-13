@@ -39,7 +39,6 @@ static int DivisionByZero(char *fnName)
 static int ErrorIncompatible(char *fnName)
 {
     return doerror(fnName,CONTAINER_ERROR_INCOMPATIBLE);
-	
 }
 
 static int NoMemory(char *fnName)
@@ -77,28 +76,6 @@ static unsigned SetFlags(ValArray *AL,unsigned newval)
 	return oldval;
 }
 
-
-static int Resize(ValArray *AL)
-{
-	size_t newcapacity;
-	ElementType *oldcontents;
-	int r = 1;
-	
-	newcapacity = AL->capacity + 1+AL->capacity/4;
-	oldcontents = AL->contents;
-	AL->contents = AL->Allocator->realloc(AL->contents,newcapacity*sizeof(ElementType));
-	if (AL->contents == NULL) {
-		NoMemory("Resize");
-		AL->contents = oldcontents;
-		r = CONTAINER_ERROR_NOMEMORY;
-	}
-	else {
-		AL->capacity = newcapacity;
-		AL->timestamp++;
-	}
-	return r;
-}
-
 static int ResizeTo(ValArray *AL,size_t newcapacity)
 {
 	ElementType *oldcontents;
@@ -107,13 +84,17 @@ static int ResizeTo(ValArray *AL,size_t newcapacity)
 	oldcontents = AL->contents;
 	AL->contents = AL->Allocator->realloc(AL->contents,newcapacity*sizeof(ElementType));
 	if (AL->contents == NULL) {
-		NoMemory("ResizeTo");
 		AL->contents = oldcontents;
-		return CONTAINER_ERROR_NOMEMORY;
+		return NoMemory("ResizeTo");
 	}
 	AL->capacity = newcapacity;
 	AL->timestamp++;
 	return 1;
+}
+
+static int Resize(ValArray *AL)
+{
+	return ResizeTo(AL,AL->capacity+1+AL->capacity/4);
 }
 
 /*------------------------------------------------------------------------
@@ -823,6 +804,7 @@ static int Sort(ValArray *AL)
 	if (AL->Slice) {
 		size_t i,j=0;
 		ElementType *sliceTab = AL->Allocator->calloc(sizeof(ElementType),AL->Slice->length);
+		if (sliceTab == NULL) return NoMemory("Sort");
 		for (i=AL->Slice->start;i<AL->Slice->length;i += AL->Slice->increment) {
 			sliceTab[j++] = AL->contents[i];
 		}
@@ -2156,6 +2138,10 @@ static ElementType Front(const ValArray *cb)
 	return r;
 }
 
+static size_t SizeofIterator(ValArray *cb)
+{
+	return sizeof (struct ValArrayIterator);
+}
 
 ValArrayInterface iValArrayInterface = {
 	Size,
@@ -2172,6 +2158,7 @@ ValArrayInterface iValArrayInterface = {
 	Sizeof,
 	NewIterator,
 	deleteIterator,
+	SizeofIterator,
 	Save,
 	Load,
 	GetElementSize,
