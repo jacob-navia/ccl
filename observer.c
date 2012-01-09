@@ -51,11 +51,11 @@ static int Subscribe(void *ObservedObject, ObserverFunction callback, unsigned f
 }
 
 
-static int Notify(const void *ObservedObject,unsigned operation,void *ExtraInfo1,void *ExtraInfo2)
+static int Notify(const void *ObservedObject,unsigned operation,const void *ExtraInfo1,const void *ExtraInfo2)
 {
 	int count=0;
 	size_t idx;
-	void *ExtraInfo[2];
+	const void *ExtraInfo[2];
 
 	ExtraInfo[0] = ExtraInfo1;
 	ExtraInfo[1] = ExtraInfo2;

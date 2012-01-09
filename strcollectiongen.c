@@ -71,7 +71,7 @@ static int ReadOnlyError(const ElementType *SC,const char *fnName)
     return doerrorCall(SC->RaiseError,fnName,CONTAINER_ERROR_READONLY);
 }
 
-static int BadArgError(ElementType *SC,const char *fnName)
+static int BadArgError(const ElementType *SC,const char *fnName)
 {
     return doerrorCall(SC->RaiseError,fnName,CONTAINER_ERROR_BADARG);
 }
@@ -82,7 +82,7 @@ static int IndexError(const ElementType *SC,const char *fnName)
     return doerrorCall(SC->RaiseError,fnName,CONTAINER_ERROR_INDEX);
 }
 
-static int NoMemoryError(ElementType *SC,const char *fnName)
+static int NoMemoryError(const ElementType *SC,const char *fnName)
 {
     return doerrorCall(SC->RaiseError,fnName,CONTAINER_ERROR_NOMEMORY);
 }
@@ -97,7 +97,7 @@ Output:        The duplicated string
 Errors:        Duplication of NULL is allowed and returns NULL. If no more
                memory is available the error function is called.
 ------------------------------------------------------------------------*/
-static CHAR_TYPE *DuplicateString(ElementType *SC,CHAR_TYPE *str,const char *fnname)
+static CHAR_TYPE *DuplicateString(const ElementType *SC,const CHAR_TYPE *str,const char *fnname)
 {
     CHAR_TYPE *result;
     if (str == NULL)      return NULL;
@@ -113,7 +113,7 @@ static CHAR_TYPE *DuplicateString(ElementType *SC,CHAR_TYPE *str,const char *fnn
 #define SC_IGNORECASE   (CONTAINER_READONLY << 1)
 #define CHUNKSIZE 20
 
-static size_t GetCount(ElementType *SC)
+static size_t GetCount(const ElementType *SC)
 { 
     if (SC == NULL) {
     	NullPtrError("GetCount");
@@ -138,7 +138,7 @@ static unsigned GetFlags(const ElementType *SC)
     return SC->Flags;
 }
 
-static ContainerMemoryManager *GetAllocator(ElementType *AL)
+static ContainerMemoryManager *GetAllocator(const ElementType *AL)
 {
     if (AL == NULL) {
     	return NULL;
@@ -146,7 +146,7 @@ static ContainerMemoryManager *GetAllocator(ElementType *AL)
     return AL->Allocator;
 }
 
-static int Mismatch(ElementType *a1,ElementType *a2,size_t *mismatch)
+static int Mismatch(const ElementType *a1,const ElementType *a2,size_t *mismatch)
 {
     size_t siz,i;
     CompareInfo ci;
@@ -164,8 +164,8 @@ static int Mismatch(ElementType *a1,ElementType *a2,size_t *mismatch)
     	return 1;
     p1 = a1->contents;
     p2 = a2->contents;
-    ci.ContainerLeft = a1;
-    ci.ContainerRight = a2;
+    ci.ContainerLeft = (ElementType *)a1;
+    ci.ContainerRight = (ElementType *)a2;
     ci.ExtraArgs = NULL;
     for (i=0;i<siz;i++) {
     	if (a1->strcompare((const void **)p1,(const void **)p2,&ci) != 0) {
@@ -240,7 +240,7 @@ static int Resize(ElementType *SC)
  Output:        Number of items in the collection or <= 0 if error
  Errors:
 ------------------------------------------------------------------------*/
-static int Add(ElementType *SC,CHAR_TYPE *newval)
+static int Add(ElementType *SC,const CHAR_TYPE *newval)
 {
     if (SC == NULL) {
     	return NullPtrError("Add");
@@ -267,7 +267,7 @@ static int Add(ElementType *SC,CHAR_TYPE *newval)
     return 1;
 }
 
-static int AddRange(ElementType *SC,size_t n, CHAR_TYPE **data)
+static int AddRange(ElementType *SC,size_t n, const CHAR_TYPE **data)
 {
     size_t newcapacity;
     CHAR_TYPE **p;
@@ -312,7 +312,7 @@ static int Append(ElementType *SC1, ElementType *SC2)
     if (SC1->Flags & CONTAINER_READONLY) {
     	return ReadOnlyError(SC1,"Append");
     }
-    return AddRange(SC1,SC2->count,SC2->contents);
+    return AddRange(SC1,SC2->count,(const CHAR_TYPE **)SC2->contents);
 }
 
 static int Clear(ElementType *SC)
@@ -337,7 +337,7 @@ static int Clear(ElementType *SC)
 }
 
 
-static int Contains(ElementType *SC,CHAR_TYPE *str)
+static int Contains(const ElementType *SC,const CHAR_TYPE *str)
 {
     int c;
     size_t i;
@@ -356,7 +356,7 @@ static int Contains(ElementType *SC,CHAR_TYPE *str)
     return 0;
 }
 
-static CHAR_TYPE **CopyTo(ElementType *SC)
+static CHAR_TYPE **CopyTo(const ElementType *SC)
 {
     CHAR_TYPE **result;
     size_t i;
@@ -386,7 +386,7 @@ static CHAR_TYPE **CopyTo(ElementType *SC)
     return result;
 }
 
-static int IndexOf(ElementType *SC,CHAR_TYPE *str,size_t *result)
+static int IndexOf(const ElementType *SC,const CHAR_TYPE *str,size_t *result)
 {
     size_t i;
 
@@ -426,7 +426,7 @@ static int Finalize(ElementType *SC)
     return 1;
 }
 
-static CHAR_TYPE *GetElement(const ElementType *SC,size_t idx)
+static const CHAR_TYPE *GetElement(const ElementType *SC,size_t idx)
 {
     if (SC == NULL) {
     	NullPtrError("GetElement");
@@ -447,7 +447,7 @@ static ElementType *IndexIn(const ElementType *SC,const Vector *AL)
 {
     ElementType *result = NULL;
     size_t i,top,idx;
-    CHAR_TYPE *p;
+    const CHAR_TYPE *p;
     int r;
 
     if (SC == NULL || AL == NULL) {
@@ -475,7 +475,7 @@ err:
     return result;
 }
 
-static int InsertAt(ElementType *SC,size_t idx,CHAR_TYPE *newval)
+static int InsertAt(ElementType *SC,size_t idx,const CHAR_TYPE *newval)
 {
     CHAR_TYPE *p;
     if (SC == NULL) {
@@ -627,7 +627,7 @@ static int RemoveRange(ElementType *SC,size_t start, size_t end)
 	return 1;
 }
 
-static int Erase(ElementType *SC,CHAR_TYPE *str)
+static int Erase(ElementType *SC,const CHAR_TYPE *str)
 {
     size_t i;
     if (SC == NULL) {
@@ -659,7 +659,7 @@ static int Erase(ElementType *SC,CHAR_TYPE *str)
     return 1;
 }
 
-static int PushBack(ElementType *SC,CHAR_TYPE *str)
+static int PushBack(ElementType *SC,const CHAR_TYPE *str)
 {
     CHAR_TYPE *r;
 
@@ -763,7 +763,7 @@ static size_t PopFront(ElementType *SC,CHAR_TYPE *buffer,size_t buflen)
 }
 
 
-static size_t GetCapacity(ElementType *SC)
+static size_t GetCapacity(const ElementType *SC)
 {
     if (SC == NULL) {
     	NullPtrError("SetCapacity");
@@ -841,7 +841,7 @@ static int ReplaceAt(ElementType *SC,size_t idx,CHAR_TYPE *newval)
     return 1;
 }
 
-static int Equal(ElementType *SC1,ElementType *SC2)
+static int Equal(const ElementType *SC1,const ElementType *SC2)
 {
     size_t i;
     CompareInfo *ci;
@@ -870,7 +870,7 @@ static int Equal(ElementType *SC1,ElementType *SC2)
     return 1;
 }
 
-static ElementType *Copy(ElementType *SC)
+static ElementType *Copy(const ElementType *SC)
 {
     size_t i;
     ElementType *result;
@@ -925,7 +925,7 @@ static bool Sort(ElementType *SC)
     return 1;
 }
 
-static size_t Sizeof(ElementType *SC)
+static size_t Sizeof(const ElementType *SC)
 {
     size_t result= sizeof(ElementType);
     size_t i;
@@ -1230,7 +1230,7 @@ static ElementType *Load(FILE *stream, ReadFunction readFn,void *arg)
     }
     return result;
 }
-static Vector *CastToArray(ElementType *SC)
+static Vector *CastToArray(const ElementType *SC)
 {
     Vector *AL = iVector.Create(sizeof(void *),SC->count);
     size_t i;
@@ -1322,7 +1322,7 @@ static ElementType *GetRange(ElementType *SC, size_t start,size_t end)
 }
 
 
-static int WriteToFile(ElementType *SC, char *fileName)
+static int WriteToFile(const ElementType *SC,const  char *fileName)
 {
     FILE *f;
     size_t i;
@@ -1354,7 +1354,7 @@ writeerror:
     return result;
 }
 
-static size_t FindFirstText(ElementType *SC,CHAR_TYPE *text)
+static size_t FindFirst(const ElementType *SC,const CHAR_TYPE *text)
 {
     size_t i;
 
@@ -1381,7 +1381,7 @@ static StringCompareFn SetCompareFunction(ElementType *SC,StringCompareFn fn)
     return oldFn;
 }
 
-static size_t FindNextText(ElementType *SC, CHAR_TYPE *text, size_t start)
+static size_t FindNext(const ElementType *SC,const CHAR_TYPE *text, size_t start)
 {
     size_t i;
 
@@ -1395,7 +1395,7 @@ static size_t FindNextText(ElementType *SC, CHAR_TYPE *text, size_t start)
     return 0;
 }
 
-static ElementType *FindText(ElementType *SC,CHAR_TYPE *text)
+static ElementType *FindText(const ElementType *SC,const CHAR_TYPE *text)
 {
     ElementType *result = NULL;
     size_t i;
@@ -1414,7 +1414,7 @@ static ElementType *FindText(ElementType *SC,CHAR_TYPE *text)
     return result;
 }
 
-static Vector *FindTextIndex(ElementType *SC,CHAR_TYPE *text)
+static Vector *FindTextIndex(const ElementType *SC,const CHAR_TYPE *text)
 {
     Vector *result = NULL;
     size_t i;
@@ -1433,7 +1433,7 @@ static Vector *FindTextIndex(ElementType *SC,CHAR_TYPE *text)
     return result;
 }
 
-static Vector *FindTextPositions(ElementType *SC,CHAR_TYPE *text)
+static Vector *FindTextPositions(const ElementType *SC,const CHAR_TYPE *text)
 {
     Vector *result = NULL;
     CHAR_TYPE *p;
@@ -1467,8 +1467,7 @@ static int Strcmp(const void **s1,const void **s2, CompareInfo *info)
  Errors:        If no more memory is available it returns NULL
  after calling the error function.
  ------------------------------------------------------------------------*/
-
-static ElementType *InitWithAllocator(ElementType *result,size_t startsize,ContainerMemoryManager *allocator)
+static ElementType *InitWithAllocator(ElementType *result,size_t startsize,const ContainerMemoryManager *allocator)
 {
     memset(result,0,sizeof(ElementType));
     result->VTable = &iElementType;
@@ -1485,11 +1484,11 @@ static ElementType *InitWithAllocator(ElementType *result,size_t startsize,Conta
     }
     result->RaiseError = iError.RaiseError;
     result->strcompare = Strcmp;
-    result->Allocator = allocator;
+    result->Allocator = (ContainerMemoryManager *)allocator;
     return result;
 
 }
-static ElementType  *CreateWithAllocator(size_t startsize,ContainerMemoryManager *allocator)
+static ElementType  *CreateWithAllocator(size_t startsize,const ContainerMemoryManager *allocator)
 {
     ElementType *result,*r1;
 
@@ -1576,7 +1575,7 @@ static DestructorFunction SetDestructor(ElementType *cb,DestructorFunction fn)
     return oldfn;
 }
 
-static CHAR_TYPE **GetData(ElementType *cb)
+static const CHAR_TYPE **GetData(const ElementType *cb)
 {
     if (cb == NULL) {
     	NullPtrError("GetData");
@@ -1586,10 +1585,10 @@ static CHAR_TYPE **GetData(ElementType *cb)
     	cb->RaiseError("GetData",CONTAINER_ERROR_READONLY);
     	return NULL;
     }
-    return cb->contents;
+    return (const CHAR_TYPE **)cb->contents;
 }
 
-static CHAR_TYPE *Back(const ElementType *cb)
+static const CHAR_TYPE *Back(const ElementType *cb)
 {
     if (cb == NULL) {
     	NullPtrError("Back");
@@ -1617,7 +1616,7 @@ static CHAR_TYPE *Front(const ElementType *cb)
     	return NULL;
     return cb->contents[0];
 }
-static size_t SizeofIterator(ElementType *gnored)
+static size_t SizeofIterator(const ElementType *ignored)
 {
 	return sizeof(struct strCollectionIterator);
 }
@@ -1650,8 +1649,8 @@ INTERFACE_TYP INTERFACE_OBJECT = {
     IndexOf,
     Sort,
     CastToArray,
-    FindFirstText,
-    FindNextText,
+    FindFirst,
+    FindNext,
     FindText,
     FindTextIndex,
     FindTextPositions,

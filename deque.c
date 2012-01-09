@@ -81,7 +81,7 @@ static int Finalize(Deque * d)
 
 /* Append the specified item to the right end of the deque (head).
 */
-static int Add(Deque * d, void* item) 
+static int Add(Deque * d,const void* item) 
 {
     DequeNode newNode;
     if (d == NULL)
@@ -271,7 +271,7 @@ static int PeekBack(Deque * d,void *outbuf)
  * This operation executes in O(n) time where n is the number of elements in
 * the deque due to a linear search for the item.
 */
-static int Remove(Deque * d, void* item) 
+static int Remove(Deque * d,const void* item) 
 {
     DequeNode tmp = d->tail;
     CompareInfo ci;

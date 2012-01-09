@@ -278,6 +278,19 @@ static void *GetElement(const HashTable *ht,const void *key, size_t klen)
     return NULL;
 }
 
+static int Contains(const HashTable *ht,const void *Key,size_t klen)
+{
+    if (ht == NULL)  {
+        return NullPtrError("Contains");
+    }
+    if (Key == NULL) {
+        iError.RaiseError("Contains",CONTAINER_ERROR_BADARG);
+        return CONTAINER_ERROR_BADARG;
+    }
+    return GetElement(ht,Key,klen) ? 1 : 0;
+}
+
+
 static size_t GetElementSize(const HashTable *l)
 {
     if (l) {
@@ -827,15 +840,16 @@ static DestructorFunction SetDestructor(HashTable *cb,DestructorFunction fn)
 
 
 HashTableInterface iHashTable = {
-Create,
-Init,
 Size,
-    Sizeof,
 GetFlags,
 SetFlags,
+Clear,
+Contains,
+Create,
+Init,
+Sizeof,
 GetElementSize,
 Add,
-Clear,
 GetElement,
 Search,
 Remove,

@@ -266,7 +266,7 @@ static void PrintstrCollection(strCollection *SC){
 static void teststrCollection(void)
 {
     strCollection *SC = istrCollection.Create(10);
-    char *p,buf[40];
+    const char *p; char buf[40];
 	size_t idx;
     istrCollection.Add(SC,"Martin");
     istrCollection.Insert(SC,(char *)"Jakob");
@@ -474,7 +474,7 @@ static int testStreamBuffers(void)
 {
 	StreamBuffer *sb = iStreamBuffer.Create(10);
 	int i;
-	char buf[20],*p;
+	char buf[20];const char *p;
 	
 	for (i=0; i<10; i++) {
 		sprintf(buf,"item %d",i+1);
