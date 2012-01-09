@@ -16,7 +16,7 @@ struct _StreamBuffer {
 #define FCLOSE_DESTROYS 8
 
 static int Finalize(StreamBuffer *b);
-static StreamBuffer *CreateWithAllocator(size_t size,ContainerMemoryManager *Allocator)
+static StreamBuffer *CreateWithAllocator(size_t size,const ContainerMemoryManager *Allocator)
 {
 	StreamBuffer *result;
 	
@@ -28,7 +28,7 @@ static StreamBuffer *CreateWithAllocator(size_t size,ContainerMemoryManager *All
 		return NULL;
 	}
 	memset(result,0,sizeof(StreamBuffer));
-	result->Allocator = Allocator;
+	result->Allocator = (ContainerMemoryManager *)Allocator;
 	result->Data = Allocator->malloc(size);
 	if (result->Data == NULL) {
 		Allocator->free(result);
@@ -107,7 +107,7 @@ static size_t Read(StreamBuffer *b, void *data, size_t siz)
 {
 	size_t len;
 	if (b == NULL || data == NULL || siz == 0) {
-		iError.RaiseError("iStreamBuffer.Add",CONTAINER_ERROR_BADARG);
+		iError.RaiseError("iStreamBuffer.Read",CONTAINER_ERROR_BADARG);
 		return 0;
 	}
 	if (b->Cursor >= b->Size)
@@ -132,14 +132,14 @@ static int SetPosition(StreamBuffer *b,size_t pos)
 	return 1;
 }
 
-static size_t GetPosition(StreamBuffer *b)
+static size_t GetPosition(const StreamBuffer *b)
 {
 	if (b == NULL)
 		return 0;
 	return b->Cursor;
 }
 
-static size_t StreamBufferSize(StreamBuffer *b)
+static size_t StreamBufferSize(const StreamBuffer *b)
 {
 	if (b == NULL)
 		return sizeof(StreamBuffer);
@@ -168,7 +168,7 @@ static int Finalize(StreamBuffer *b)
 	return 1;
 }
 
-static char *GetData(StreamBuffer *b)
+static const char *GetData(const StreamBuffer *b)
 {
 	if (b == NULL) {
 		iError.RaiseError("iStreamBuffer.Finalize",CONTAINER_ERROR_BADARG);
@@ -236,14 +236,14 @@ static DestructorFunction SetDestructor(CircularBuffer *cb,DestructorFunction fn
 	return oldfn;
 }
 	
-static size_t Size(CircularBuffer *cb)
+static size_t Size(const CircularBuffer *cb)
 {
 	if (cb == NULL)
 		return sizeof(CircularBuffer);
 	return cb->head - cb->tail;
 }
 
-static int Add( CircularBuffer * b, void *data_element)
+static int Add( CircularBuffer * b,const void *data_element)
 {
     unsigned char *ring_data = NULL;
 	int result = 1;
@@ -294,7 +294,7 @@ static int PeekFront(CircularBuffer *b,void *result)
 	return 1;
 }
 
-static CircularBuffer *CreateCBWithAllocator(size_t sizElement,size_t sizeBuffer,ContainerMemoryManager *allocator)
+static CircularBuffer *CreateCBWithAllocator(size_t sizElement,size_t sizeBuffer,const ContainerMemoryManager *allocator)
 {
 	CircularBuffer *result;
 	
@@ -310,7 +310,7 @@ static CircularBuffer *CreateCBWithAllocator(size_t sizElement,size_t sizeBuffer
 	memset(result,0,sizeof(CircularBuffer));
 	result->maxCount = sizeBuffer;
 	result->ElementSize = sizElement;
-	result->Allocator = allocator;
+	result->Allocator = (ContainerMemoryManager *)allocator;
 	sizElement = sizElement*sizeBuffer; /* Here we should test for overflow */
 	result->data = allocator->malloc(sizElement);
 	if (result->data == NULL) {
@@ -360,7 +360,7 @@ static int CBFinalize(CircularBuffer *cb)
 	return 1;
 }
 
-static size_t Sizeof(CircularBuffer *cb)
+static size_t Sizeof(const CircularBuffer *cb)
 {
 	size_t result = sizeof(CircularBuffer);
 	if (cb == NULL)

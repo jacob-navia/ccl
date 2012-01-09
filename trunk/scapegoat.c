@@ -165,7 +165,7 @@ static struct Node *bt_last (const TreeMap *bt)
 }
 /* Searches BT for a node equal to TARGET.
    Returns the node if found, or a null pointer otherwise. */
-static struct Node *find (const TreeMap *bt, void *data)
+static struct Node *find (const TreeMap *bt,const void *data)
 {
   const struct Node *p;
   int cmp;
@@ -571,7 +571,7 @@ static void *Find(TreeMap *tree,void *data,void *ExtraArgs)
     return NULL;
 }
 
-static int Erase(TreeMap *tree, void * element,void *ExtraArgs)
+static int Erase(TreeMap *tree, const void * element,void *ExtraArgs)
 {
     struct Node *n;
     CompareInfo cInfo;

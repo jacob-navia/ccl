@@ -437,7 +437,7 @@ static void **CopyTo(Vector *AL)
 	return result;
 }
 
-static int IndexOf(Vector *AL,void *data,void *ExtraArgs,size_t *result)
+static int IndexOf(const Vector *AL,const void *data,void *ExtraArgs,size_t *result)
 {
 	size_t i;
 	char *p;
@@ -451,7 +451,7 @@ static int IndexOf(Vector *AL,void *data,void *ExtraArgs,size_t *result)
 		return CONTAINER_ERROR_BADARG;
 	}
 	p = AL->contents;
-	ci.ContainerLeft = AL;
+	ci.ContainerLeft = (Vector *)AL;
 	ci.ContainerRight = NULL;
 	ci.ExtraArgs = ExtraArgs;
 	for (i=0; i<AL->count;i++) {
@@ -652,7 +652,7 @@ static int RemoveRange(Vector *AL,size_t start, size_t end)
 }
 
 
-static int Remove(Vector *AL,void *str)
+static int Remove(Vector *AL,const void *str)
 {
 	size_t idx;
 	int i = IndexOf(AL,str,NULL,&idx);
@@ -661,12 +661,12 @@ static int Remove(Vector *AL,void *str)
 	return EraseAt(AL,idx);
 }
 
-static int PushBack(Vector *AL,void *str)
+static int PushBack(Vector *AL,const void *str)
 {
 	if (AL == NULL) {
 		return NullPtrError("PushBack");
 	}
-	return InsertAt(AL,AL->count,str);
+	return InsertAt(AL,AL->count,(void *)str);
 }
 
 /*------------------------------------------------------------------------

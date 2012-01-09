@@ -1,7 +1,7 @@
 #include "containers.h"
 #include "ccl_internal.h"
 
-static size_t Size(GenericContainer *gen)
+static size_t Size(const GenericContainer *gen)
 {
 	if (gen == NULL) {
 		iError.RaiseError("iGeneric.Size",CONTAINER_ERROR_BADARG);
@@ -10,7 +10,7 @@ static size_t Size(GenericContainer *gen)
 	return gen->vTable->Size(gen);
 }
 
-static unsigned GetFlags(GenericContainer  *gen)
+static unsigned GetFlags(const GenericContainer  *gen)
 {
 	if (gen == NULL) {
 		iError.RaiseError("iGneric.GetFlags",CONTAINER_ERROR_BADARG);
@@ -36,12 +36,12 @@ static int Clear(GenericContainer *gen)
 	return gen->vTable->Clear(gen);
 }
 
-static int Contains(GenericContainer *gen,void *value)
+static int Contains(const GenericContainer *gen,const void *value)
 {
 	return gen->vTable->Contains(gen,value);
 }
 
-static int Erase(GenericContainer *gen,void *elem)
+static int Erase(GenericContainer *gen,const void *elem)
 {
 	return gen->vTable->Erase(gen,elem);
 }
@@ -56,12 +56,12 @@ static void Apply(GenericContainer *Gen,int (*Applyfn)(void *,void * arg),void *
 	Gen->vTable->Apply(Gen,Applyfn,arg);
 }
 
-static int Equal(GenericContainer *Gen1,GenericContainer *Gen2)
+static int Equal(const GenericContainer *Gen1,const GenericContainer *Gen2)
 {
 	return Gen1->vTable->Equal(Gen1,Gen2);
 }
 
-static GenericContainer *Copy(GenericContainer *src)
+static GenericContainer *Copy(const GenericContainer *src)
 {
 	return src->vTable->Copy(src);
 }
@@ -71,7 +71,7 @@ static ErrorFunction SetErrorFunction(GenericContainer *Gen,ErrorFunction fn)
 	return Gen->vTable->SetErrorFunction(Gen,fn);
 }
 
-static size_t Sizeof(GenericContainer *gen)
+static size_t Sizeof(const GenericContainer *gen)
 {
 	return gen->vTable->Sizeof(gen);
 }
@@ -83,7 +83,7 @@ static Iterator *NewIterator(GenericContainer *gen)
 }
 
 
-static size_t SizeofIterator(GenericContainer *gen)
+static size_t SizeofIterator(const GenericContainer *gen)
 {
 	return gen->vTable->SizeofIterator(gen);
 }
@@ -101,7 +101,7 @@ static int deleteIterator(Iterator *git)
 	return gen->vTable->deleteIterator(git);
 }
 
-static int Save(GenericContainer *gen, FILE *stream,SaveFunction saveFn,void *arg)
+static int Save(const GenericContainer *gen, FILE *stream,SaveFunction saveFn,void *arg)
 {
 	return gen->vTable->Save(gen,stream,saveFn,arg);
 }

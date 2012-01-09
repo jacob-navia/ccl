@@ -11,7 +11,7 @@ static const guid DlistGuid = {0xac2525ff, 0x2e2a, 0x4540,
 #define CONTAINER_READONLY	1
 #define LIST_HASPOINTER	2
 #define CHUNK_SIZE	1000
-static int Add_nd(Dlist *l,void *elem);
+static int Add_nd(Dlist *l,const void *elem);
 /*------------------------------------------------------------------------
  Procedure:     new_link ID:1
  Purpose:       Allocation of a new Dlist element. If the element
@@ -29,7 +29,7 @@ static int Add_nd(Dlist *l,void *elem);
  Output:        A pointer to the new Dlist element (can be NULL)
  Errors:        If there is no memory returns NULL
 ------------------------------------------------------------------------*/
-static dlist_element *new_dlink(Dlist *l,void *data,const char *fname)
+static dlist_element *new_dlink(Dlist *l,const void *data,const char *fname)
 {
     dlist_element *result;
 
@@ -82,7 +82,7 @@ static Dlist *Init(Dlist *result,size_t elementsize)
                 routine is called. If there is no memory result is
                 NULL.
 ------------------------------------------------------------------------*/
-static Dlist *CreateWithAllocator(size_t elementsize,ContainerMemoryManager *allocator)
+static Dlist *CreateWithAllocator(size_t elementsize,const ContainerMemoryManager *allocator)
 {
     Dlist *result,*r;
 
@@ -98,7 +98,7 @@ static Dlist *CreateWithAllocator(size_t elementsize,ContainerMemoryManager *all
     r = Init(result,elementsize);
     if (r == NULL)
     	allocator->free(result);
-    else r->Allocator = allocator;
+    else r->Allocator = (ContainerMemoryManager *)allocator;
     return r;
 }
 
@@ -107,11 +107,11 @@ static Dlist *Create(size_t elementsize)
     return CreateWithAllocator(elementsize,CurrentMemoryManager);
 }
 
-static Dlist *InitializeWith(size_t elementSize,size_t n,void *Data)
+static Dlist *InitializeWith(size_t elementSize,size_t n,const void *Data)
 {
         Dlist *result = Create(elementSize);
         size_t i;
-        char *pData = Data;
+        const char *pData = Data;
         if (result == NULL)
                 return result;
         for (i=0; i<n; i++) {
@@ -224,7 +224,7 @@ static int Clear(Dlist *l)
  Errors:        The element to be added can't be NULL, and the Dlist
                 must be writable.
 ------------------------------------------------------------------------*/
-static int Add_nd(Dlist *l,void *elem)
+static int Add_nd(Dlist *l,const void *elem)
 {
         dlist_element *newl = new_dlink(l,elem,"iList.Add");
         if (newl == 0)
@@ -242,7 +242,7 @@ static int Add_nd(Dlist *l,void *elem)
     return 1;
 }
 
-static int Add(Dlist *l,void *elem)
+static int Add(Dlist *l,const void *elem)
 {
     int r;
     if (elem == NULL || l == NULL) {
@@ -265,9 +265,9 @@ static int Add(Dlist *l,void *elem)
     return 1;
 }
 
-static int AddRange(Dlist * AL,size_t n, void *data)
+static int AddRange(Dlist * AL,size_t n, const void *data)
 {
-        unsigned char *p;
+        const unsigned char *p;
 
         if (AL == NULL) {
                 return iError.NullPtrError("iList.AddRange");
@@ -323,7 +323,7 @@ static unsigned SetFlags(Dlist *l,unsigned newval)
  Output:        The state of the flag
  Errors:        None
 ------------------------------------------------------------------------*/
-static unsigned GetFlags(Dlist *l)
+static unsigned GetFlags(const Dlist *l)
 {
     if (l == NULL) {
     	iError.NullPtrError("iDlist.Size");
@@ -339,7 +339,7 @@ static unsigned GetFlags(Dlist *l)
  Output:        The number of elements
  Errors:        None
 ------------------------------------------------------------------------*/
-static size_t Size(Dlist *l)
+static size_t Size(const Dlist *l)
 {
     if (l == NULL) {
     	iError.NullPtrError("iDlist.Size");
@@ -380,7 +380,7 @@ static CompareFunction SetCompareFunction(Dlist *l,CompareFunction fn)
  Output:        A pointer to the new Dlist
  Errors:        None. Returns NULL if therfe is no memory left.
 ------------------------------------------------------------------------*/
-static Dlist *Copy(Dlist *l)
+static Dlist *Copy(const Dlist *l)
 {
     Dlist *result;
     dlist_element *rvp,*newRvp,*last;
@@ -455,13 +455,13 @@ static int Finalize(Dlist *l)
  Output:        A pointer to the data
  Errors:        NULL if error in the positgion index
 ------------------------------------------------------------------------*/
-static void * GetElement(Dlist *l,int position)
+static const void * GetElement(const Dlist *l,int position)
 {
     dlist_element *rvp;
 
 
     if (l == NULL) {
-    	iError.NullPtrError("iDlist.ReplaceAt");
+    	iError.NullPtrError("iDlist.GetElement");
     	return 0;
     }
     if (position >= (signed)l->count || position < 0) {
@@ -480,7 +480,7 @@ static void * GetElement(Dlist *l,int position)
     return rvp->Data;
 }
 
-static int ReplaceAt(Dlist *l,size_t position,void *data)
+static int ReplaceAt(Dlist *l,size_t position,const void *data)
 {
     dlist_element *rvp;
 
@@ -578,7 +578,7 @@ static Dlist *GetRange(Dlist *l,size_t start,size_t end)
  Output:        Returns 1 if the two lists are equal, zero otherwise
  Errors:        None
 ------------------------------------------------------------------------*/
-static bool Equal(Dlist *l1,Dlist *l2)
+static bool Equal(const Dlist *l1,const Dlist *l2)
 {
     dlist_element *link1,*link2;
     CompareInfo ci;
@@ -599,8 +599,8 @@ static bool Equal(Dlist *l1,Dlist *l2)
     fn = l1->Compare;
     link1 = l1->First;
     link2 = l2->First;
-    ci.ContainerLeft = l1;
-    ci.ContainerRight = l2;
+    ci.ContainerLeft = (Dlist *)l1;
+    ci.ContainerRight = (Dlist *)l2;
     ci.ExtraArgs = NULL;
     while (link1 && link2) {
     	if (fn(link1->Data,link2->Data,&ci))
@@ -657,7 +657,7 @@ static int PushFront(Dlist *l,void *pdata)
     return 1;
 }
 
-static int PushBack(Dlist *l,void *pdata)
+static int PushBack(Dlist *l,const void *pdata)
 {
     dlist_element *rvp;
 
@@ -757,7 +757,7 @@ static int PopBack(Dlist *l,void *result)
     return 1;
 }
 
-static int InsertAt(Dlist *l,size_t pos,void *pdata)
+static int InsertAt(Dlist *l,size_t pos,const void *pdata)
 {
     dlist_element *elem;
 
@@ -952,7 +952,7 @@ static int Reverse(Dlist *l)
 /* Searches a Dlist for a given data item
    Returns a positive integer if found, negative if the end is reached
 */
-static int IndexOf(Dlist *l,void *ElementToFind, void * args,size_t *result)
+static int IndexOf(const Dlist *l,const void *ElementToFind, void * args,size_t *result)
 {
     dlist_element *rvp;
     int r,i=0;
@@ -968,7 +968,7 @@ static int IndexOf(Dlist *l,void *ElementToFind, void * args,size_t *result)
     }
     rvp = l->First;
     fn = l->Compare;
-    ci.ContainerLeft = l;
+    ci.ContainerLeft = (Dlist *)l;
     ci.ContainerRight = NULL;
     ci.ExtraArgs = args;
     while (rvp) {
@@ -983,7 +983,7 @@ static int IndexOf(Dlist *l,void *ElementToFind, void * args,size_t *result)
     return CONTAINER_ERROR_NOTFOUND;
 }
 
-static int Erase(Dlist *l,void *elem)
+static int Erase(Dlist *l,const void *elem)
 {
     size_t idx;
     int i;
@@ -1009,7 +1009,7 @@ static int Erase(Dlist *l,void *elem)
  otherwise
  Errors:        The same as the function IndexOf
  ------------------------------------------------------------------------*/
-static int Contains(Dlist *l,void *data)
+static int Contains(const Dlist *l,const void *data)
 {
     size_t r;
     int i;
@@ -1024,7 +1024,7 @@ static int Contains(Dlist *l,void *data)
     return (i < 0) ? 0 : 1;
 }
 
-static int CopyElement(Dlist *l,size_t position,void *outBuffer)
+static int CopyElement(const Dlist *l,size_t position,void *outBuffer)
 {
     dlist_element *rvp;
 
@@ -1370,7 +1370,7 @@ static int Append(Dlist *l1, Dlist *l2)
 }
 
 
-static size_t GetElementSize(Dlist *d) 
+static size_t GetElementSize(const Dlist *d) 
 { 
     if (d == NULL) {
     	iError.NullPtrError("iDlist.GetElementSize");
@@ -1379,7 +1379,7 @@ static size_t GetElementSize(Dlist *d)
 
     return d->ElementSize;
 }
-static size_t Sizeof(Dlist *dl)
+static size_t Sizeof(const Dlist *dl)
 {
     if (dl == NULL) {
     	return sizeof(Dlist);
@@ -1406,10 +1406,11 @@ static int DefaultSaveFunction(const void *element,void *arg, FILE *Outfile)
     return len == fwrite(str,1,len,Outfile);
 }
 
-static int Save(Dlist *L,FILE *stream, SaveFunction saveFn,void *arg)
+static int Save(const Dlist *L,FILE *stream, SaveFunction saveFn,void *arg)
 {
     size_t i;
     dlist_element *rvp;
+    size_t elmsiz;
 
     if (stream == NULL || L == NULL ) {
     	if (L)
@@ -1420,7 +1421,9 @@ static int Save(Dlist *L,FILE *stream, SaveFunction saveFn,void *arg)
     }
     if (saveFn == NULL) {
     	saveFn = DefaultSaveFunction;
-    	arg = &L->ElementSize;
+        /* Copy element size to preserve const semantics */
+        elmsiz = L->ElementSize;
+    	arg = &elmsiz;
     }
     if (fwrite(&DlistGuid,sizeof(guid),1,stream) == 0)
     	return EOF;
@@ -1519,7 +1522,7 @@ static DestructorFunction SetDestructor(Dlist *cb,DestructorFunction fn)
     	cb->DestructorFn = fn;
     return oldfn;
 }
-static ContainerMemoryManager *GetAllocator(Dlist *l)
+static ContainerMemoryManager *GetAllocator(const Dlist *l)
 {
     if (l == NULL)
         return NULL;
@@ -1557,7 +1560,7 @@ static void *Front(const Dlist *l)
     return l->First->Data;
 }
 
-static size_t SizeofIterator(Dlist *l)
+static size_t SizeofIterator(const Dlist *l)
 {
 	return sizeof(struct DListIterator);
 }

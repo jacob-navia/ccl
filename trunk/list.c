@@ -59,7 +59,7 @@ static int NullPtrError(char *fnName)
  Output:        A pointer to the new list element (can be NULL)
  Errors:        If there is no memory returns NULL
 ------------------------------------------------------------------------*/
-static ListElement *NewLink(List *li,void *data,const char *fname)
+static ListElement *NewLink(List *li,const void *data,const char *fname)
 {
     ListElement *result;
 
@@ -163,7 +163,7 @@ static int Clear(List *l)
  Errors:        The element to be added can't be NULL, and the list
                 must be writable.
 ------------------------------------------------------------------------*/
-static int Add_nd(List *l,void *elem)
+static int Add_nd(List *l,const void *elem)
 {
     ListElement *newl;
 
@@ -182,7 +182,7 @@ static int Add_nd(List *l,void *elem)
     return 1;
 }
 
-static int Add(List *l,void *elem)
+static int Add(List *l,const void *elem)
 {
     int r;
     if (l == NULL || elem == NULL) return NullPtrError("Add");
@@ -739,7 +739,7 @@ static int InsertIn(List *l, size_t idx,List *newData)
     return 1;
 }
 
-static int InsertAt(List *l,size_t pos,void *pdata)
+static int InsertAt(List *l,size_t pos,const void *pdata)
 {
     ListElement *elem;
     if (l == NULL || pdata == NULL) {
@@ -785,7 +785,7 @@ static int InsertAt(List *l,size_t pos,void *pdata)
     return 1;
 }
 
-static int Erase(List *l,void *elem)
+static int Erase(List *l,const void *elem)
 {
     size_t position;
     ListElement *rvp,*previous;
