@@ -199,6 +199,7 @@ typedef struct tagGenericContainerInterface {
     int (*Clear)(GenericContainer *Gen);
     int (*Contains)(const GenericContainer *Gen,const void *Value);
     int (*Erase)(GenericContainer *Gen,const void *);
+    int (*EraseAll)(GenericContainer *Gen,const void *);
     int (*Finalize)(GenericContainer *Gen);
     void (*Apply)(GenericContainer *Gen,int (*Applyfn)(void *,void * arg),void *arg);
     int (*Equal)(const GenericContainer * Gen1,const GenericContainer * Gen2);
@@ -226,6 +227,7 @@ typedef struct tagSequentialContainerInterface {
     int (*Clear)(SequentialContainer *Gen);
     int (*Contains)(const SequentialContainer *Gen,const void *Value);
     int (*Erase)(SequentialContainer *Gen,const void *);
+    int (*EraseAll)(SequentialContainer *Gen,const void *);
     int (*Finalize)(SequentialContainer *Gen);
     void (*Apply)(SequentialContainer *Gen,int (*Applyfn)(void *,void * arg),void *arg);
     int (*Equal)(const SequentialContainer *Gen1,const SequentialContainer *Gen2);
@@ -323,6 +325,7 @@ typedef struct tagstrCollection {
     int (*Clear)(strCollection *SC);
     int (*Contains)(const strCollection *SC,const char *str);
     int (*Erase)(strCollection *SC,const char *);
+    int (*EraseAll)(strCollection *SC,const char *);
     int (*Finalize)(strCollection *SC);
     int (*Apply)(strCollection *SC,int (*Applyfn)(char *,void * arg),void *arg);
     int (*Equal)(const strCollection *SC1,const strCollection *SC2);
@@ -403,6 +406,7 @@ typedef struct tagWstrCollection {
     int (*Clear)(WstrCollection *SC);
     int (*Contains)(const WstrCollection *SC,const wchar_t *str);
     int (*Erase)(WstrCollection *SC,const wchar_t *);
+    int (*EraseAll)(WstrCollection *SC,const wchar_t *str);
     int (*Finalize)(WstrCollection *SC);
     int (*Apply)(WstrCollection *SC,int (*Applyfn)(wchar_t *,void * arg),void *arg);
     int (*Equal)(const WstrCollection *SC1,const WstrCollection *SC2);
@@ -480,6 +484,7 @@ typedef struct tagList {
     int (*Clear)(List *L);
     int (*Contains)(const List *L,const void *element);
     int (*Erase)(List *L,const void *);
+    int (*EraseAll)(List *l,const void *);
     int (*Finalize)(List *L);
     int (*Apply)(List *L,int(Applyfn)(void *,void *),void *arg);
     int (*Equal)(const List *l1,const List *l2);
@@ -554,13 +559,14 @@ extern QueueInterface iQueue;
  *                           Double Ended QUEues                      *
  * -------------------------------------------------------------------*/
 typedef struct deque_t Deque;
-typedef struct tagDeQueueInterface {
+typedef struct tagDequeInterface {
     size_t (*Size)(Deque *Q);
     unsigned (*GetFlags)(Deque *Q);
     unsigned (*SetFlags)(Deque *Q,unsigned newFlags);
     int (*Clear)(Deque *Q);
     size_t (*Contains)(Deque * d, void* item);
     int (*Erase)(Deque * d, const void* item);
+    int (*EraseAll)(Deque * d, const void* item);
     int (*Finalize)(Deque *Q);
     void (*Apply)(Deque *Q,int (*Applyfn)(void *,void * arg),void *arg);
     int (*Equal)(Deque *d1,Deque *d2);
@@ -601,6 +607,7 @@ typedef struct tagDlist {
     int (*Clear)(Dlist *dl);       
     int (*Contains)(const Dlist *dl,const void *element);
     int (*Erase)(Dlist *AL,const void *);
+    int (*EraseAll)(Dlist *AL,const void *);
     int (*Finalize)(Dlist *AL);
     int (*Apply)(Dlist *L,int(Applyfn)(void *elem,void *extraArg),void *extraArg);
     bool (*Equal)(const Dlist *l1,const Dlist *l2); 
@@ -656,55 +663,37 @@ extern DlistInterface iDlist;
 
 /* Definition of the functions associated with this type. */
 typedef struct tagVector {
-    /* Returns the number of elements stored */
     size_t (*Size)(const Vector *AL);
-    /* Is this collection read only? */
     unsigned (*GetFlags)(const Vector *AL);
-    /* Sets this collection read-only or unsets the read-only flag */
     unsigned (*SetFlags)(Vector *AL,unsigned flags);
-    /* Clears all data and frees the memory */
     int (*Clear)(Vector *AL);
     /*Case sensitive search of a character string in the data */
-    int (*Contains)(Vector *AL,void *str,void *ExtraArgs);
-    /* erases the given string if found */
+    int (*Contains)(const Vector *AL,const void *element,void *ExtraArgs);
     int (*Erase)(Vector *AL,const void *);
-    /* Frees the memory used by the collection */
+    int (*EraseAll)(Vector *AL,const void *);
     int (*Finalize)(Vector *AL);
-    /* Calls the given function for all strings in the given collection.
-       "Arg" is a user supplied argument (can be NULL) that is passed
-       to the function to call */
     int (*Apply)(Vector *AL,int (*Applyfn)(void *element,void * arg),void *arg);
-    int (*Equal)(Vector *first,Vector *second);
-        /* Copies an array list */
-    Vector *(*Copy)(Vector *AL);
+    int (*Equal)(const Vector *first,const Vector *second);
+    Vector *(*Copy)(const Vector *AL);
     ErrorFunction (*SetErrorFunction)(Vector *AL,ErrorFunction);
-    size_t (*Sizeof)(Vector *AL);
+    size_t (*Sizeof)(const Vector *AL);
     Iterator *(*NewIterator)(Vector *AL);
     int (*InitIterator)(Vector *V,void *buf);
     int (*deleteIterator)(Iterator *);
     size_t (*SizeofIterator)(Vector *);
-    /* Writes the vector in binary form to a stream */
-    int (*Save)(Vector *AL,FILE *stream, SaveFunction saveFn,void *arg);
+    int (*Save)(const Vector *AL,FILE *stream, SaveFunction saveFn,void *arg);
     Vector *(*Load)(FILE *stream, ReadFunction readFn,void *arg);
     size_t (*GetElementSize)(const Vector *AL);
 
     /* Sequential container specific fields */
 
-    /* Adds one element at the end. Given element is copied */
-    int (*Add)(Vector *AL,void *newval);
-    /* Returns the string at the given position */
+    int (*Add)(Vector *AL,const void *newval);
     void *(*GetElement)(const Vector *AL,size_t idx);
-    /* Pushes a string, using the collection as a stack */
     int (*PushBack)(Vector *AL,const void *str);
-    /* Pops the last string off the collection */
     int (*PopBack)(Vector *AL,void *result);
-    /* Inserts an element at the given position */
     int (*InsertAt)(Vector *AL,size_t idx,void *newval);
-    /*erases the string at the indicated position */
     int (*EraseAt)(Vector *AL,size_t idx);
-    /* Replaces the character string at the given position with a new one */
     int (*ReplaceAt)(Vector *AL,size_t idx,void *newval);
-    /*Returns the 1 based index of the given string or 0 if not found */
     int (*IndexOf)(const Vector *AL,const void *data,void *ExtraArgs,size_t *result);
 
     /* Vector container specific fields */
@@ -712,20 +701,18 @@ typedef struct tagVector {
     int (*Insert)(Vector *AL,void *);
     int (*InsertIn)(Vector *AL, size_t idx,Vector *newData);
     Vector *(*IndexIn)(Vector *SC,Vector *AL);
-    /* Returns the current capacity of the collection */
     size_t (*GetCapacity)(const Vector *AL);
-    /* Sets the capacity in the collection */
     int (*SetCapacity)(Vector *AL,size_t newCapacity);
 
     CompareFunction (*SetCompareFunction)(Vector *l,CompareFunction fn);
     int (*Sort)(Vector *AL);
     Vector *(*Create)(size_t elementsize,size_t startsize);
-    Vector *(*CreateWithAllocator)(size_t elementsize,size_t startsize,ContainerMemoryManager *allocator);
+    Vector *(*CreateWithAllocator)(size_t elementsize,size_t startsize,const ContainerMemoryManager *allocator);
     Vector *(*Init)(Vector *r,size_t elementsize,size_t startsize);
-    int (*AddRange)(Vector *AL,size_t n, void *newvalues);
+    int (*AddRange)(Vector *AL,size_t n,const void *newvalues);
     Vector *(*GetRange)(const Vector *AL, size_t start, size_t end);
-    int (*CopyElement)(Vector *AL,size_t idx,void *outbuf);
-    void **(*CopyTo)(Vector *AL);
+    int (*CopyElement)(const Vector *AL,size_t idx,void *outbuf);
+    void **(*CopyTo)(const Vector *AL);
     int (*Reverse)(Vector *AL);
     int (*Append)(Vector *AL1, Vector *AL2);
     int (*Mismatch)(Vector *a1,Vector *a2,size_t *mismatch);
@@ -735,8 +722,8 @@ typedef struct tagVector {
     int (*Select)(Vector *src,Mask *m);
     Vector *(*SelectCopy)(Vector *src,Mask *m);
     int (*Resize)(Vector *AL,size_t newcapacity);
-    Vector *(*InitializeWith)(size_t elementSize, size_t n, void *Data);
-    void **(*GetData)(Vector *AL);
+    Vector *(*InitializeWith)(size_t elementSize, size_t n,const void *Data);
+    void **(*GetData)(const Vector *AL);
     void *(*Back)(const Vector *AL);
     void *(*Front)(const Vector *AL);
     int (*RemoveRange)(Vector *SC,size_t start,size_t end);
@@ -951,17 +938,10 @@ typedef struct tagBitString {
     size_t (*Size)(BitString *BitStr); /* Returns the number of elements stored */
     unsigned (*GetFlags)(BitString *BitStr); /* gets the flags */
     unsigned (*SetFlags)(BitString *BitStr,unsigned flags);/* Sets flags */
-    /* Clears all data and frees the memory */
     int (*Clear)(BitString *BitStr);
-    /* Searches a bit in the data */
     int (*Contains)(BitString *BitStr,BitString *str,void *ExtraArgs);
-    /* erases the given string if found */
     int (*Erase)(BitString *BitStr,bool bit);
-    /* Frees the memory used by the collection */
     int         (*Finalize)(BitString *BitStr);
-    /* Calls the given function for all strings in the given collection.
-     "Arg" is a user supplied argument (can be NULL) that is passed
-     to the function to call */
     int        (*Apply)(BitString *BitStr,int (*Applyfn)(bool ,void * arg),void *arg);
     int       (*Equal)(BitString *bsl,BitString *bsr);
     BitString *(*Copy)(BitString *);
@@ -976,18 +956,13 @@ typedef struct tagBitString {
 
     /* Sequential container specific functions */
     
-    int (*Add)(BitString *BitStr,int);     /* Adds one bit at the end. */
-    /* Returns the string at the given position */
+    int (*Add)(BitString *BitStr,int);
     int (*GetElement)(BitString *BitStr,size_t idx);
-    /* Pushes a bit */
-    int        (*PushBack)(BitString *BitStr,int val);
-    /* Pops the last bit off */
+    int  (*PushBack)(BitString *BitStr,int val);
     int       (*PopBack)(BitString *BitStr);
     /* Inserts a string at the given position */
     size_t (*InsertAt)(BitString *BitStr,size_t idx,bool bit);
-    /*erases the string at the indicated position */
     int (*EraseAt)(BitString *BitStr,size_t idx);
-    /* Replaces the bit at the given position with a new one */
     int        (*ReplaceAt)(BitString *BitStr,size_t idx,bool newval);
     int (*IndexOf)(BitString *BitStr,bool SearchedBit,void *ExtraArgs,size_t *result);
 
@@ -995,13 +970,9 @@ typedef struct tagBitString {
     
     /* Inserts a bit at the position zero. */
     size_t     (*Insert)(BitString *BitStr,bool bit);
-    /* sets the given element to a new value */
     int        (*SetElement)(BitString *bs,size_t position,bool b);
-    /* Returns the current capacity of the collection */
     size_t     (*GetCapacity)(BitString *BitStr);
-    /* Sets the capacity if there are no items in the collection */
     int        (*SetCapacity)(BitString *BitStr,size_t newCapacity);
-    /* Bit string specific functions */
     BitString *(*Or)(BitString *left,BitString *right);
     int        (*OrAssign)(BitString *bsl,BitString *bsr);
     BitString *(*And)(BitString *bsl,BitString *bsr);
@@ -1022,7 +993,6 @@ typedef struct tagBitString {
     size_t     (*Print)(BitString *b,size_t bufsiz,unsigned char *out);
     int        (*Append)(BitString *left,BitString *right);
     int        (*Memset)(BitString *,size_t start,size_t stop,bool newval);
-    /* creates a bit string */
     BitString *(*Create)(size_t bitlen);
     BitString *(*Init)(BitString *BitStr,size_t bitlen);
     unsigned char *(*GetData)(BitString *BitStr);

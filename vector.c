@@ -42,7 +42,7 @@ static int NoMemory(const Vector *AL,const char *fnName)
 
 static Vector *Create(size_t elementsize,size_t startsize);
 
-static void *DuplicateElement(Vector *AL,void *str,size_t size,const char *functionName)
+static void *DuplicateElement(const Vector *AL,void *str,size_t size,const char *functionName)
 {
 	void *result;
 	if (size == 0)
@@ -151,7 +151,7 @@ static int ResizeTo(Vector *AL,size_t newcapacity)
                 error
  Errors:
 ------------------------------------------------------------------------*/
-static int Add(Vector *AL,void *newval)
+static int Add(Vector *AL,const void *newval)
 {
 	char *p;
 
@@ -189,7 +189,7 @@ static int Add(Vector *AL,void *newval)
  Errors:        Vector must be writable and data must be
                 different of NULL
 ------------------------------------------------------------------------*/
-static int AddRange(Vector * AL,size_t n,void *data)
+static int AddRange(Vector * AL,size_t n,const void *data)
 {
 	unsigned char *p;
 	size_t newcapacity;
@@ -291,7 +291,7 @@ static int Clear(Vector *AL)
 	return 1;
 }
 
-static int Contains(Vector *AL,void *data,void *ExtraArgs)
+static int Contains(const Vector *AL,const void *data,void *ExtraArgs)
 {
 	size_t i;
 	char *p;
@@ -307,7 +307,7 @@ static int Contains(Vector *AL,void *data,void *ExtraArgs)
 	p = (char *)AL->contents;
 	if (ExtraArgs == NULL) {
 		ExtraArgs = &ci;
-		ci.ContainerLeft = AL;
+		ci.ContainerLeft = (void *)AL;
 		ci.ContainerRight = NULL;
 		ci.ExtraArgs = ExtraArgs;
 	}
@@ -319,7 +319,7 @@ static int Contains(Vector *AL,void *data,void *ExtraArgs)
 	return 0;
 }
 
-static int Equal(Vector *AL1,Vector *AL2)
+static int Equal(const Vector *AL1,const Vector *AL2)
 {
 	if (AL1 == AL2)
 		return 1;
@@ -338,7 +338,7 @@ static int Equal(Vector *AL1,Vector *AL2)
 	return 1;
 }
 
-static Vector *Copy(Vector *AL)
+static Vector *Copy(const Vector *AL)
 {
 	Vector *result;
 	size_t startsize,es;
@@ -385,7 +385,7 @@ static Vector *Copy(Vector *AL)
 	return result;
 }
 
-static int CopyElement(Vector *AL,size_t idx, void *outbuf)
+static int CopyElement(const Vector *AL,size_t idx, void *outbuf)
 {
 	char *p;
 	if (AL == NULL || outbuf == NULL) {
@@ -405,7 +405,7 @@ static int CopyElement(Vector *AL,size_t idx, void *outbuf)
 	return 1;
 }
 
-static void **CopyTo(Vector *AL)
+static void **CopyTo(const Vector *AL)
 {
 	void **result;
 	size_t i;
@@ -652,14 +652,57 @@ static int RemoveRange(Vector *AL,size_t start, size_t end)
 }
 
 
-static int Remove(Vector *AL,const void *str)
+static int EraseInternal(Vector *AL,const void *elem,int all)
 {
-	size_t idx;
-	int i = IndexOf(AL,str,NULL,&idx);
-	if (i < 0)
-		return i;
-	return EraseAt(AL,idx);
+    size_t i;
+    char *p;
+    CompareInfo ci;
+    int result = CONTAINER_ERROR_NOTFOUND;
+
+    if (AL == NULL) {
+            return NullPtrError("Erase");
+    }
+    if (elem == NULL) {
+            AL->RaiseError("iVector.Erase",CONTAINER_ERROR_BADARG);
+            return CONTAINER_ERROR_BADARG;
+    }
+    if (AL->Flags & CONTAINER_READONLY)
+        return ErrorReadOnly(AL,"Erase");
+
+restart:
+    p = AL->contents;
+    ci.ContainerLeft = AL;
+    ci.ContainerRight = NULL;
+    ci.ExtraArgs = NULL;
+    for (i=0; i<AL->count;i++) {
+        if (!AL->CompareFn(p,elem,&ci)) {
+            if (i > 0) {
+                p = GetElement(AL,--i);
+                result = EraseAt(AL,i+1);
+            } else {
+                result = EraseAt(AL,0);
+                if (result < 0 || all == 0) return result;
+                if (all) goto restart;
+            }
+            if (all == 0) return result;
+            result = 1;
+        }
+        p += AL->ElementSize;
+    }
+    return result;
+
 }
+
+static int Erase(Vector *AL, const void *elem)
+{
+    return EraseInternal(AL,elem,0);
+}
+static int EraseAll(Vector *AL, const void *elem)
+{
+    return EraseInternal(AL,elem,1);
+}
+
+
 
 static int PushBack(Vector *AL,const void *str)
 {
@@ -926,7 +969,7 @@ static ErrorFunction SetErrorFunction(Vector *AL,ErrorFunction fn)
 	return old;
 }
 
-static size_t Sizeof(Vector *AL)
+static size_t Sizeof(const Vector *AL)
 {
 	if (AL == NULL)
 		return sizeof(Vector);
@@ -1302,10 +1345,9 @@ static int DefaultLoadFunction(void *element,void *arg, FILE *Infile)
 	return len == fread(element,1,len,Infile);
 }
 
-static int Save(Vector *AL,FILE *stream, SaveFunction saveFn,void *arg)
+static int Save(const Vector *AL,FILE *stream, SaveFunction saveFn,void *arg)
 {
-	size_t i;
-
+	size_t i,elemsiz;
 
 	if (AL == NULL) {
 		return NullPtrError("Save");
@@ -1316,7 +1358,8 @@ static int Save(Vector *AL,FILE *stream, SaveFunction saveFn,void *arg)
 	}
 	if (saveFn == NULL) {
 		saveFn = DefaultSaveFunction;
-		arg = &AL->ElementSize;
+                elemsiz = AL->ElementSize;
+		arg = &elemsiz;
 	}
 	if (fwrite(&VectorGuid,sizeof(guid),1,stream) == 0)
 		return EOF;
@@ -1432,7 +1475,7 @@ static Vector *Load(FILE *stream, ReadFunction loadFn,void *arg)
 
 
 
-static Vector *CreateWithAllocator(size_t elementsize,size_t startsize,ContainerMemoryManager *allocator)
+static Vector *CreateWithAllocator(size_t elementsize,size_t startsize,const ContainerMemoryManager *allocator)
 {
 	Vector *result;
 	size_t es;
@@ -1460,7 +1503,7 @@ static Vector *CreateWithAllocator(size_t elementsize,size_t startsize,Container
 		result->ElementSize = elementsize;
 		result->CompareFn = DefaultVectorCompareFunction;
 		result->RaiseError = iError.RaiseError;
-		result->Allocator = allocator;
+		result->Allocator = (ContainerMemoryManager *)allocator;
 	}
 	return result;
 }
@@ -1470,7 +1513,7 @@ static Vector *Create(size_t elementsize,size_t startsize)
 	return CreateWithAllocator(elementsize,startsize,CurrentMemoryManager);
 }
 
-static Vector *InitializeWith(size_t elementSize,size_t n,void *data)
+static Vector *InitializeWith(size_t elementSize,size_t n,const void *data)
 {
         Vector *result = Create(elementSize,n);
         if (result == NULL)
@@ -1614,7 +1657,7 @@ static Vector * SelectCopy(Vector *src,Mask *m)
     return result;
 }
 
-static void **GetData(Vector *cb)
+static void **GetData(const Vector *cb)
 {
 	if (cb == NULL) {
 		NullPtrError("GetData");
@@ -1670,7 +1713,8 @@ VectorInterface iVector = {
 	SetFlags, 
 	Clear,
 	Contains,
-	Remove, 
+	Erase, 
+        EraseAll,
 	Finalize,
 	Apply,
 	Equal,
