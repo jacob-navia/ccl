@@ -455,7 +455,7 @@ static int Finalize(Dlist *l)
  Output:        A pointer to the data
  Errors:        NULL if error in the positgion index
 ------------------------------------------------------------------------*/
-static const void * GetElement(const Dlist *l,int position)
+static void * GetElement(const Dlist *l,int position)
 {
     dlist_element *rvp;
 
@@ -1529,7 +1529,7 @@ static ContainerMemoryManager *GetAllocator(const Dlist *l)
     return l->Allocator;
 }
 
-static const void *Back(const Dlist *l)
+static void *Back(const Dlist *l)
 {
     if (l == NULL) {
         iError.NullPtrError("Back");
@@ -1542,9 +1542,9 @@ static const void *Back(const Dlist *l)
         l->RaiseError("iList.Back",CONTAINER_ERROR_READONLY);
         return NULL;
     }
-    return (const void *)l->Last->Data;
+    return l->Last->Data;
 }
-static const void *Front(const Dlist *l)
+static void *Front(const Dlist *l)
 {
     if (l == NULL) {
         iError.NullPtrError("Front");
@@ -1557,7 +1557,7 @@ static const void *Front(const Dlist *l)
         l->RaiseError("iList.Front",CONTAINER_ERROR_READONLY);
         return NULL;
     }
-    return (const void *)l->First->Data;
+    return l->First->Data;
 }
 
 static size_t SizeofIterator(const Dlist *l)

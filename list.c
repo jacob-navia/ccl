@@ -382,7 +382,7 @@ static int Finalize(List *l)
  Output:        A pointer to the data
  Errors:        NULL if error in the positgion index
 ------------------------------------------------------------------------*/
-static const void * GetElement(const List *l,size_t position)
+static void * GetElement(const List *l,size_t position)
 {
     ListElement *rvp;
 
@@ -403,10 +403,10 @@ static const void * GetElement(const List *l,size_t position)
         rvp = rvp->Next;
         position--;
     }
-    return (const void *)rvp->Data;
+    return rvp->Data;
 }
 
-static const void *Back(const List *l)
+static void *Back(const List *l)
 {
     if (l == NULL) {
         NullPtrError("Back");
@@ -419,9 +419,9 @@ static const void *Back(const List *l)
         l->RaiseError("iList.Back",CONTAINER_ERROR_READONLY);
         return NULL;
     }
-    return (const void *)l->Last->Data;
+    return l->Last->Data;
 }
-static const void *Front(const List *l)
+static void *Front(const List *l)
 {
     if (l == NULL) {
         NullPtrError("Front");
@@ -434,7 +434,7 @@ static const void *Front(const List *l)
         l->RaiseError("iList.Front",CONTAINER_ERROR_READONLY);
         return NULL;
     }
-    return (const void *)l->First->Data;
+    return l->First->Data;
 }
 
 /*------------------------------------------------------------------------

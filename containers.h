@@ -239,7 +239,7 @@ typedef struct tagSequentialContainerInterface {
     int (*Save)(const SequentialContainer *Gen,FILE *stream, SaveFunction saveFn,void *arg);
 
     int (*Add)(SequentialContainer *SC,const void *Element);
-    const void *(*GetElement)(const SequentialContainer *SC,size_t idx);
+    void *(*GetElement)(const SequentialContainer *SC,size_t idx);
     int (*Push)(SequentialContainer *Gen,void *Element);
     int (*Pop)(SequentialContainer *Gen,void *result);
     int (*InsertAt)(SequentialContainer *SC,size_t idx,const void *newval);
@@ -259,7 +259,7 @@ typedef struct AssociativeContainer AssociativeContainer;
 typedef struct tagAssociativeContainerInterface {
     GenericContainerInterface Generic;
     int (*Add)(SequentialContainer *SC,const void *key,const void *Element);
-    const void *(*GetElement)(const AssociativeContainer *SC,const void *Key);
+    void *(*GetElement)(const AssociativeContainer *SC,const void *Key);
     int (*Replace)(AssociativeContainer *SC, const void *Key, const void *element);
 } AssociativeContainerInterface;
 extern AssociativeContainerInterface iAssociativeContainer;
@@ -278,7 +278,7 @@ typedef struct tagStreamBufferInterface {
     size_t (*Write)(StreamBuffer *b,void *data, size_t siz);
     int (*SetPosition)(StreamBuffer *b,size_t pos);
     size_t (*GetPosition)(const StreamBuffer *b);
-    const char *(*GetData)(const StreamBuffer *b);
+    char *(*GetData)(const StreamBuffer *b);
     size_t (*Size)(const StreamBuffer *b);
     int (*Clear)(StreamBuffer *b);
     int (*Finalize)(StreamBuffer *b);
@@ -363,7 +363,7 @@ typedef struct tagstrCollection {
 
     int (*Insert)(strCollection *SC,char *);
     int (*InsertIn)(strCollection *source, size_t idx,strCollection *newData);
-    const char *(*GetElement)(const strCollection *SC,size_t idx);
+    char *(*GetElement)(const strCollection *SC,size_t idx);
     size_t (*GetCapacity)(const strCollection *SC);
     int (*SetCapacity)(strCollection *SC,size_t newCapacity);
     StringCompareFn (*SetCompareFunction)(strCollection *SC,StringCompareFn);
@@ -378,8 +378,8 @@ typedef struct tagstrCollection {
     strCollection *(*Init)(strCollection *result,size_t startsize);
     DestructorFunction (*SetDestructor)(strCollection *v,DestructorFunction fn);
     strCollection *(*InitializeWith)(size_t n, char **data);
-    const char **(*GetData)(const strCollection *SC);
-    const char *(*Back)(const strCollection *str);
+    char **(*GetData)(const strCollection *SC);
+    char *(*Back)(const strCollection *str);
     char *(*Front)(const strCollection *str);
     int (*RemoveRange)(strCollection *SC,size_t start,size_t end);
 //    unsigned char *(*Find)(strCollection *SC,unsigned char *str,CompareInfo *ci);
@@ -443,7 +443,7 @@ typedef struct tagWstrCollection {
     
     int (*Insert)(WstrCollection *SC,wchar_t *);
     int (*InsertIn)(WstrCollection *source, size_t idx,WstrCollection *newData);
-    const wchar_t *(*GetElement)(const WstrCollection *SC,size_t idx);
+    wchar_t *(*GetElement)(const WstrCollection *SC,size_t idx);
     size_t (*GetCapacity)(const WstrCollection *SC);
     int (*SetCapacity)(WstrCollection *SC,size_t newCapacity);
     StringCompareFn (*SetCompareFunction)(WstrCollection *SC,StringCompareFn);
@@ -458,8 +458,8 @@ typedef struct tagWstrCollection {
     WstrCollection *(*Init)(WstrCollection *result,size_t startsize);
     DestructorFunction (*SetDestructor)(WstrCollection *v,DestructorFunction fn);
     WstrCollection *(*InitializeWith)(size_t n,wchar_t **data);
-    const wchar_t **(*GetData)(const WstrCollection *SC);
-    const wchar_t *(*Back)(const WstrCollection *SC);
+    wchar_t **(*GetData)(const WstrCollection *SC);
+    wchar_t *(*Back)(const WstrCollection *SC);
     wchar_t *(*Front)(const WstrCollection *SC);
     int (*RemoveRange)(WstrCollection *SC,size_t start,size_t end); 
 //    wchar_t *Find(WstrCollection *SC,wchar_t *data,CompareInfo *ci);
@@ -495,7 +495,7 @@ typedef struct tagList {
     size_t (*GetElementSize)(const List *l);
  /* -------------------------------------------This is the Sequential container part */
     int (*Add)(List *L,const void *newval);
-    const void *(*GetElement)(const List *L,size_t idx);
+    void *(*GetElement)(const List *L,size_t idx);
     int (*PushFront)(List *L,const void *str);
     int (*PopFront)(List *L,void *result);
     int (*InsertAt)(List *L,size_t idx,const void *newval);
@@ -522,8 +522,8 @@ typedef struct tagList {
     ContainerMemoryManager *(*GetAllocator)(const List *list);
     DestructorFunction (*SetDestructor)(List *v,DestructorFunction fn);
     List *(*InitializeWith)(size_t elementSize,size_t n,const void *data);
-    const void *(*Back)(const List *l);
-    const void *(*Front)(const List *l);
+    void *(*Back)(const List *l);
+    void *(*Front)(const List *l);
 } ListInterface;
 
 extern ListInterface iList;
@@ -617,7 +617,7 @@ typedef struct tagDlist {
 
     /* -----------------------------------------Sequential container part */
     int (*Add)(Dlist *dl,const void *newval);
-    const void *(*GetElement)(const Dlist *AL,int idx);
+    void *(*GetElement)(const Dlist *AL,int idx);
     int (*PushFront)(Dlist *AL,const void *str); 
     int (*PopFront)(Dlist *AL,void *result);
     int (*InsertAt)(Dlist *AL,size_t idx,const void *newval);
@@ -644,8 +644,8 @@ typedef struct tagDlist {
     DestructorFunction (*SetDestructor)(Dlist *v,DestructorFunction fn);
     Dlist *(*InitializeWith)(size_t elementSize, size_t n,const void *data);
     ContainerMemoryManager *(*GetAllocator)(const Dlist *l);
-    const void *(*Back)(const Dlist *l);
-    const void *(*Front)(const Dlist *l);
+    void *(*Back)(const Dlist *l);
+    void *(*Front)(const Dlist *l);
 } DlistInterface;
 
 extern DlistInterface iDlist;
@@ -747,57 +747,47 @@ extern VectorInterface iVector;
 #include "valarray.h"
 typedef struct _Dictionary Dictionary;
 typedef struct tagDictionary {
-    /* Returns the number of elements stored */
-    size_t (*Size)(Dictionary *Dict);
-    /* Get the flags */
-    unsigned (*GetFlags)(Dictionary *Dict);
-    /* Sets the flags */
+    size_t (*Size)(const Dictionary *Dict);
+    unsigned (*GetFlags)(const Dictionary *Dict);
     unsigned (*SetFlags)(Dictionary *Dict,unsigned flags);
-    /* Clears all data and frees the memory */
     int (*Clear)(Dictionary *Dict);
-    int (*Contains)(Dictionary *dict,const char *key);
-    /* erases the given element if found */
+    int (*Contains)(const Dictionary *dict,const char *key);
     int (*Erase)(Dictionary *Dict,const char *);
-    /* Frees the memory used by the dictionary */
     int (*Finalize)(Dictionary *Dict);
-    /* Calls the given function for all objects. "Arg" is a used supplied argument */
-    /* (that can be NULL) that is passed to the function to call */
     int (*Apply)(Dictionary *Dict,int (*Applyfn)(const char *Key,
                                                   const void *data,void *arg),void *arg);
     int (*Equal)(const Dictionary *d1,const Dictionary *d2);
-    Dictionary *(*Copy)(Dictionary *dict);
-    /* Set or unset the error function */
+    Dictionary *(*Copy)(const Dictionary *dict);
     ErrorFunction (*SetErrorFunction)(Dictionary *Dict,ErrorFunction fn);
-    size_t (*Sizeof)(Dictionary *dict);
+    size_t (*Sizeof)(const Dictionary *dict);
     Iterator *(*NewIterator)(Dictionary *dict);
     int (*InitIterator)(Dictionary *dict,void *buf);
     int (*deleteIterator)(Iterator *);
-    size_t (*SizeofIterator)(Dictionary *);
-    int (*Save)(Dictionary *Dict,FILE *stream, SaveFunction saveFn,void *arg);
+    size_t (*SizeofIterator)(const Dictionary *);
+    int (*Save)(const Dictionary *Dict,FILE *stream, SaveFunction saveFn,void *arg);
     Dictionary * (*Load)(FILE *stream, ReadFunction readFn, void *arg);
-    size_t (*GetElementSize)(Dictionary *d);
+    size_t (*GetElementSize)(const Dictionary *d);
 
     /* Hierarchical container specific fields */
 
-    /* Adds one element. Given string is copied */
-    int (*Add)(Dictionary *Dict,const char *key,void *Data);
-    /* Returns the element at the given position */
-    const void *(*GetElement)(const Dictionary *Dict,const char *Key);
-    int (*Replace)(Dictionary *dict,const char *Key,void *Data);
-    int (*Insert)(Dictionary *Dict,const char *key,void *Data);
+    int (*Add)(Dictionary *Dict,const char *key,const void *Data);
+    void *(*GetElement)(const Dictionary *Dict,const char *Key);
+    int (*Replace)(Dictionary *dict,const char *Key,const void *Data);
+    int (*Insert)(Dictionary *Dict,const char *key,const void *Data);
+
     /* Dictionary specific fields */
 
-    Vector *(*CastToArray)(Dictionary *);
+    Vector *(*CastToArray)(const Dictionary *);
     int (*CopyElement)(const Dictionary *Dict,const char *Key,void *outbuf);
     int (*InsertIn)(Dictionary *dst,Dictionary *src);
     Dictionary *(*Create)(size_t ElementSize,size_t hint);
-    Dictionary *(*CreateWithAllocator)(size_t elementsize,size_t hint,ContainerMemoryManager *allocator);
+    Dictionary *(*CreateWithAllocator)(size_t elementsize,size_t hint,const ContainerMemoryManager *allocator);
     Dictionary *(*Init)(Dictionary *dict,size_t ElementSize,size_t hint);
     Dictionary *(*InitWithAllocator)(Dictionary *Dict,size_t elementsize,size_t hint,const ContainerMemoryManager *allocator);
-    strCollection *(*GetKeys)(Dictionary *Dict);
-    ContainerMemoryManager *(*GetAllocator)(Dictionary *Dict);
+    strCollection *(*GetKeys)(const Dictionary *Dict);
+    ContainerMemoryManager *(*GetAllocator)(const Dictionary *Dict);
     DestructorFunction (*SetDestructor)(Dictionary *v,DestructorFunction fn);
-    Dictionary *(*InitializeWith)(size_t elementSize,size_t n, char **Keys,void *Values);
+    Dictionary *(*InitializeWith)(size_t elementSize,size_t n, const char **Keys,const void *Values);
     HashFunction (*SetHashFunction)(Dictionary *d,HashFunction newFn);
 } DictionaryInterface;
 
@@ -814,46 +804,26 @@ typedef struct tagHashTable {
     int (*Contains)(const HashTable *ht,const void *Key,size_t klen);
     HashTable *(*Create)(size_t ElementSize);
     HashTable *(*Init)(HashTable *ht,size_t ElementSize);
-    /* Returns the number of elements stored */
     size_t (*Sizeof)(const HashTable *HT);
     size_t (*GetElementSize)(const HashTable *HT);
-    /* Adds one element. Given string is copied */
     int (*Add)(HashTable *HT,const void *key,size_t klen,const void *Data);
-    /* Returns the element with the given key */
     void *(*GetElement)(const HashTable *HT,const void *Key,size_t klen);
     int (*Search)(HashTable *ht,int (*Comparefn)(void *rec, const void *key,size_t klen,const void *value), void *rec);
-    /* erases the given string if found */
     int (*Erase)(HashTable *HT,const void *key,size_t klen);
-    /* Frees the memory used by the HashTable */
     int (*Finalize)(HashTable *HT);
-    /* Calls the given function for all strings. "Arg" is a used supplied argument */
-    /* that can be NULL that is passed to the function to call */
     int (*Apply)(HashTable *HT,int (*Applyfn)(void *Key,size_t klen,void *data,void *arg),void *arg);
-    /* Set or unset the error function */
     ErrorFunction (*SetErrorFunction)(HashTable *HT,ErrorFunction fn);
     int (*Resize)(HashTable *HT,size_t newSize);
     int (*Replace)(HashTable *HT,const void *key, size_t klen,const void *val);
     HashTable *(*Copy)(const HashTable *Orig,Pool *pool);
     GeneralHashFunction (*SetHashFunction)(HashTable *ht, GeneralHashFunction hf);
-    /* Copy hash table base into overlay. If duplicates, table "base" wins*/
     HashTable *(*Overlay)(Pool *p, const HashTable *overlay, const HashTable *base);
-    /*
-     Merge two hash tables. If duplicate keys are found, call the "merger" callback to decide
-     which element should be kept in the final hash table
-     */
-    HashTable *(*Merge)(Pool *p, const HashTable *overlay, const HashTable *base,
-                        void * (*merger)(Pool *p,
-                                         const void *key,
-                                         size_t klen,
-                                         const void *h1_val,
-                                         const void *h2_val,
-                                         const void *data),
-                        const void *data);
+    HashTable *(*Merge)(Pool *p, const HashTable *overlay, const HashTable *base, void * (*merger)(Pool *p, const void *key, size_t klen, const void *h1_val, const void *h2_val, const void *data), const void *data);
     Iterator *(*NewIterator)(HashTable *);
     int (*InitIterator)(HashTable *SC,void *buf);
     int (*deleteIterator)(Iterator *);
-    size_t (*SizeofIterator)(HashTable *ht);
-    int (*Save)(HashTable *HT,FILE *stream, SaveFunction saveFn,void *arg);
+    size_t (*SizeofIterator)(const HashTable *ht);
+    int (*Save)(const HashTable *HT,FILE *stream, SaveFunction saveFn,void *arg);
     HashTable *(*Load)(FILE *stream, ReadFunction readFn, void *arg);
     DestructorFunction (*SetDestructor)(HashTable *v,DestructorFunction fn);
 } HashTableInterface;
@@ -868,30 +838,17 @@ void qsortEx(void *base, size_t num, size_t width,CompareFunction cmp, CompareIn
 typedef struct tagBinarySearchTree BinarySearchTree;
 
 typedef struct tagBinarySearchTreeInterface {
-    /* Returns the number of elements stored */
     size_t (*Size)(BinarySearchTree *ST);
-    /* Get the flags */
     unsigned (*GetFlags)(BinarySearchTree *ST);
-    /* Sets the flags */
     unsigned (*SetFlags)(BinarySearchTree *ST, unsigned flags);
-    /* Clears all data and frees the memory */
     int (*Clear)(BinarySearchTree *ST);
-    /* Find a given data in the tree */
     int (*Contains)(BinarySearchTree *ST,void *data);
-    /* erases the given data if found */
     int (*Erase)(BinarySearchTree *ST, const void *,void *);
-    /* Frees the memory used by the tree */
     int (*Finalize)(BinarySearchTree *ST);
-    /* Calls the given function for all nodes. "Arg" is a used supplied argument */
-    /* that can be NULL that is passed to the function to call */
     int (*Apply)(BinarySearchTree *ST,int (*Applyfn)(const void *data,void *arg),void *arg);
     bool (*Equal)(const BinarySearchTree *left, const BinarySearchTree *right);
-    /* Adds one element. Given data is copied */
     int (*Add)(BinarySearchTree *ST, const void *Data);
-    /* Like Add but allows for an extra argument to be passed to the
-       comparison function */
     int (*Insert)(BinarySearchTree * ST, const void *Data, void *ExtraArgs);
-    /* Set or unset the error function */
     ErrorFunction (*SetErrorFunction)(BinarySearchTree *ST, ErrorFunction fn);
     CompareFunction (*SetCompareFunction)(BinarySearchTree *ST,CompareFunction fn);
     size_t (*Sizeof)(BinarySearchTree *ST);
@@ -917,23 +874,13 @@ typedef struct tagRedBlackTreeInterface {
     size_t (*Size)(RedBlackTree *ST); /* Returns the number of elements stored */
     unsigned (*GetFlags)(RedBlackTree *ST); /* Gets the flags */
     unsigned (*SetFlags)(RedBlackTree *ST, unsigned flags);
-    /* Adds one element. Given data is copied */
     int (*Add)(RedBlackTree *ST, const void *Key,const void *Data);
-    /* Like Add but allows for an extra argument to be passed to the
-     comparison function */
     int (*Insert)(RedBlackTree *RB, const void *Key, const void *Data, void *ExtraArgs);
-    /* Clears all data and frees the memory */
     int (*Clear)(RedBlackTree *ST);
-    /* erases the given data if found */
     int (*Erase)(RedBlackTree *ST, const void *,void *);
-    /* Frees the memory used by the tree */
     int (*Finalize)(RedBlackTree *ST);
-    /* Calls the given function for all nodes. "Arg" is a used supplied argument */
-    /* that can be NULL that is passed to the function to call */
     int (*Apply)(RedBlackTree *ST,int (*Applyfn)(const void *data,void *arg),void *arg);
-    /* Find a given data in the tree */
     void *(*Find)(RedBlackTree *ST,void *key_data,void *ExtraArgs);
-    /* Set or unset the error function */
     ErrorFunction (*SetErrorFunction)(RedBlackTree *ST, ErrorFunction fn);
     CompareFunction (*SetCompareFunction)(RedBlackTree *ST,CompareFunction fn);
     size_t (*Sizeof)(RedBlackTree *ST);
