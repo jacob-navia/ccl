@@ -623,7 +623,7 @@ static bool Equal(const Dlist *l1,const Dlist *l2)
     			no more memory left.
  Errors:        None
 ------------------------------------------------------------------------*/
-static int PushFront(Dlist *l,void *pdata)
+static int PushFront(Dlist *l,const void *pdata)
 {
     dlist_element *rvp;
 
@@ -1529,7 +1529,7 @@ static ContainerMemoryManager *GetAllocator(const Dlist *l)
     return l->Allocator;
 }
 
-static void *Back(const Dlist *l)
+static const void *Back(const Dlist *l)
 {
     if (l == NULL) {
         iError.NullPtrError("Back");
@@ -1542,9 +1542,9 @@ static void *Back(const Dlist *l)
         l->RaiseError("iList.Back",CONTAINER_ERROR_READONLY);
         return NULL;
     }
-    return l->Last->Data;
+    return (const void *)l->Last->Data;
 }
-static void *Front(const Dlist *l)
+static const void *Front(const Dlist *l)
 {
     if (l == NULL) {
         iError.NullPtrError("Front");
@@ -1557,7 +1557,7 @@ static void *Front(const Dlist *l)
         l->RaiseError("iList.Front",CONTAINER_ERROR_READONLY);
         return NULL;
     }
-    return l->First->Data;
+    return (const void *)l->First->Data;
 }
 
 static size_t SizeofIterator(const Dlist *l)

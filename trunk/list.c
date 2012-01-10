@@ -17,7 +17,7 @@ the proposed interface COULD be done.
 #ifndef INT_MAX
 #define INT_MAX (((unsigned)-1) >> 1)
 #endif
-static int IndexOf_nd(List *AL,void *SearchedElement,void *ExtraArgs,size_t *result);
+static int IndexOf_nd(const List *AL,const void *SearchedElement,void *ExtraArgs,size_t *result);
 static int RemoveAt(List *AL,size_t idx);
 #define CONTAINER_LIST_SMALL    2
 #define CHUNK_SIZE    1000
@@ -90,7 +90,7 @@ static int DefaultListCompareFunction(const void *left,const void *right,Compare
                 otherwise
  Errors:        The same as the function IndexOf
 ------------------------------------------------------------------------*/
-static int Contains(List *l,void *data)
+static int Contains(const List *l,const void *data)
 {
     size_t idx;
     if (l == NULL || data == NULL) {
@@ -215,13 +215,13 @@ static unsigned SetFlags(List *l,unsigned newval)
 }
 
 /*------------------------------------------------------------------------
- Procedure:     IsReadOnly ID:1
+ Procedure:     GetFlags ID:1
  Purpose:       Queries the read only flag
  Input:         The list
  Output:        The state of the flag
  Errors:        None
 ------------------------------------------------------------------------*/
-static unsigned GetFlags(List *l)
+static unsigned GetFlags(const List *l)
 {
     if (l == NULL) {
         NullPtrError("GetFlags");
@@ -237,7 +237,7 @@ static unsigned GetFlags(List *l)
  Output:        The number of elements
  Errors:        None
 ------------------------------------------------------------------------*/
-static size_t Size(List *l)
+static size_t Size(const List *l)
 {
     if (l == NULL) {
         return (size_t)NullPtrError("Size");
@@ -307,7 +307,7 @@ static CompareFunction SetCompareFunction(List *l,CompareFunction fn)
  Output:        A pointer to the new list
  Errors:        None. Returns NULL if therfe is no memory left.
 ------------------------------------------------------------------------*/
-static List *Copy(List *l)
+static List *Copy(const List *l)
 {
     List *result;
     ListElement *elem,*newElem;
@@ -382,7 +382,7 @@ static int Finalize(List *l)
  Output:        A pointer to the data
  Errors:        NULL if error in the positgion index
 ------------------------------------------------------------------------*/
-static void * GetElement(List *l,size_t position)
+static const void * GetElement(const List *l,size_t position)
 {
     ListElement *rvp;
 
@@ -403,10 +403,10 @@ static void * GetElement(List *l,size_t position)
         rvp = rvp->Next;
         position--;
     }
-    return rvp->Data;
+    return (const void *)rvp->Data;
 }
 
-static void *Back(const List *l)
+static const void *Back(const List *l)
 {
     if (l == NULL) {
         NullPtrError("Back");
@@ -419,9 +419,9 @@ static void *Back(const List *l)
         l->RaiseError("iList.Back",CONTAINER_ERROR_READONLY);
         return NULL;
     }
-    return l->Last->Data;
+    return (const void *)l->Last->Data;
 }
-static void *Front(const List *l)
+static const void *Front(const List *l)
 {
     if (l == NULL) {
         NullPtrError("Front");
@@ -434,7 +434,7 @@ static void *Front(const List *l)
         l->RaiseError("iList.Front",CONTAINER_ERROR_READONLY);
         return NULL;
     }
-    return l->First->Data;
+    return (const void *)l->First->Data;
 }
 
 /*------------------------------------------------------------------------
@@ -444,7 +444,7 @@ static void *Front(const List *l)
  Output:        A pointer to the data
  Errors:        NULL if error in the positgion index
  ------------------------------------------------------------------------*/
-static int CopyElement(List *l,size_t position,void *outBuffer)
+static int CopyElement(const List *l,size_t position,void *outBuffer)
 {
     ListElement *rvp;
 
@@ -468,7 +468,7 @@ static int CopyElement(List *l,size_t position,void *outBuffer)
     return 1;
 }
 
-static int ReplaceAt(List *l,size_t position,void *data)
+static int ReplaceAt(List *l,size_t position,const void *data)
 {
     ListElement *rvp;
 
@@ -518,7 +518,7 @@ static int ReplaceAt(List *l,size_t position,void *data)
                 empty too.
  Errors:        None
 ------------------------------------------------------------------------*/
-static List *GetRange(List *l,size_t start,size_t end)
+static List *GetRange(const List *l,size_t start,size_t end)
 {
     size_t counter;
     List *result;
@@ -569,7 +569,7 @@ static List *GetRange(List *l,size_t start,size_t end)
  Output:        Returns 1 if the two lists are equal, zero otherwise
  Errors:        None
 ------------------------------------------------------------------------*/
-static int Equal(List *l1,List *l2)
+static int Equal(const List *l1,const List *l2)
 {
     ListElement *link1,*link2;
     CompareFunction fn;
@@ -590,8 +590,8 @@ static int Equal(List *l1,List *l2)
     fn = l1->Compare;
     link1 = l1->First;
     link2 = l2->First;
-    ci.ContainerLeft = l1;
-    ci.ContainerRight = l2;
+    ci.ContainerLeft = (List *)l1;
+    ci.ContainerRight = (List *)l2;
     ci.ExtraArgs = NULL;
     while (link1 && link2) {
         if (fn(link1->Data,link2->Data,&ci))
@@ -614,7 +614,7 @@ static int Equal(List *l1,List *l2)
                 no more memory left.
  Errors:        None
 ------------------------------------------------------------------------*/
-static int PushFront(List *l,void *pdata)
+static int PushFront(List *l,const void *pdata)
 {
     ListElement *rvp;
 
@@ -685,7 +685,7 @@ static int PopFront(List *l,void *result)
 }
 
 
-static int InsertIn(List *l, size_t idx,List *newData)
+static int InsertIn(List *l, size_t idx, List *newData)
 {
     size_t newCount;
     ListElement *le,*nle;
@@ -1022,9 +1022,9 @@ static int Reverse(List *l)
 }
 
 
-static int AddRange(List * AL,size_t n, void *data)
+static int AddRange(List * AL,size_t n,const void *data)
 {
-        unsigned char *p;
+        const unsigned char *p;
     ListElement *oldLast;
 
         if (AL == NULL) return NullPtrError("AddRange");
@@ -1069,7 +1069,7 @@ static int AddRange(List * AL,size_t n, void *data)
 /* Searches a List for a given data item
    Returns a positive integer if found, negative if the end is reached
 */
-static int IndexOf_nd(List *l,void *ElementToFind,void *ExtraArgs,size_t *result)
+static int IndexOf_nd(const List *l,const void *ElementToFind,void *ExtraArgs,size_t *result)
 {
     ListElement *rvp;
     int r;
@@ -1079,7 +1079,7 @@ static int IndexOf_nd(List *l,void *ElementToFind,void *ExtraArgs,size_t *result
 
     rvp = l->First;
     fn = l->Compare;
-    ci.ContainerLeft = l;
+    ci.ContainerLeft = (List *)l;
     ci.ContainerRight = NULL;
     ci.ExtraArgs = ExtraArgs;
     while (rvp) {
@@ -1095,7 +1095,7 @@ static int IndexOf_nd(List *l,void *ElementToFind,void *ExtraArgs,size_t *result
     return CONTAINER_ERROR_NOTFOUND;
 }
 
-static int IndexOf(List *l,void *ElementToFind,void *ExtraArgs,size_t *result)
+static int IndexOf(const List *l,const void *ElementToFind,void *ExtraArgs,size_t *result)
 {
     if (l == NULL || ElementToFind == NULL) {
         if (l)
@@ -1197,7 +1197,7 @@ static ErrorFunction SetErrorFunction(List *l,ErrorFunction fn)
     return old;
 }
 
-static size_t Sizeof(List *l)
+static size_t Sizeof(const List *l)
 {
     if (l == NULL) {
         return sizeof(List);
@@ -1206,7 +1206,7 @@ static size_t Sizeof(List *l)
     return sizeof(List) + l->ElementSize * l->count + l->count *sizeof(ListElement);
 }
 
-static size_t SizeofIterator(List *l)
+static size_t SizeofIterator(const List *l)
 {
 	return sizeof(struct ListIterator);
 }
@@ -1482,9 +1482,10 @@ static int DefaultSaveFunction(const void *element,void *arg, FILE *Outfile)
     return len == fwrite(str,1,len,Outfile);
 }
 
-static int Save(List *L,FILE *stream, SaveFunction saveFn,void *arg)
+static int Save(const List *L,FILE *stream, SaveFunction saveFn,void *arg)
 {
     size_t i;
+    size_t elemsiz;
     ListElement *rvp;
 
     if (L == NULL) return NullPtrError("Save");
@@ -1495,7 +1496,8 @@ static int Save(List *L,FILE *stream, SaveFunction saveFn,void *arg)
     }
     if (saveFn == NULL) {
         saveFn = DefaultSaveFunction;
-        arg = &L->ElementSize;
+        elemsiz = L->ElementSize;
+        arg = &elemsiz;
     }
 
     if (fwrite(&ListGuid,sizeof(guid),1,stream) == 0)
@@ -1581,7 +1583,7 @@ static List *Load(FILE *stream, ReadFunction loadFn,void *arg)
     return result;
 }
 
-static size_t GetElementSize(List *l)
+static size_t GetElementSize(const List *l)
 {
     if (l) {
         return l->ElementSize;
@@ -1601,7 +1603,7 @@ static size_t GetElementSize(List *l)
                 routine is called. If there is no memory result is
                 NULL.
  ------------------------------------------------------------------------*/
-static List *CreateWithAllocator(size_t elementsize,ContainerMemoryManager *allocator)
+static List *CreateWithAllocator(size_t elementsize,const ContainerMemoryManager *allocator)
 {
     List *result;
 
@@ -1618,7 +1620,7 @@ static List *CreateWithAllocator(size_t elementsize,ContainerMemoryManager *allo
     result->VTable = &iList;
     result->Compare = DefaultListCompareFunction;
     result->RaiseError = iError.RaiseError;
-    result->Allocator = allocator;
+    result->Allocator = (ContainerMemoryManager *)allocator;
     return result;
 }
 
@@ -1627,11 +1629,11 @@ static List *Create(size_t elementsize)
     return CreateWithAllocator(elementsize,CurrentMemoryManager);
 }
 
-static List *InitializeWith(size_t elementSize,size_t n,void *Data)
+static List *InitializeWith(size_t elementSize,size_t n,const void *Data)
 {
     List *result = Create(elementSize);
     size_t i;
-    char *pData = Data;
+    const char *pData = Data;
     if (result == NULL)
         return result;
     for (i=0; i<n; i++) {
@@ -1642,7 +1644,7 @@ static List *InitializeWith(size_t elementSize,size_t n,void *Data)
 }
 
 static List *InitWithAllocator(List *result,size_t elementsize,
-                           ContainerMemoryManager *allocator)
+                       const ContainerMemoryManager *allocator)
 {
     if (elementsize == 0) {
         NullPtrError("Init");
@@ -1653,7 +1655,7 @@ static List *InitWithAllocator(List *result,size_t elementsize,
     result->VTable = &iList;
     result->Compare = DefaultListCompareFunction;
     result->RaiseError = iError.RaiseError;
-    result->Allocator = allocator;
+    result->Allocator = (ContainerMemoryManager *)allocator;
     return result;
 }
 
@@ -1662,7 +1664,7 @@ static List *Init(List *result,size_t elementsize)
     return InitWithAllocator(result,elementsize,CurrentMemoryManager);
 }
 
-static ContainerMemoryManager *GetAllocator(List *l)
+static ContainerMemoryManager *GetAllocator(const List *l)
 {
     if (l == NULL)
         return NULL;

@@ -979,7 +979,8 @@ static ContainerMemoryManager *GetAllocator(Dictionary *AL)
  Output:        A pointer to a newly allocated table
  Errors:        If no more memory is available returns NULL
  ------------------------------------------------------------------------*/
-static Dictionary *InitWithAllocator(Dictionary *Dict,size_t elementsize,size_t hint,ContainerMemoryManager *allocator)
+static Dictionary *InitWithAllocator(Dictionary *Dict,size_t elementsize,size_t hint,
+                      const ContainerMemoryManager *allocator)
 {
     size_t i,allocSiz;
     static size_t primes[] = { 509, 509, 1021, 2053, 4093, 8191, 16381,
@@ -998,7 +999,7 @@ static Dictionary *InitWithAllocator(Dictionary *Dict,size_t elementsize,size_t 
     Dict->hash = hash;
     Dict->VTable = &iDictionary;
     Dict->ElementSize = elementsize;
-    Dict->Allocator = allocator;
+    Dict->Allocator = (ContainerMemoryManager *)allocator;
     Dict->RaiseError = iError.RaiseError;
     return Dict;
 }

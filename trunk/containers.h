@@ -362,7 +362,7 @@ typedef struct tagstrCollection {
     char **(*CopyTo)(const strCollection *SC);
 
     int (*Insert)(strCollection *SC,char *);
-    int (*InsertIn)(strCollection *source, size_t idx, strCollection *newData);
+    int (*InsertIn)(strCollection *source, size_t idx,strCollection *newData);
     const char *(*GetElement)(const strCollection *SC,size_t idx);
     size_t (*GetCapacity)(const strCollection *SC);
     int (*SetCapacity)(strCollection *SC,size_t newCapacity);
@@ -442,7 +442,7 @@ typedef struct tagWstrCollection {
     wchar_t **(*CopyTo)(const WstrCollection *SC);
     
     int (*Insert)(WstrCollection *SC,wchar_t *);
-    int (*InsertIn)(WstrCollection *source, size_t idx, WstrCollection *newData);
+    int (*InsertIn)(WstrCollection *source, size_t idx,WstrCollection *newData);
     const wchar_t *(*GetElement)(const WstrCollection *SC,size_t idx);
     size_t (*GetCapacity)(const WstrCollection *SC);
     int (*SetCapacity)(WstrCollection *SC,size_t newCapacity);
@@ -474,70 +474,56 @@ extern WstrCollectionInterface iWstrCollection;
  *-------------------------------------------------------------------------*/
 typedef struct _List List;
 typedef struct tagList {
-    size_t (*Size)(List *L);        /* Returns the number of elements stored */
-    unsigned (*GetFlags)(List *L);                      /* Gets the flags */
-    unsigned (*SetFlags)(List *L,unsigned flags);       /* Sets the flags */
-    int (*Clear)(List *L);                         /* Clears all elements */
-    int (*Contains)(List *L,void *element);       /* Searches an element */
-    int (*Erase)(List *L,const void *);       /* erases the given data if found */
-    /* Frees the memory used by the collection and destroys the list */
+    size_t (*Size)(const List *L);
+    unsigned (*GetFlags)(const List *L);
+    unsigned (*SetFlags)(List *L,unsigned flags);
+    int (*Clear)(List *L);
+    int (*Contains)(const List *L,const void *element);
+    int (*Erase)(List *L,const void *);
     int (*Finalize)(List *L);
-    /* Call a callback function with each element of the list and an extra argument */
     int (*Apply)(List *L,int(Applyfn)(void *,void *),void *arg);
-    int (*Equal)(List *l1,List *l2);  /* Compares two lists (Shallow comparison) */
-    List *(*Copy)(List *L);           /* Copies all items into a new list */
-    ErrorFunction (*SetErrorFunction)(List *L,ErrorFunction); /* Set/unset the error function */
-    size_t (*Sizeof)(List *l);
+    int (*Equal)(const List *l1,const List *l2);
+    List *(*Copy)(const List *L);
+    ErrorFunction (*SetErrorFunction)(List *L,ErrorFunction);
+    size_t (*Sizeof)(const List *l);
     Iterator *(*NewIterator)(List *L);
     int (*InitIterator)(List *L,void *buf);
     int (*deleteIterator)(Iterator *);
-    size_t (*SizeofIterator)(List *);
-    int (*Save)(List *L,FILE *stream, SaveFunction saveFn,void *arg);
+    size_t (*SizeofIterator)(const List *);
+    int (*Save)(const List *L,FILE *stream, SaveFunction saveFn,void *arg);
     List *(*Load)(FILE *stream, ReadFunction loadFn,void *arg);
-    size_t (*GetElementSize)(List *l);
+    size_t (*GetElementSize)(const List *l);
  /* -------------------------------------------This is the Sequential container part */
-    int (*Add)(List *L,const void *newval);              /* Adds element at end */
-    /* Returns the data at the given position */
-    void *(*GetElement)(List *L,size_t idx);
-    /* Pushes an element, using the collection as a stack */
-    int (*PushFront)(List *L,void *str);
-    /* Pops the first element the list */
+    int (*Add)(List *L,const void *newval);
+    const void *(*GetElement)(const List *L,size_t idx);
+    int (*PushFront)(List *L,const void *str);
     int (*PopFront)(List *L,void *result);
-    /* Inserts a value at the given position */
     int (*InsertAt)(List *L,size_t idx,const void *newval);
     int (*EraseAt)(List *L,size_t idx);
-    /* Replaces the element at the given position with a new one */
-    int (*ReplaceAt)(List *L,size_t idx,void *newval);
-    /*Returns the index of the given data or -1 if not found */
-    int (*IndexOf)(List *L,void *SearchedElement,void *ExtraArgs,size_t *result);
+    int (*ReplaceAt)(List *L,size_t idx,const void *newval);
+    int (*IndexOf)(const List *L,const void *SearchedElement,void *ExtraArgs,size_t *result);
 /* -------------------------------------------This is the list container part */
     int (*InsertIn)(List *l, size_t idx,List *newData);
-    int  (*CopyElement)(List *list,size_t idx,void *OutBuffer);
-    /*erases the string at the indicated position */
+    int  (*CopyElement)(const List *list,size_t idx,void *OutBuffer);
     int (*EraseRange)(List *L,size_t start,size_t end);
-    /* Sorts the list in place */
     int (*Sort)(List *l);
-    /* Reverses the list */
     int (*Reverse)(List *l);
-    /* Gets an element range from the list */
-    List *(*GetRange)(List *l,size_t start,size_t end);
-    /* Add a list at the end of another */
+    List *(*GetRange)(const List *l,size_t start,size_t end);
     int (*Append)(List *l1,List *l2);
-    /* Set the comparison function */
     CompareFunction (*SetCompareFunction)(List *l,CompareFunction fn);
     CompareFunction Compare;
     int (*UseHeap)(List *L, ContainerMemoryManager *m);
-    int (*AddRange)(List *L, size_t n,void *data);
+    int (*AddRange)(List *L, size_t n,const void *data);
     List *(*Create)(size_t element_size);
-    List *(*CreateWithAllocator)(size_t elementsize,ContainerMemoryManager *allocator);
+    List *(*CreateWithAllocator)(size_t elementsize,const ContainerMemoryManager *allocator);
     List *(*Init)(List *aList,size_t element_size);
-    List *(*InitWithAllocator)(List *aList,size_t element_size,ContainerMemoryManager *allocator);
+    List *(*InitWithAllocator)(List *aList,size_t element_size,const ContainerMemoryManager *allocator);
     List *(*SetAllocator)(List *l, ContainerMemoryManager  *allocator);
-    ContainerMemoryManager *(*GetAllocator)(List *list);
+    ContainerMemoryManager *(*GetAllocator)(const List *list);
     DestructorFunction (*SetDestructor)(List *v,DestructorFunction fn);
-    List *(*InitializeWith)(size_t elementSize,size_t n,void *data);
-    void *(*Back)(const List *l);
-    void *(*Front)(const List *l);
+    List *(*InitializeWith)(size_t elementSize,size_t n,const void *data);
+    const void *(*Back)(const List *l);
+    const void *(*Front)(const List *l);
 } ListInterface;
 
 extern ListInterface iList;
@@ -632,7 +618,7 @@ typedef struct tagDlist {
     /* -----------------------------------------Sequential container part */
     int (*Add)(Dlist *dl,const void *newval);
     const void *(*GetElement)(const Dlist *AL,int idx);
-    int (*PushFront)(Dlist *AL,void *str); 
+    int (*PushFront)(Dlist *AL,const void *str); 
     int (*PopFront)(Dlist *AL,void *result);
     int (*InsertAt)(Dlist *AL,size_t idx,const void *newval);
     int (*EraseAt)(Dlist *AL,size_t idx); 
@@ -654,12 +640,12 @@ typedef struct tagDlist {
     Dlist *(*CreateWithAllocator)(size_t,const ContainerMemoryManager *);
     Dlist *(*Init)(Dlist *dlist,size_t elementsize);
     int (*CopyElement)(const Dlist *l,size_t idx,void *outbuf);
-    int (*InsertIn)(Dlist *l, size_t idx,Dlist *newData);/* Inserts list at position */
+    int (*InsertIn)(Dlist *l, size_t idx,Dlist *newData);
     DestructorFunction (*SetDestructor)(Dlist *v,DestructorFunction fn);
     Dlist *(*InitializeWith)(size_t elementSize, size_t n,const void *data);
     ContainerMemoryManager *(*GetAllocator)(const Dlist *l);
-    void *(*Back)(const Dlist *l);
-    void *(*Front)(const Dlist *l);
+    const void *(*Back)(const Dlist *l);
+    const void *(*Front)(const Dlist *l);
 } DlistInterface;
 
 extern DlistInterface iDlist;
@@ -724,7 +710,7 @@ typedef struct tagVector {
     /* Vector container specific fields */
 
     int (*Insert)(Vector *AL,void *);
-    int (*InsertIn)(Vector *AL, size_t idx, Vector *newData);
+    int (*InsertIn)(Vector *AL, size_t idx,Vector *newData);
     Vector *(*IndexIn)(Vector *SC,Vector *AL);
     /* Returns the current capacity of the collection */
     size_t (*GetCapacity)(const Vector *AL);
@@ -807,7 +793,7 @@ typedef struct tagDictionary {
     Dictionary *(*Create)(size_t ElementSize,size_t hint);
     Dictionary *(*CreateWithAllocator)(size_t elementsize,size_t hint,ContainerMemoryManager *allocator);
     Dictionary *(*Init)(Dictionary *dict,size_t ElementSize,size_t hint);
-    Dictionary *(*InitWithAllocator)(Dictionary *Dict,size_t elementsize,size_t hint,ContainerMemoryManager *allocator);
+    Dictionary *(*InitWithAllocator)(Dictionary *Dict,size_t elementsize,size_t hint,const ContainerMemoryManager *allocator);
     strCollection *(*GetKeys)(Dictionary *Dict);
     ContainerMemoryManager *(*GetAllocator)(Dictionary *Dict);
     DestructorFunction (*SetDestructor)(Dictionary *v,DestructorFunction fn);
