@@ -627,9 +627,10 @@ static int RemoveRange(ElementType *SC,size_t start, size_t end)
 	return 1;
 }
 
-static int Erase(ElementType *SC,const CHAR_TYPE *str)
+static int EraseInternal(ElementType *SC,const CHAR_TYPE *str,int all)
 {
     size_t i;
+    int result = CONTAINER_ERROR_NOTFOUND;
     if (SC == NULL) {
     	return NullPtrError("Erase");
     }
@@ -641,22 +642,29 @@ static int Erase(ElementType *SC,const CHAR_TYPE *str)
     for (i=0; i<SC->count;i++) {
     	if (!SC->strcompare((const void **)&SC->contents[i],
                             (const void **)&str,SC->StringCompareContext)) {
-            break;
+            if (SC->DestructorFn) SC->DestructorFn(SC->contents[i]);
+            SC->Allocator->free(SC->contents[i]);
+            if (i < (SC->count-1))
+                memmove(SC->contents+i,SC->contents+i+1,(SC->count-i)*sizeof(char *));
+            --SC->count;
+            SC->contents[SC->count]=NULL;
+            SC->timestamp++;
+            result = 1;
+            if (all == 0) break;
+            i--;
         }
     }
-    if (i == SC->count)
-    	return CONTAINER_ERROR_NOTFOUND;
-    if (SC->DestructorFn)
-    SC->DestructorFn(SC->contents[i]);
-    SC->Allocator->free(SC->contents[i]);
-    if (i < (SC->count-1)) {
-        memmove(SC->contents+i,SC->contents+i+1,(SC->count-i)*sizeof(char *));
-    }
-    --SC->count;
-    SC->contents[SC->count]=NULL;
-    SC->timestamp++;
+    return result;
+}
 
-    return 1;
+static int Erase(ElementType *SC,const CHAR_TYPE *str)
+{
+    return EraseInternal(SC,str,0);
+}
+
+static int EraseAll(ElementType *SC,const CHAR_TYPE *str)
+{
+    return EraseInternal(SC,str,1);
 }
 
 static int PushBack(ElementType *SC,const CHAR_TYPE *str)
@@ -1627,6 +1635,7 @@ INTERFACE_TYP INTERFACE_OBJECT = {
     Clear,
     Contains,
     Erase,
+    EraseAll,
     Finalize,
     Apply,
     Equal,

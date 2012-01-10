@@ -785,11 +785,12 @@ static int InsertAt(List *l,size_t pos,const void *pdata)
     return 1;
 }
 
-static int Erase(List *l,const void *elem)
+static int EraseInternal(List *l,const void *elem,int all)
 {
     size_t position;
     ListElement *rvp,*previous;
     int r;
+    int result=CONTAINER_ERROR_NOTFOUND;
     CompareFunction fn;
     CompareInfo ci;
     
@@ -844,13 +845,24 @@ static int Erase(List *l,const void *elem)
             }
             l->count--;
             l->timestamp++;
-            return 1;
+            if (all == 0) return 1;
+            result = 1;
         }
         previous = rvp;
         rvp = rvp->Next;
         position++;
     }
-    return CONTAINER_ERROR_NOTFOUND;
+    return result;
+}
+
+static int Erase(List *l,const void *elem)
+{
+    return EraseInternal(l,elem,0);
+}
+
+static int EraseAll(List *l,const void *elem)
+{
+	return EraseInternal(l,elem,1);
 }
 
 static int EraseRange(List *l,size_t start,size_t end)
@@ -1688,6 +1700,7 @@ ListInterface iList = {
     Clear,
     Contains,
     Erase,
+    EraseAll,
     Finalize,
     Apply,
     Equal,

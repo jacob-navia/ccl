@@ -983,10 +983,13 @@ static int IndexOf(const Dlist *l,const void *ElementToFind, void * args,size_t 
     return CONTAINER_ERROR_NOTFOUND;
 }
 
-static int Erase(Dlist *l,const void *elem)
+static int EraseInternal(Dlist *l,const void *elem,int all)
 {
-    size_t idx;
-    int i;
+    int r,result = CONTAINER_ERROR_NOTFOUND;
+    CompareFunction fn;
+    CompareInfo ci;
+    dlist_element *rvp,*previous;
+    size_t position;
 
     if (l == NULL || elem == NULL) {
     	if (l)
@@ -995,11 +998,66 @@ static int Erase(Dlist *l,const void *elem)
     		iError.NullPtrError("iDlist.Erase");
     	return CONTAINER_ERROR_BADARG;
     }
-    i = IndexOf(l,elem,NULL,&idx);
-    if (i < 0)
-    	return i;
-    return EraseAt(l,idx);
+    position = 0;
+    rvp = l->First;
+    previous = NULL;
+    fn = l->Compare;
+    ci.ContainerLeft = l;
+    ci.ContainerRight = NULL;
+    ci.ExtraArgs = NULL;
+    while (rvp) {
+        r = fn(&rvp->Data,elem,&ci);
+        if (r == 0) {
+            if (l->Flags & CONTAINER_HAS_OBSERVER)
+                iObserver.Notify(l,CCL_ERASE_AT,rvp,(void *)position);
+
+            if (position == 0) {
+                if (l->count == 1) {
+                    l->First = l->Last = NULL;
+                }
+                else {
+                    l->First = l->First->Next;
+                    l->First->Previous = NULL;
+                }
+            }
+            else if (position == l->count - 1) {
+                previous->Next = NULL;
+                l->Last = previous;
+            }
+            else {
+                previous->Next = rvp->Next;
+                rvp->Next->Previous = previous;
+            }
+
+            if (l->DestructorFn)
+                l->DestructorFn(&rvp->Data);
+
+            if (l->Heap)
+                iHeap.AddToFreeList(l->Heap,rvp);
+            else {
+                l->Allocator->free(rvp);
+            }
+            l->count--;
+            l->timestamp++;
+            if (all == 0) return 1;
+            result = 1;
+        }
+        previous = rvp;
+        rvp = rvp->Next;
+        position++;
+    }
+    return result;
 }
+
+static int Erase(Dlist *l,const void *elem)
+{
+    return EraseInternal(l,elem,0);
+}
+static int EraseAll(Dlist *l,const void *elem)
+{
+    return EraseInternal(l,elem,1);
+}
+
 
 /*------------------------------------------------------------------------
  Procedure:     Contains ID:1
@@ -1572,6 +1630,7 @@ DlistInterface iDlist = {
     Clear,
     Contains,
     Erase,
+    EraseAll,
     Finalize,
     Apply,
     Equal,

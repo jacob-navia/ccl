@@ -53,6 +53,11 @@ static int Erase(SequentialContainer *gen,const void *elem)
 	return gen->vTable->Erase(gen,elem);
 }
 
+static int EraseAll(SequentialContainer *gen,const void *elem)
+{
+        return gen->vTable->EraseAll(gen,elem);
+}
+
 static int Finalize(SequentialContainer *gen)
 {
 	return gen->vTable->Finalize(gen);
@@ -184,6 +189,7 @@ SetFlags,
 Clear,
 Contains,
 Erase,
+EraseAll,
 Finalize,
 Apply,
 Equal,

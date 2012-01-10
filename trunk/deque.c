@@ -271,9 +271,9 @@ static int PeekBack(Deque * d,void *outbuf)
  * This operation executes in O(n) time where n is the number of elements in
 * the deque due to a linear search for the item.
 */
-static int Remove(Deque * d,const void* item) 
+static int EraseInternal(Deque * d,const void* item,int all) 
 {
-    DequeNode tmp = d->tail;
+    DequeNode tmp = d->tail,deleted;
     CompareInfo ci;
 
     ci.ContainerLeft = d;
@@ -287,15 +287,27 @@ static int Remove(Deque * d,const void* item)
             if (tmp->Next != NULL) {
                 tmp->Next->Previous = tmp->Previous;
             }
-    		if (d->DestructorFn)
-    			d->DestructorFn(tmp);
-    		d->Allocator->free(tmp);
+    	    if (d->DestructorFn)
+    	        d->DestructorFn(tmp);
+            deleted = tmp;
+            tmp = tmp->Previous;
+    	    d->Allocator->free(deleted);
             d->count--;
-            return 1;
+            if (all == 0) return 1;
         }
         tmp = tmp->Next;
     }
     return 0; /* item not found in deque */
+}
+
+static int Erase(Deque * d,const void* item)
+{
+    return EraseInternal(d,item,0);
+}
+
+static int EraseAll(Deque * d,const void* item)
+{
+    return EraseInternal(d,item,1);
 }
 
 /* Return the number of items in the deque */
@@ -632,7 +644,8 @@ DequeInterface iDeque = {
     SetFlags,
     Clear,
     Contains,
-    Remove,
+    Erase,
+    EraseAll,
     Finalize,
     Apply,
     Equal,
