@@ -10,7 +10,8 @@ static void testList(void)
 {
 	FILE *outFile;
 	List *l = iList.Create(sizeof(double)),*l1,*l2;
-	double d,*pd,sum;
+	double d,sum;
+	const double *pd;
 	size_t isum=0,msum=0,i;
 
 	for (i=0; i<1000;i++) {
