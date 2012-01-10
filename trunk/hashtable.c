@@ -581,26 +581,28 @@ static int DefaultLoadFunction(void *element,void *arg, FILE *Infile)
     return len == fread(element,1,len,Infile);
 }
 
-static int Save(HashTable *HT,FILE *stream, SaveFunction saveFn,void *arg)
+static int Save(const HashTable *HT,FILE *stream, SaveFunction saveFn,void *arg)
 {
     HashIndex  hix;
     HashIndex *hi;
     int rv;
     int retval=1;
+    size_t elemsiz;
 
     if (HT == NULL || stream == NULL) {
         return NullPtrError("Save");
     }
     if (saveFn == NULL) {
         saveFn = DefaultSaveFunction;
-        arg = &HT->ElementSize;
+        elemsiz = HT->ElementSize;
+        arg = &elemsiz;
     }
     if (fwrite(&HashTableGuid,sizeof(guid),1,stream) == 0)
         return EOF;
     if (fwrite(HT,1,sizeof(HashTable),stream) == 0)
         return EOF;
 
-    hix.ht    = HT;
+    hix.ht    = (HashTable *)HT;
     hix.index = 0;
     hix.this  = NULL;
     hix.next  = NULL;
@@ -812,7 +814,7 @@ static int InitIterator(HashTable *ht,void *buf)
 }
 
 
-static size_t SizeofIterator(HashTable *ht)
+static size_t SizeofIterator(const HashTable *ht)
 {
 	return sizeof(struct HashTableIterator);
 }

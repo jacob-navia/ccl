@@ -121,7 +121,7 @@ static int Add(SequentialContainer *sc, const void *Element)
 	return sc->vTable->Add(sc,Element);
 }
 
-static const void *GetElement(const SequentialContainer *sc,size_t idx)
+static void *GetElement(const SequentialContainer *sc,size_t idx)
 {
 	return sc->vTable->GetElement(sc,idx);
 }

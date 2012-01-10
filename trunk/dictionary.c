@@ -132,7 +132,7 @@ static int BadArgError(const Dictionary *SC,const char *fnName)
     return doerrorCall(SC->RaiseError,fnName,CONTAINER_ERROR_BADARG);
 }
 
-static int NoMemoryError(Dictionary *SC,const char *fnName)
+static int NoMemoryError(const Dictionary *SC,const char *fnName)
 {
     return doerrorCall(SC->RaiseError,fnName,CONTAINER_ERROR_NOMEMORY);
 }
@@ -215,7 +215,7 @@ static unsigned int hashlen(const char *key,int *klen)
                 error code will be returned. Returns zero if there
                 is no more memory
 ------------------------------------------------------------------------*/
-static const void *GetElement(const Dictionary *Dict,const char *Key)
+static void *GetElement(const Dictionary *Dict,const char *Key)
 {
     size_t i;
     struct DataList *p;
@@ -259,7 +259,7 @@ static int CopyElement(const Dictionary *Dict,const char *Key,void *outbuf)
     return 0;
 }
 
-static int Contains(Dictionary *Dict,const char *Key)
+static int Contains(const Dictionary *Dict,const char *Key)
 {
     if (Dict == NULL)  {
         return NullPtrError("Contains");
@@ -308,7 +308,7 @@ static int Equal(const Dictionary *d1,const Dictionary *d2)
                 error code
  Errors:        The container must be read/write.
 ------------------------------------------------------------------------*/
-static int add_nd(Dictionary *Dict,const char *Key,void *Value,int is_insert)
+static int add_nd(Dictionary *Dict,const char *Key,const void *Value,int is_insert)
 {
     size_t i;
     struct DataList *p;
@@ -355,7 +355,7 @@ static int add_nd(Dictionary *Dict,const char *Key,void *Value,int is_insert)
 
     return result;
 }
-static int Add(Dictionary *Dict,const char *Key,void *Value)
+static int Add(Dictionary *Dict,const char *Key,const void *Value)
 {
     int result;
 
@@ -371,7 +371,7 @@ static int Add(Dictionary *Dict,const char *Key,void *Value)
         iObserver.Notify(Dict,CCL_ADD,Value,NULL);
     return result;
 }
-static int Insert(Dictionary *Dict,const char *Key,void *Value)
+static int Insert(Dictionary *Dict,const char *Key,const void *Value)
 {
     int result;
 
@@ -387,7 +387,7 @@ static int Insert(Dictionary *Dict,const char *Key,void *Value)
         iObserver.Notify(Dict,CCL_INSERT,Value,NULL);
     return result;
 }
-static int Replace(Dictionary *Dict,const char *Key,void *Value)
+static int Replace(Dictionary *Dict,const char *Key,const void *Value)
 {
     size_t i;
     struct DataList *p;
@@ -430,7 +430,7 @@ static int Replace(Dictionary *Dict,const char *Key,void *Value)
  Output:        The number of entries
  Errors:        None
 ------------------------------------------------------------------------*/
-static size_t Size(Dictionary *Dict)
+static size_t Size(const Dictionary *Dict)
 {
     if (Dict == NULL) {
         NullPtrError("Size");
@@ -446,7 +446,7 @@ static size_t Size(Dictionary *Dict)
  Output:        The flags
  Errors:        None
 ------------------------------------------------------------------------*/
-static unsigned GetFlags(Dictionary *Dict)
+static unsigned GetFlags(const Dictionary *Dict)
 {
     if (Dict == NULL) {
         NullPtrError("GetFlags");
@@ -455,7 +455,7 @@ static unsigned GetFlags(Dictionary *Dict)
     return Dict->Flags;
 }
 
-static size_t Sizeof(Dictionary *dict)
+static size_t Sizeof(const Dictionary *dict)
 {
     if (dict == NULL) {
         return sizeof(Dictionary);
@@ -671,7 +671,7 @@ static ErrorFunction SetErrorFunction(Dictionary *Dict,ErrorFunction fn)
  Output:        A string collection with all keys
  Errors:        NULL if no more memory available
 ------------------------------------------------------------------------*/
-static strCollection *GetKeys(Dictionary *Dict)
+static strCollection *GetKeys(const Dictionary *Dict)
 {
     size_t i;
     struct DataList *p;
@@ -837,7 +837,7 @@ static int deleteIterator(Iterator *it)
     return 1;
 }
 
-static Vector *CastToArray(Dictionary *Dict)
+static Vector *CastToArray(const Dictionary *Dict)
 {
     size_t i;
     struct DataList *p;
@@ -859,7 +859,7 @@ static Vector *CastToArray(Dictionary *Dict)
     return result;
 }
 
-static int Save(Dictionary *Dict,FILE *stream, SaveFunction saveFn,void *arg)
+static int Save(const Dictionary *Dict,FILE *stream, SaveFunction saveFn,void *arg)
 {
     Vector *al;
     strCollection *sc;
@@ -883,7 +883,7 @@ static int Save(Dictionary *Dict,FILE *stream, SaveFunction saveFn,void *arg)
     iVector.Finalize(al);
     return result;
 }
-static Dictionary *Copy(Dictionary *src)
+static Dictionary *Copy(const Dictionary *src)
 {
     Dictionary *result;
     size_t i;
@@ -952,7 +952,7 @@ static Dictionary *Load(FILE *stream, ReadFunction readFn, void *arg)
     return result;
 }
 
-static size_t GetElementSize(Dictionary *d)
+static size_t GetElementSize(const Dictionary *d)
 {
     if (d == NULL) {
         NullPtrError("GetElementSize");
@@ -961,7 +961,7 @@ static size_t GetElementSize(Dictionary *d)
     return d->ElementSize;
 }
 
-static ContainerMemoryManager *GetAllocator(Dictionary *AL)
+static ContainerMemoryManager *GetAllocator(const Dictionary *AL)
 {
     if (AL == NULL) {
         return NULL;
@@ -1009,7 +1009,7 @@ static Dictionary *Init(Dictionary *dict,size_t elementsize,size_t hint)
     return InitWithAllocator(dict, elementsize, hint, CurrentMemoryManager);
 }
 
-static Dictionary *CreateWithAllocator(size_t elementsize,size_t hint,ContainerMemoryManager *allocator)
+static Dictionary *CreateWithAllocator(size_t elementsize,size_t hint,const ContainerMemoryManager *allocator)
 {
     Dictionary *Dict,*result;
 
@@ -1029,11 +1029,11 @@ static Dictionary *Create(size_t elementsize,size_t hint)
     return CreateWithAllocator(elementsize,hint,CurrentMemoryManager);
 }
 
-static Dictionary *InitializeWith(size_t elementSize,size_t n, char **Keys,void *Values)
+static Dictionary *InitializeWith(size_t elementSize,size_t n,const char **Keys,const void *Values)
 {
     Dictionary *result = Create(elementSize,n);
     size_t i;
-    char *pValues = Values;
+    const char *pValues = Values;
 
     if (result) {
         i=0;
@@ -1070,7 +1070,7 @@ static HashFunction SetHashFunction(Dictionary *d,HashFunction newFn)
     return old;
 }
 
-static size_t SizeofIterator(Dictionary *b)
+static size_t SizeofIterator(const Dictionary *b)
 {
 	return sizeof(struct DictionaryIterator);
 }

@@ -426,7 +426,7 @@ static int Finalize(ElementType *SC)
     return 1;
 }
 
-static const CHAR_TYPE *GetElement(const ElementType *SC,size_t idx)
+static CHAR_TYPE *GetElement(const ElementType *SC,size_t idx)
 {
     if (SC == NULL) {
     	NullPtrError("GetElement");
@@ -1575,7 +1575,7 @@ static DestructorFunction SetDestructor(ElementType *cb,DestructorFunction fn)
     return oldfn;
 }
 
-static const CHAR_TYPE **GetData(const ElementType *cb)
+static CHAR_TYPE **GetData(const ElementType *cb)
 {
     if (cb == NULL) {
     	NullPtrError("GetData");
@@ -1585,10 +1585,10 @@ static const CHAR_TYPE **GetData(const ElementType *cb)
     	cb->RaiseError("GetData",CONTAINER_ERROR_READONLY);
     	return NULL;
     }
-    return (const CHAR_TYPE **)cb->contents;
+    return cb->contents;
 }
 
-static const CHAR_TYPE *Back(const ElementType *cb)
+static CHAR_TYPE *Back(const ElementType *cb)
 {
     if (cb == NULL) {
     	NullPtrError("Back");

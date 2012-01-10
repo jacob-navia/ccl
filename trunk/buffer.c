@@ -168,7 +168,7 @@ static int Finalize(StreamBuffer *b)
 	return 1;
 }
 
-static const char *GetData(const StreamBuffer *b)
+static char *GetData(const StreamBuffer *b)
 {
 	if (b == NULL) {
 		iError.RaiseError("iStreamBuffer.Finalize",CONTAINER_ERROR_BADARG);
