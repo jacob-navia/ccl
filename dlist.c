@@ -599,8 +599,8 @@ static bool Equal(const Dlist *l1,const Dlist *l2)
     fn = l1->Compare;
     link1 = l1->First;
     link2 = l2->First;
-    ci.ContainerLeft = (Dlist *)l1;
-    ci.ContainerRight = (Dlist *)l2;
+    ci.ContainerLeft = l1;
+    ci.ContainerRight = l2;
     ci.ExtraArgs = NULL;
     while (link1 && link2) {
     	if (fn(link1->Data,link2->Data,&ci))
@@ -968,7 +968,7 @@ static int IndexOf(const Dlist *l,const void *ElementToFind, void * args,size_t 
     }
     rvp = l->First;
     fn = l->Compare;
-    ci.ContainerLeft = (Dlist *)l;
+    ci.ContainerLeft = l;
     ci.ContainerRight = NULL;
     ci.ExtraArgs = args;
     while (rvp) {
@@ -1622,6 +1622,65 @@ static size_t SizeofIterator(const Dlist *l)
 {
 	return sizeof(struct DListIterator);
 }
+
+int RemoveRange(Dlist *l,size_t start, size_t end)
+{
+    dlist_element *rvp,*rvpS,*rvpE;
+    size_t position=0,tmp;
+
+    if (l == NULL) {
+        iError.RaiseError("RemoveRange",CONTAINER_ERROR_BADARG);
+        return CONTAINER_ERROR_BADARG;
+    }
+    if (l->Flags&CONTAINER_READONLY) {
+        l->RaiseError("RemoveRange",CONTAINER_ERROR_READONLY);
+        return CONTAINER_ERROR_READONLY;
+    }
+    rvp = l->First;
+    if (start >= l->count)
+        return 0;
+    if (end >= l->count)
+        end = l->count;
+    if (start == end) return 0;
+    if (end < start) {
+        tmp = end;
+        end = start;
+        start = tmp;
+    }
+    while (rvp && position != start) {
+        rvp = rvp->Next;
+        position++;
+    }
+    rvpS = rvp->Previous;
+    while (rvp && position < end) {
+        rvp = rvp->Next;
+        position++;
+    }
+    if (rvp == NULL) {
+        iError.RaiseError("RemoveRange",CONTAINER_ASSERTION_FAILED);
+        return CONTAINER_ASSERTION_FAILED;
+    }
+    rvpE = rvp->Previous;
+    if (rvpS) {
+        if (rvpE) {
+            rvpS->Next = rvpE;
+            rvpE->Previous = rvpS;
+        }
+        else rvpS->Next = NULL;
+    }
+    if (start == 0) {
+        l->First = rvpE;
+        rvpE->Previous = NULL;
+    }
+    if (end == l->count-1) {
+        l->Last = rvpE;
+        rvpE->Next = NULL;
+    }
+    l->count -= (end-start-1);
+    l->timestamp++;
+    return 1;
+}
+
 
 DlistInterface iDlist = {
     Size,

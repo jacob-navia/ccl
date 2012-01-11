@@ -590,8 +590,8 @@ static int Equal(const List *l1,const List *l2)
     fn = l1->Compare;
     link1 = l1->First;
     link2 = l2->First;
-    ci.ContainerLeft = (List *)l1;
-    ci.ContainerRight = (List *)l2;
+    ci.ContainerLeft = l1;
+    ci.ContainerRight = l2;
     ci.ExtraArgs = NULL;
     while (link1 && link2) {
         if (fn(link1->Data,link2->Data,&ci))
@@ -1091,7 +1091,7 @@ static int IndexOf_nd(const List *l,const void *ElementToFind,void *ExtraArgs,si
 
     rvp = l->First;
     fn = l->Compare;
-    ci.ContainerLeft = (List *)l;
+    ci.ContainerLeft = l;
     ci.ContainerRight = NULL;
     ci.ExtraArgs = ExtraArgs;
     while (rvp) {
@@ -1733,8 +1733,10 @@ int RemoveRange(List *l,size_t start, size_t end)
     if (start == 0) {
         l->First = rvpE;
     }
-    if (end == l->count-1)
+    if (end == l->count-1) {
         l->Last = rvpE;
+        rvpE->Next = NULL;
+    }
     l->count -= (end-start-1);
     l->timestamp++;
     return 1;
