@@ -14,12 +14,12 @@ typedef struct {
     int (*Equal)(const ValArray *first, const ValArray *second);
     ValArray *(*Copy)(const ValArray *AL);
     ErrorFunction (*SetErrorFunction)(ValArray *AL,ErrorFunction);
-    size_t (*Sizeof)(ValArray *AL);
+    size_t (*Sizeof)(const ValArray *AL);
     Iterator *(*NewIterator)(ValArray *AL);
     int (*InitIterator)(ValArray *AL,void *buf);
     int (*deleteIterator)(Iterator *);
-    size_t (*SizeofIterator)(ValArray *);
-    int (*Save)(ValArray *AL,FILE *stream);
+    size_t (*SizeofIterator)(const ValArray *);
+    int (*Save)(const ValArray *AL,FILE *stream);
     ValArray *(*Load)(FILE *stream);
     size_t (*GetElementSize)(const ValArray *AL);
 
@@ -50,7 +50,7 @@ typedef struct {
     ValArray *(*Init)(ValArray *AL,size_t startsize);
     int (*AddRange)(ValArray *AL,size_t n, const ElementType *newvalues);
     ValArray *(*GetRange)(const ValArray *AL, size_t start, size_t end);
-    int (*CopyElement)(ValArray *AL,size_t idx,ElementType *outbuf);
+    int (*CopyElement)(const ValArray *AL,size_t idx,ElementType *outbuf);
     ElementType *(*CopyTo)(ValArray *AL);
     int (*Reverse)(ValArray *AL);
     int (*Append)(ValArray *AL1, ValArray *AL2);
@@ -59,6 +59,7 @@ typedef struct {
     DestructorFunction (*SetDestructor)(ValArray *cb,DestructorFunction fn);
 
     /* ValArray specific functions */
+
     ErrorFunction RaiseError;      /* Error function */
     int (*SumTo)(ValArray *left,const ValArray *right);
     int (*SubtractFrom)(ValArray *left, const ValArray *right);

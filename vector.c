@@ -307,7 +307,7 @@ static int Contains(const Vector *AL,const void *data,void *ExtraArgs)
 	p = (char *)AL->contents;
 	if (ExtraArgs == NULL) {
 		ExtraArgs = &ci;
-		ci.ContainerLeft = (void *)AL;
+		ci.ContainerLeft = AL;
 		ci.ContainerRight = NULL;
 		ci.ExtraArgs = ExtraArgs;
 	}
@@ -627,8 +627,10 @@ static int RemoveRange(Vector *AL,size_t start, size_t end)
 		end = AL->count;
 	if (start == end) return 0;
 	if (start >= AL->count) {
-		iError.RaiseError("RemoveRange",CONTAINER_ERROR_INDEX);
-		return CONTAINER_ERROR_INDEX;
+		return 0;
+	}
+	if (AL->Flags & CONTAINER_READONLY) {
+		return ErrorReadOnly(AL,"Erase");
 	}
 	p = AL->contents;
 	if (AL->DestructorFn) {
