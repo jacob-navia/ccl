@@ -428,7 +428,7 @@ static unsigned SetFlags(Deque *d,unsigned newflags){
 	d->timestamp++;
     return oldflags;
 }
-static int Save(Deque *d,FILE *stream, SaveFunction saveFn,void *arg)
+static int Save(const Deque *d,FILE *stream, SaveFunction saveFn,void *arg)
 {
     size_t i;
     DequeNode tmp = d->head;

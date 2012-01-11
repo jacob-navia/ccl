@@ -1693,6 +1693,53 @@ static DestructorFunction SetDestructor(List *cb,DestructorFunction fn)
         cb->DestructorFn = fn;
     return oldfn;
 }
+
+int RemoveRange(List *l,size_t start, size_t end)
+{
+    ListElement *rvp,*previous=NULL,*rvpS,*rvpE;
+    size_t position=0,tmp;
+
+    if (l == NULL) return NullPtrError("RemoveRange");
+    if (l->Flags&CONTAINER_READONLY)
+        return ErrorReadOnly(l,"RemoveRange");
+    rvp = l->First;
+    if (start >= l->count)
+        return 0;
+    if (end >= l->count)
+        end = l->count;
+    if (start == end) return 0;
+    if (end < start) {
+        tmp = end;
+        end = start;
+        start = tmp;
+    }
+    while (rvp && position != start) {
+        previous = rvp;
+        rvp = rvp->Next;
+        position++;
+    }
+    rvpS = previous;
+    while (rvp && position < end) {
+        previous = rvp;
+        rvp = rvp->Next;
+        position++;
+    }
+    rvpE = previous;
+    if (rvpS) {
+        if (rvpE)
+            rvpS->Next = rvpE;
+        else rvpS->Next = NULL;
+    }
+    if (start == 0) {
+        l->First = rvpE;
+    }
+    if (end == l->count-1)
+        l->Last = rvpE;
+    l->count -= (end-start-1);
+    l->timestamp++;
+    return 1;
+}
+
 ListInterface iList = {
     Size,
     GetFlags,
@@ -1745,4 +1792,5 @@ ListInterface iList = {
     InitializeWith,
     Back,
     Front,
+    RemoveRange,
 };

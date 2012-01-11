@@ -336,7 +336,7 @@ typedef struct tagstrCollection {
     int (*InitIterator)(strCollection *SC,void *buf);
     int (*deleteIterator)(Iterator *);
     size_t (*SizeofIterator)(const strCollection *l);
-    int (*Save)(strCollection *SC,FILE *stream, SaveFunction saveFn,void *arg);
+    int (*Save)(const strCollection *SC,FILE *stream, SaveFunction saveFn,void *arg);
     strCollection *(*Load)(FILE *stream, ReadFunction readFn,void *arg);
     size_t (*GetElementSize)(const strCollection *SC);
  /* -------------------------------------------This is the Sequential container part */
@@ -417,7 +417,7 @@ typedef struct tagWstrCollection {
     int (*InitIterator)(WstrCollection *SC,void *buf);
     int (*deleteIterator)(Iterator *);
     size_t (*SizeofIterator)(const WstrCollection *);
-    int (*Save)(WstrCollection *SC,FILE *stream, SaveFunction saveFn,void *arg);
+    int (*Save)(const WstrCollection *SC,FILE *stream, SaveFunction saveFn,void *arg);
     WstrCollection *(*Load)(FILE *stream, ReadFunction readFn,void *arg);
     size_t (*GetElementSize)(const WstrCollection *SC);
     /* -------------------------------------------This is the Sequential container part */
@@ -529,6 +529,7 @@ typedef struct tagList {
     List *(*InitializeWith)(size_t elementSize,size_t n,const void *data);
     void *(*Back)(const List *l);
     void *(*Front)(const List *l);
+    int (*RemoveRange)(List *l,size_t start, size_t end);
 } ListInterface;
 
 extern ListInterface iList;
@@ -577,7 +578,7 @@ typedef struct tagDequeInterface {
     int (*InitIterator)(Deque *dc,void *buf);
     int (*deleteIterator)(Iterator *);
     size_t (*SizeofIterator)(Deque *);
-    int (*Save)(Deque *d,FILE *stream, SaveFunction saveFn,void *arg);
+    int (*Save)(const Deque *d,FILE *stream, SaveFunction saveFn,void *arg);
     Deque *(*Load)(FILE *stream, ReadFunction readFn,void *arg);
     /* Deque specific functions */
     int (*PushBack)(Deque *Q,const void *Element);
@@ -902,7 +903,7 @@ typedef struct tagTreeMapInterface {
     int (*InitIterator)(TreeMap *,void *buf);
     int (*deleteIterator)(Iterator *);
     size_t (*SizeofIterator)(TreeMap *);
-    int (*Save)(TreeMap *src,FILE *stream, SaveFunction saveFn,void *arg);
+    int (*Save)(const TreeMap *src,FILE *stream, SaveFunction saveFn,void *arg);
     int (*Add)(TreeMap *ST, void *Data,void *ExtraArgs); /* Adds one element. Given data is copied */
     int (*AddRange)(TreeMap *ST,size_t n, void *Data,void *ExtraArgs);
     /* Like Add but allows for an extra argument to be passed to the
@@ -950,7 +951,7 @@ typedef struct tagBitString {
     Iterator  *(*NewIterator)(BitString *);
     int (*InitIterator)(BitString *,void *);
     int (*deleteIterator)(Iterator *);
-    int        (*Save)(BitString *bitstr,FILE *stream, SaveFunction saveFn,void *arg);
+    int        (*Save)(const BitString *bitstr,FILE *stream, SaveFunction saveFn,void *arg);
     BitString *(*Load)(FILE *stream, ReadFunction saveFn,void *arg);
     size_t (*GetElementSize)(BitString *b);
 

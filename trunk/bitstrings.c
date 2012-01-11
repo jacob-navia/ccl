@@ -1248,7 +1248,7 @@ static int deleteIterator(Iterator * it)
 	bi->Bits->Allocator->free(bi);
 	return 1;
 }
-static int Save(BitString *bitstr,FILE *stream, SaveFunction saveFn,void *arg)
+static int Save(const BitString *bitstr,FILE *stream, SaveFunction saveFn,void *arg)
 {
 	if (stream == NULL || bitstr == NULL) {
 		return NullPtrError("Load");
