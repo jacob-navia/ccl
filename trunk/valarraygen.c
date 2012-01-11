@@ -342,7 +342,7 @@ static ValArray *Copy(const ValArray *AL)
 	return result;
 }
 
-static int CopyElement(ValArray *AL,size_t idx, ElementType *outbuf)
+static int CopyElement(const ValArray *AL,size_t idx, ElementType *outbuf)
 {
 	size_t top = (AL->Slice) ? AL->Slice->length : AL->count;
 	if (idx >= top) {
@@ -540,8 +540,7 @@ static int RemoveRange(ValArray *AL,size_t start, size_t end)
                 end = AL->count;
         if (start == end) return 0;
         if (start >= AL->count) {
-                iError.RaiseError("RemoveRange",CONTAINER_ERROR_INDEX);
-                return CONTAINER_ERROR_INDEX;
+                return 0;
         }
         if (end < AL->count)
         memmove(AL->contents+start,
@@ -778,7 +777,7 @@ static ErrorFunction SetErrorFunction(ValArray *AL,ErrorFunction fn)
 	return old;
 }
 
-static size_t Sizeof(ValArray *AL)
+static size_t Sizeof(const ValArray *AL)
 {
 	if (AL == NULL)
 		return sizeof(ValArray);
@@ -1154,7 +1153,7 @@ static int deleteIterator(Iterator * it)
 	return 1;
 }
 
-static int Save(ValArray *AL,FILE *stream)
+static int Save(const ValArray *AL,FILE *stream)
 {
 	if (fwrite(&ValArrayGuid,sizeof(guid),1,stream) == 0)
 		return EOF;
@@ -2156,7 +2155,7 @@ static ElementType Front(const ValArray *cb)
 	return r;
 }
 
-static size_t SizeofIterator(ValArray *cb)
+static size_t SizeofIterator(const ValArray *cb)
 {
 	return sizeof (struct ValArrayIterator) + sizeof(ElementType);
 }

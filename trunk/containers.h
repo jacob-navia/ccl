@@ -359,7 +359,7 @@ typedef struct tagstrCollection {
     strCollection *(*IndexIn)(const strCollection *SC,const Vector *AL);
     strCollection *(*CreateFromFile)(const char *fileName);
     strCollection *(*Create)(size_t startsize);
-    strCollection *(*CreateWithAllocator)(size_t startsize,const ContainerMemoryManager *allocator);
+    strCollection *(*CreateWithAllocator)(size_t startsiz,const ContainerMemoryManager *mm);
 
     int (*AddRange)(strCollection *SC,size_t n,const char **newvalues);
     char **(*CopyTo)(const strCollection *SC);
@@ -377,7 +377,7 @@ typedef struct tagstrCollection {
     strCollection *(*GetRange)(strCollection *SC, size_t start,size_t end);
     ContainerMemoryManager *(*GetAllocator)(const strCollection *AL);
     int (*Mismatch)(const strCollection *a1,const strCollection *a2,size_t *mismatch);
-    strCollection *(*InitWithAllocator)(strCollection *result,size_t startsize,const ContainerMemoryManager *allocator);
+    strCollection *(*InitWithAllocator)(strCollection *c,size_t start,const ContainerMemoryManager *mm);
     strCollection *(*Init)(strCollection *result,size_t startsize);
     DestructorFunction (*SetDestructor)(strCollection *v,DestructorFunction fn);
     strCollection *(*InitializeWith)(size_t n, char **data);
@@ -440,7 +440,7 @@ typedef struct tagWstrCollection {
     WstrCollection *(*IndexIn)(const WstrCollection *SC,const Vector *AL);
     WstrCollection *(*CreateFromFile)(const char *fileName);
     WstrCollection *(*Create)(size_t startsize);
-    WstrCollection *(*CreateWithAllocator)(size_t startsize,const ContainerMemoryManager *allocator);
+    WstrCollection *(*CreateWithAllocator)(size_t startsize,const ContainerMemoryManager *mm);
     
     int (*AddRange)(WstrCollection *SC,size_t n,const wchar_t **newvalues);
     wchar_t **(*CopyTo)(const WstrCollection *SC);
@@ -458,7 +458,7 @@ typedef struct tagWstrCollection {
     WstrCollection *(*GetRange)(WstrCollection *SC, size_t start,size_t end);
     ContainerMemoryManager *(*GetAllocator)(const WstrCollection *AL);
     int (*Mismatch)(const WstrCollection *a1,const WstrCollection *a2,size_t *mismatch);
-    WstrCollection *(*InitWithAllocator)(WstrCollection *result,size_t startsize,const ContainerMemoryManager *allocator);
+    WstrCollection *(*InitWithAllocator)(WstrCollection *result,size_t startsize,const ContainerMemoryManager *mm);
     WstrCollection *(*Init)(WstrCollection *result,size_t startsize);
     DestructorFunction (*SetDestructor)(WstrCollection *v,DestructorFunction fn);
     WstrCollection *(*InitializeWith)(size_t n,wchar_t **data);
@@ -520,9 +520,9 @@ typedef struct tagList {
     int (*UseHeap)(List *L, ContainerMemoryManager *m);
     int (*AddRange)(List *L, size_t n,const void *data);
     List *(*Create)(size_t element_size);
-    List *(*CreateWithAllocator)(size_t elementsize,const ContainerMemoryManager *allocator);
+    List *(*CreateWithAllocator)(size_t elementsize,const ContainerMemoryManager *mm);
     List *(*Init)(List *aList,size_t element_size);
-    List *(*InitWithAllocator)(List *aList,size_t element_size,const ContainerMemoryManager *allocator);
+    List *(*InitWithAllocator)(List *aList,size_t element_size,const ContainerMemoryManager *mm);
     List *(*SetAllocator)(List *l, ContainerMemoryManager  *allocator);
     ContainerMemoryManager *(*GetAllocator)(const List *list);
     DestructorFunction (*SetDestructor)(List *v,DestructorFunction fn);
@@ -542,8 +542,7 @@ typedef struct _Queue Queue;
 
 typedef struct tagQueueInterface {
     Queue *(*Create)(size_t elementSize);
-    Queue *(*CreateWithAllocator)(size_t elementSize,
-                                  ContainerMemoryManager *allocator);
+    Queue *(*CreateWithAllocator)(size_t elementSize, ContainerMemoryManager *allocator);
     size_t (*Size)(Queue *Q);
     size_t (*Sizeof)(Queue *Q);
     int (*Enqueue)(Queue *Q, void *Element);
@@ -709,7 +708,7 @@ typedef struct tagVector {
     CompareFunction (*SetCompareFunction)(Vector *l,CompareFunction fn);
     int (*Sort)(Vector *AL);
     Vector *(*Create)(size_t elementsize,size_t startsize);
-    Vector *(*CreateWithAllocator)(size_t elementsize,size_t startsize,const ContainerMemoryManager *allocator);
+    Vector *(*CreateWithAllocator)(size_t elemsiz,size_t startsiz,const ContainerMemoryManager *mm);
     Vector *(*Init)(Vector *r,size_t elementsize,size_t startsize);
     int (*AddRange)(Vector *AL,size_t n,const void *newvalues);
     Vector *(*GetRange)(const Vector *AL, size_t start, size_t end);
@@ -770,9 +769,9 @@ typedef struct tagDictionary {
     int (*CopyElement)(const Dictionary *Dict,const char *Key,void *outbuf);
     int (*InsertIn)(Dictionary *dst,Dictionary *src);
     Dictionary *(*Create)(size_t ElementSize,size_t hint);
-    Dictionary *(*CreateWithAllocator)(size_t elementsize,size_t hint,const ContainerMemoryManager *allocator);
+    Dictionary *(*CreateWithAllocator)(size_t elementsize,size_t hint,const ContainerMemoryManager *mm);
     Dictionary *(*Init)(Dictionary *dict,size_t ElementSize,size_t hint);
-    Dictionary *(*InitWithAllocator)(Dictionary *Dict,size_t elementsize,size_t hint,const ContainerMemoryManager *allocator);
+    Dictionary *(*InitWithAllocator)(Dictionary *D,size_t elemsize,size_t hint,const ContainerMemoryManager *mm);
     strCollection *(*GetKeys)(const Dictionary *Dict);
     ContainerMemoryManager *(*GetAllocator)(const Dictionary *Dict);
     DestructorFunction (*SetDestructor)(Dictionary *v,DestructorFunction fn);
