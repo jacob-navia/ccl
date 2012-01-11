@@ -1141,7 +1141,7 @@ static int deleteIterator(Iterator *it)
     return 1;
 }
 
-static int SaveHeader(ElementType *SC,FILE *stream)
+static int SaveHeader(const ElementType *SC,FILE *stream)
 {
     return (int)fwrite(SC,1,sizeof(ElementType),stream);
 }
@@ -1164,7 +1164,7 @@ static int DefaultLoadFunction(void *element,void *arg, FILE *Infile)
     return len == fread(element,1,len,Infile);
 }
 
-static int Save(ElementType *SC,FILE *stream, SaveFunction saveFn,void *arg)
+static int Save(const ElementType *SC,FILE *stream, SaveFunction saveFn,void *arg)
 {
     size_t i;
 

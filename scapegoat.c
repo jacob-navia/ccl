@@ -855,9 +855,10 @@ static int DefaultSaveFunction(const void *element,void *arg, FILE *Outfile)
     return len == fwrite(str,1,len,Outfile);
 }
 
-static int Save(TreeMap *src,FILE *stream, SaveFunction saveFn,void *arg)
+static int Save(const TreeMap *src,FILE *stream, SaveFunction saveFn,void *arg)
 {
     struct Node *rvp;
+    size_t elemsiz;
     if (src == NULL) {
     	iError.RaiseError("Save",CONTAINER_ERROR_BADARG);
     	return CONTAINER_ERROR_BADARG;
@@ -872,7 +873,8 @@ static int Save(TreeMap *src,FILE *stream, SaveFunction saveFn,void *arg)
     if (fwrite(&TreeMapGuid,sizeof(guid),1,stream) == 0)
         return EOF;
     if (arg == NULL) {
-    	arg = &src->ElementSize;
+        elemsiz = src->ElementSize;
+    	arg = &elemsiz;
     }
     if (fwrite(src,1,sizeof(TreeMap),stream) == 0)
         return EOF;
