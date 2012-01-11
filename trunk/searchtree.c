@@ -767,7 +767,7 @@ static int compareHeaders(const BinarySearchTree *left,const BinarySearchTree *r
 
 static int compareNodes(const BinarySearchTreeNode *left,const BinarySearchTreeNode *right,CompareInfo *ci)
 {
-	BinarySearchTree *tree;
+	const BinarySearchTree *tree;
 
 	if (left->hidden != right->hidden || left->factor != right->factor)
 		return 0;

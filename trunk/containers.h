@@ -126,8 +126,8 @@ typedef struct _Iterator {
 /* Type definition of the compare function */
 typedef struct tagCompareInfo {
     void *ExtraArgs;
-    void *ContainerLeft;
-    void *ContainerRight;
+    const void *ContainerLeft;
+    const void *ContainerRight;
 } CompareInfo;
 typedef int (*CompareFunction)(const void *elem1, const void *elem2,CompareInfo *ExtraArgs);
 typedef int (*SaveFunction)(const void *element, void *arg, FILE *OutputStream);
@@ -654,6 +654,7 @@ typedef struct tagDlist {
     ContainerMemoryManager *(*GetAllocator)(const Dlist *l);
     void *(*Back)(const Dlist *l);
     void *(*Front)(const Dlist *l);
+    int (*RemoveRange)(Dlist *l,size_t start, size_t end);
 } DlistInterface;
 
 extern DlistInterface iDlist;
