@@ -774,7 +774,7 @@ static int Finalize(Vector *AL)
 	return result;
 }
 
-static ContainerMemoryManager *GetAllocator(Vector *AL)
+static const ContainerMemoryManager *GetAllocator(const Vector *AL)
 {
 	if (AL == NULL) {
 		return NULL;

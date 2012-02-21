@@ -20,7 +20,7 @@ static size_t Sizeof(Queue *q)
 
 static int Finalize(Queue *Q)
 {
-	ContainerMemoryManager *allocator = iList.GetAllocator(Q->Items);
+    const ContainerMemoryManager *allocator = iList.GetAllocator(Q->Items);
     iList.Finalize(Q->Items);
     allocator->free(Q);
     return 1;

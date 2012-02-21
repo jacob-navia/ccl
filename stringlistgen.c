@@ -18,7 +18,7 @@ the proposed interface COULD be done.
 #endif
 static int IndexOf_nd(LIST_TYPE *AL,CHARTYPE *SearchedElement,void *ExtraArgs,size_t *result);
 static int RemoveAt_nd(LIST_TYPE *AL,size_t idx);
-static LIST_TYPE *CreateWithAllocator(ContainerMemoryManager *allocator);
+static LIST_TYPE *CreateWithAllocator(const ContainerMemoryManager *allocator);
 static LIST_TYPE *Create(void);
 static int Finalize(LIST_TYPE *l);
 #define CONTAINER_LIST_SMALL    2
@@ -303,7 +303,7 @@ static CompareFunction SetCompareFunction(LIST_TYPE *l,CompareFunction fn)
  Output:        A pointer to the new list
  Errors:        None. Returns NULL if therfe is no memory left.
 ------------------------------------------------------------------------*/
-static LIST_TYPE *Copy(LIST_TYPE *l)
+static LIST_TYPE *Copy(const LIST_TYPE *l)
 {
     LIST_TYPE *result;
     LIST_ELEMENT *elem,*newElem;
@@ -1596,7 +1596,7 @@ static size_t GetElementSize(LIST_TYPE *l)
                 routine is called. If there is no memory result is
                 NULL.
  ------------------------------------------------------------------------*/
-static LIST_TYPE *CreateWithAllocator(ContainerMemoryManager *allocator)
+static LIST_TYPE *CreateWithAllocator(const ContainerMemoryManager *allocator)
 {
     LIST_TYPE *result;
 
@@ -1647,7 +1647,7 @@ static LIST_TYPE *Init(LIST_TYPE *result)
     return InitWithAllocator(result,CurrentMemoryManager);
 }
 
-static ContainerMemoryManager *GetAllocator(LIST_TYPE *l)
+static const ContainerMemoryManager *GetAllocator(LIST_TYPE *l)
 {
     if (l == NULL)
         return NULL;

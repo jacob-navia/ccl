@@ -24,7 +24,7 @@ static size_t count_nodes_in_subtree (const struct Node *);
 
 static size_t floor_log2 (size_t);
 static size_t calculate_h_alpha (size_t);
-static TreeMap *CreateWithAllocator(size_t ElementSize,ContainerMemoryManager *m);
+static TreeMap *CreateWithAllocator(size_t ElementSize,const ContainerMemoryManager *m);
 
 
 /* Inserts the given NODE into BT.
@@ -555,7 +555,7 @@ static int Insert(TreeMap *tree, const void *Data, void *ExtraArgs)
 
 }
 
-static void *Find(TreeMap *tree,void *data,void *ExtraArgs)
+static void *GetElement(TreeMap *tree,const void *data,void *ExtraArgs)
 {
     struct Node *p;
     CompareInfo cInfo;
@@ -802,12 +802,12 @@ static size_t GetElementSize(TreeMap *d)
 
 static int Contains(TreeMap *d, void *element,void *ExtraArgs)
 {
-    if (Find(d,element,ExtraArgs))
+    if (GetElement(d,element,ExtraArgs))
     	return 1;
     return 0;
 }
 
-static TreeMap *CreateWithAllocator(size_t ElementSize,ContainerMemoryManager *m)
+static TreeMap *CreateWithAllocator(size_t ElementSize,const ContainerMemoryManager *m)
 {
     TreeMap *result;
 
@@ -966,7 +966,7 @@ static DestructorFunction SetDestructor(TreeMap *cb,DestructorFunction fn)
 		cb->DestructorFn = fn;
 	return oldfn;
 }
-static ContainerMemoryManager *GetAllocator(TreeMap *l)
+static const ContainerMemoryManager *GetAllocator(const TreeMap *l)
 {
     if (l == NULL)
         return NULL;
@@ -995,7 +995,7 @@ TreeMapInterface iTreeMap = {
     Add,
 	AddRange,
     Insert,
-    Find,
+    GetElement,
     SetCompareFunction,
     CreateWithAllocator,
     Create,

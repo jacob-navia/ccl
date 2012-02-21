@@ -1028,7 +1028,8 @@ static int Reverse(List *l)
         Previous = current;
     }
     l->First = Previous;
-    l->Last->Next = NULL;
+    if (l->Last)
+        l->Last->Next = NULL;
     l->timestamp++;
     return 1;
 }
@@ -1223,7 +1224,7 @@ static size_t SizeofIterator(const List *l)
 	return sizeof(struct ListIterator);
 }
 
-static int UseHeap(List *L, ContainerMemoryManager *m)
+static int UseHeap(List *L,const  ContainerMemoryManager *m)
 {
     if (L == NULL) {
         return NullPtrError("UseHeap");
@@ -1676,7 +1677,7 @@ static List *Init(List *result,size_t elementsize)
     return InitWithAllocator(result,elementsize,CurrentMemoryManager);
 }
 
-static ContainerMemoryManager *GetAllocator(const List *l)
+static const ContainerMemoryManager *GetAllocator(const List *l)
 {
     if (l == NULL)
         return NULL;
@@ -1694,7 +1695,7 @@ static DestructorFunction SetDestructor(List *cb,DestructorFunction fn)
     return oldfn;
 }
 
-int RemoveRange(List *l,size_t start, size_t end)
+static int RemoveRange(List *l,size_t start, size_t end)
 {
     ListElement *rvp,*previous=NULL,*rvpS,*rvpE;
     size_t position=0,tmp;
@@ -1735,7 +1736,8 @@ int RemoveRange(List *l,size_t start, size_t end)
     }
     if (end == l->count-1) {
         l->Last = rvpE;
-        rvpE->Next = NULL;
+        if (rvpE)
+            rvpE->Next = NULL;
     }
     l->count -= (end-start-1);
     l->timestamp++;

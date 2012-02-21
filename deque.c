@@ -295,7 +295,8 @@ static int EraseInternal(Deque * d,const void* item,int all)
             d->count--;
             if (all == 0) return 1;
         }
-        tmp = tmp->Next;
+        if (tmp)
+            tmp = tmp->Next;
     }
     return 0; /* item not found in deque */
 }
@@ -632,7 +633,7 @@ static DestructorFunction SetDestructor(Deque *cb,DestructorFunction fn)
     return oldfn;
 }
 
-size_t SizeofIterator(Deque *l)
+static size_t SizeofIterator(Deque *l)
 {
 	return sizeof(struct DequeIterator);
 }

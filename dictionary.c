@@ -961,7 +961,7 @@ static size_t GetElementSize(const Dictionary *d)
     return d->ElementSize;
 }
 
-static ContainerMemoryManager *GetAllocator(const Dictionary *AL)
+static const ContainerMemoryManager *GetAllocator(const Dictionary *AL)
 {
     if (AL == NULL) {
         return NULL;

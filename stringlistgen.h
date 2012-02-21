@@ -11,7 +11,7 @@ typedef struct _INTERNAL_INTERFACE_NAME {
     /* Call a callback function with each element of the list and an extra argument */
     int (*Apply)(EXTERNAL_NAME *L,int(Applyfn)(CHARTYPE *,void *),void *arg);
     int (*Equal)(EXTERNAL_NAME *l1,EXTERNAL_NAME *l2);  /* Compares two lists (Shallow comparison) */
-    EXTERNAL_NAME *(*Copy)(EXTERNAL_NAME *L);           /* Copies all items into a new list */
+    EXTERNAL_NAME *(*Copy)(const EXTERNAL_NAME *L);           /* Copies all items into a new list */
     ErrorFunction (*SetErrorFunction)(EXTERNAL_NAME *L,ErrorFunction); /* Set/unset the error function */
     size_t (*Sizeof)(EXTERNAL_NAME *l);
     Iterator *(*NewIterator)(EXTERNAL_NAME *L);
@@ -54,12 +54,12 @@ typedef struct _INTERNAL_INTERFACE_NAME {
     int (*UseHeap)(EXTERNAL_NAME *L, ContainerMemoryManager *m);
     int (*AddRange)(EXTERNAL_NAME *L, size_t n,CHARTYPE **data);
     EXTERNAL_NAME *(*Create)(void);
-    EXTERNAL_NAME *(*CreateWithAllocator)(ContainerMemoryManager *allocator);
+    EXTERNAL_NAME *(*CreateWithAllocator)(const ContainerMemoryManager *allocator);
     EXTERNAL_NAME *(*Init)(EXTERNAL_NAME *aEXTERNAL_NAME);
     EXTERNAL_NAME *(*InitWithAllocator)(EXTERNAL_NAME *aEXTERNAL_NAME,ContainerMemoryManager *allocator);
     EXTERNAL_NAME *(*SetAllocator)(EXTERNAL_NAME *l, ContainerMemoryManager  *allocator);
     int (*InitIterator)(EXTERNAL_NAME *list,void *storage);
-    ContainerMemoryManager *(*GetAllocator)(EXTERNAL_NAME *list);
+    const ContainerMemoryManager *(*GetAllocator)(EXTERNAL_NAME *list);
     DestructorFunction (*SetDestructor)(EXTERNAL_NAME *v,DestructorFunction fn);
     EXTERNAL_NAME *(*InitializeWith)(size_t n,CHARTYPE **data);
     CHARTYPE *(*Back)(const EXTERNAL_NAME *l);
