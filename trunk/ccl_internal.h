@@ -32,7 +32,7 @@ typedef struct {
 /*----------------------------------------------------------------------------*/
 struct _Mask {
     size_t length;
-    ContainerMemoryManager *Allocator;
+    const ContainerMemoryManager *Allocator;
     char data[MINIMUM_ARRAY_INDEX];
 };
 
@@ -68,7 +68,7 @@ struct _Vector {
     unsigned timestamp;            /* Incremented at each change */
     CompareFunction CompareFn;     /* Element comparison function */
     ErrorFunction RaiseError;      /* Error function */
-    ContainerMemoryManager *Allocator;
+    const ContainerMemoryManager *Allocator;
     DestructorFunction DestructorFn;
 } ;
 
@@ -93,7 +93,7 @@ struct _BitString {
     size_t capacity;                /* allocated space in the contents vector */
     unsigned timestamp;
     unsigned int Flags;             /* Read-only or other flags */
-    ContainerMemoryManager *Allocator;
+    const ContainerMemoryManager *Allocator;
 } ;
 
 /*----------------------------------------------------------------------------*/
@@ -118,7 +118,7 @@ struct _List {
     CompareFunction Compare;    /* Element comparison function */
     ErrorFunction RaiseError;   /* Error function */
     ContainerHeap *Heap;
-    ContainerMemoryManager *Allocator;
+    const ContainerMemoryManager *Allocator;
     DestructorFunction DestructorFn;
 };
 
@@ -151,7 +151,7 @@ struct _StringList {
     CompareFunction Compare;    /* Element comparison function */
     ErrorFunction RaiseError;   /* Error function */
     ContainerHeap *Heap;
-    ContainerMemoryManager *Allocator;
+    const ContainerMemoryManager *Allocator;
     DestructorFunction DestructorFn;
 };
 
@@ -184,7 +184,7 @@ struct _WStringList {
     CompareFunction Compare;    /* Element comparison function */
     ErrorFunction RaiseError;   /* Error function */
     ContainerHeap *Heap;
-    ContainerMemoryManager *Allocator;
+    const ContainerMemoryManager *Allocator;
     DestructorFunction DestructorFn;
 };
 
@@ -220,7 +220,7 @@ struct Dlist {
     CompareFunction Compare;     /* Element comparison function */
     ErrorFunction RaiseError;        /* Error function */
     ContainerHeap *Heap;
-    ContainerMemoryManager *Allocator;
+    const ContainerMemoryManager *Allocator;
     DestructorFunction DestructorFn;
 };
 
@@ -243,7 +243,7 @@ struct _Dictionary {
 	ErrorFunction RaiseError;
 	unsigned timestamp;
 	size_t ElementSize;
-	ContainerMemoryManager *Allocator;
+	const ContainerMemoryManager *Allocator;
 	DestructorFunction DestructorFn;
 	HashFunction hash;
 	struct DataList {
@@ -303,7 +303,7 @@ struct _HashTable {
     ErrorFunction  RaiseError;
     unsigned       timestamp;
     size_t         ElementSize;
-    ContainerMemoryManager *Allocator;
+    const ContainerMemoryManager *Allocator;
     DestructorFunction DestructorFn;
 };
 
@@ -342,7 +342,7 @@ struct tagTreeMap {
     unsigned Flags;
     unsigned timestamp;
     ContainerHeap *Heap;
-    ContainerMemoryManager *Allocator;
+    const ContainerMemoryManager *Allocator;
     DestructorFunction DestructorFn;
 };
 
@@ -372,7 +372,7 @@ struct strCollection {
     ErrorFunction RaiseError;
     StringCompareFn strcompare;
     CompareInfo *StringCompareContext;
-    ContainerMemoryManager *Allocator;
+    const ContainerMemoryManager *Allocator;
     DestructorFunction DestructorFn;
 };
 
@@ -387,7 +387,7 @@ struct WstrCollection {
     ErrorFunction RaiseError;
     StringCompareFn strcompare;
     CompareInfo *StringCompareContext;
-    ContainerMemoryManager *Allocator;
+    const ContainerMemoryManager *Allocator;
     DestructorFunction DestructorFn;
 };
 #endif

@@ -6,7 +6,7 @@ static void ABORT(char *file,int line)
 	abort();
 }
 #define Abort() ABORT(__FILE__,__LINE__)
-void PrintList(List *l)
+static void PrintList(List *l)
 {
     Iterator *it = iList.NewIterator(l);
     int *pi;
@@ -17,18 +17,17 @@ void PrintList(List *l)
     printf("\n");
 }
 
-int testRemoveRange(void)
+static int testRemoveRange(void)
 {
-    List *l1,*l2;
+    List *l1;
     int table[] = {1,2,3,4,5,6,7,8,9,10};
-    int r;
 
     l1 = iList.InitializeWith(sizeof(int),10,table);
-    l2 = iList.Copy(l1);
+    iList.Copy(l1);
     printf("Original list:\n");
     PrintList(l1);
     printf("Removing element 2 to 5\n");
-    r = iList.RemoveRange(l1,2,5);
+    iList.RemoveRange(l1,2,5);
     PrintList(l1);
     return 1;
 }

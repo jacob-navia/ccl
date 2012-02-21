@@ -102,7 +102,7 @@ static BloomFilter *Create(size_t nbOfElements,double Probability)
 	if (result == NULL) {
 		goto errMem;
 	}
-	memset(result,0,sizeof(result));
+	memset(result,0,sizeof(*result));
 	result->bits = CurrentMemoryManager->malloc(1+nbOfBits/8);
 	if (result->bits == NULL) {
 		CurrentMemoryManager->free(result);
@@ -189,7 +189,7 @@ static int Finalize(BloomFilter *b)
 	if (b == NULL)
 		return CONTAINER_ERROR_BADARG;
 	b->Allocator->free(b->bits);
-	memset(b,0,sizeof(b));
+	memset(b,0,sizeof(*b));
 	b->Allocator->free(b);
 	return 1;
 

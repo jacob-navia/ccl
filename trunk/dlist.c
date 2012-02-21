@@ -122,7 +122,7 @@ static Dlist *InitializeWith(size_t elementSize,size_t n,const void *Data)
 }
 
 
-static int UseHeap(Dlist *L, ContainerMemoryManager *m)
+static int UseHeap(Dlist *L,const ContainerMemoryManager *m)
 {
     if (L->Heap || L->count) {
     	L->RaiseError("iDlist.UseHeap",CONTAINER_ERROR_NOT_EMPTY);
@@ -1580,7 +1580,7 @@ static DestructorFunction SetDestructor(Dlist *cb,DestructorFunction fn)
     	cb->DestructorFn = fn;
     return oldfn;
 }
-static ContainerMemoryManager *GetAllocator(const Dlist *l)
+static const ContainerMemoryManager *GetAllocator(const Dlist *l)
 {
     if (l == NULL)
         return NULL;
@@ -1623,7 +1623,7 @@ static size_t SizeofIterator(const Dlist *l)
 	return sizeof(struct DListIterator);
 }
 
-int RemoveRange(Dlist *l,size_t start, size_t end)
+static int RemoveRange(Dlist *l,size_t start, size_t end)
 {
     dlist_element *rvp,*rvpS,*rvpE;
     size_t position=0,tmp;
@@ -1651,6 +1651,10 @@ int RemoveRange(Dlist *l,size_t start, size_t end)
         rvp = rvp->Next;
         position++;
     }
+    if (rvp == NULL) {
+        l->RaiseError("RemoveRange",CONTAINER_INTERNAL_ERROR);
+        return CONTAINER_INTERNAL_ERROR;
+    }
     rvpS = rvp->Previous;
     while (rvp && position < end) {
         rvp = rvp->Next;
@@ -1670,11 +1674,13 @@ int RemoveRange(Dlist *l,size_t start, size_t end)
     }
     if (start == 0) {
         l->First = rvpE;
-        rvpE->Previous = NULL;
+        if (rvpE)
+            rvpE->Previous = NULL;
     }
     if (end == l->count-1) {
         l->Last = rvpE;
-        rvpE->Next = NULL;
+        if (rvpE)
+            rvpE->Next = NULL;
     }
     l->count -= (end-start-1);
     l->timestamp++;
@@ -1733,5 +1739,6 @@ DlistInterface iDlist = {
     GetAllocator,
 	Back,
 	Front,
+    RemoveRange,
 };
 

@@ -138,7 +138,7 @@ static unsigned GetFlags(const ElementType *SC)
     return SC->Flags;
 }
 
-static ContainerMemoryManager *GetAllocator(const ElementType *AL)
+static const ContainerMemoryManager *GetAllocator(const ElementType *AL)
 {
     if (AL == NULL) {
     	return NULL;

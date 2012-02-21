@@ -57,7 +57,7 @@ static StreamBuffer *CreateFromFile(char *FileName)
 		goto err;
 	}
 	siz = ftell(f);
-	if (siz < 0) goto err;
+	if ((int)siz < 0) goto err;
 	fseek(f,0,SEEK_SET);
 	result = Create(siz+1);
 	if (result == NULL) goto err;

@@ -145,12 +145,12 @@ typedef struct tagErrorInfo {
 /************************************************************************** */
 typedef struct tagHeapObject ContainerHeap;
 typedef struct _HeapAllocatorInterface {
-    ContainerHeap *(*Create)(size_t ElementSize,ContainerMemoryManager *m);
+    ContainerHeap *(*Create)(size_t ElementSize,const ContainerMemoryManager *m);
     void *(*newObject)(ContainerHeap *heap);
     void (*AddToFreeList)(ContainerHeap *heap,void *element);
     void (*Clear)(ContainerHeap *heap);
     void (*Finalize)(ContainerHeap *heap);
-    ContainerHeap *(*InitHeap)(void *heap,size_t nbElements,ContainerMemoryManager *allocator);
+    ContainerHeap *(*InitHeap)(void *heap,size_t nbElements,const ContainerMemoryManager *allocator);
     size_t (*Sizeof)(ContainerHeap *heap);
     Iterator *(*NewIterator)(ContainerHeap *);
     int (*deleteIterator)(Iterator *it);
@@ -375,7 +375,7 @@ typedef struct tagstrCollection {
     size_t (*PopBack)(strCollection *, char *result,size_t bufsize);
     int (*PushBack)(strCollection *,const char *data);
     strCollection *(*GetRange)(strCollection *SC, size_t start,size_t end);
-    ContainerMemoryManager *(*GetAllocator)(const strCollection *AL);
+    const ContainerMemoryManager *(*GetAllocator)(const strCollection *AL);
     int (*Mismatch)(const strCollection *a1,const strCollection *a2,size_t *mismatch);
     strCollection *(*InitWithAllocator)(strCollection *c,size_t start,const ContainerMemoryManager *mm);
     strCollection *(*Init)(strCollection *result,size_t startsize);
@@ -456,7 +456,7 @@ typedef struct tagWstrCollection {
     size_t (*PopBack)(WstrCollection *,wchar_t *result,size_t bufsize);
     int (*PushBack)(WstrCollection *,const wchar_t *data);
     WstrCollection *(*GetRange)(WstrCollection *SC, size_t start,size_t end);
-    ContainerMemoryManager *(*GetAllocator)(const WstrCollection *AL);
+    const ContainerMemoryManager *(*GetAllocator)(const WstrCollection *AL);
     int (*Mismatch)(const WstrCollection *a1,const WstrCollection *a2,size_t *mismatch);
     WstrCollection *(*InitWithAllocator)(WstrCollection *result,size_t startsize,const ContainerMemoryManager *mm);
     WstrCollection *(*Init)(WstrCollection *result,size_t startsize);
@@ -517,14 +517,14 @@ typedef struct tagList {
     int (*Append)(List *l1,List *l2);
     CompareFunction (*SetCompareFunction)(List *l,CompareFunction fn);
     CompareFunction Compare;
-    int (*UseHeap)(List *L, ContainerMemoryManager *m);
+    int (*UseHeap)(List *L, const ContainerMemoryManager *m);
     int (*AddRange)(List *L, size_t n,const void *data);
     List *(*Create)(size_t element_size);
     List *(*CreateWithAllocator)(size_t elementsize,const ContainerMemoryManager *mm);
     List *(*Init)(List *aList,size_t element_size);
     List *(*InitWithAllocator)(List *aList,size_t element_size,const ContainerMemoryManager *mm);
     List *(*SetAllocator)(List *l, ContainerMemoryManager  *allocator);
-    ContainerMemoryManager *(*GetAllocator)(const List *list);
+    const ContainerMemoryManager *(*GetAllocator)(const List *list);
     DestructorFunction (*SetDestructor)(List *v,DestructorFunction fn);
     List *(*InitializeWith)(size_t elementSize,size_t n,const void *data);
     void *(*Back)(const List *l);
@@ -641,7 +641,7 @@ typedef struct tagDlist {
     Dlist *(*GetRange)(Dlist *l,size_t start,size_t end);
     int (*Append)(Dlist *l1,Dlist *l2);
     CompareFunction (*SetCompareFunction)(Dlist *l,CompareFunction fn);
-    int (*UseHeap)(Dlist *L, ContainerMemoryManager *m);
+    int (*UseHeap)(Dlist *L,const ContainerMemoryManager *m);
     int (*AddRange)(Dlist *l,size_t n,const void *data);
     Dlist *(*Create)(size_t elementsize);
     Dlist *(*CreateWithAllocator)(size_t,const ContainerMemoryManager *);
@@ -650,7 +650,7 @@ typedef struct tagDlist {
     int (*InsertIn)(Dlist *l, size_t idx,Dlist *newData);
     DestructorFunction (*SetDestructor)(Dlist *v,DestructorFunction fn);
     Dlist *(*InitializeWith)(size_t elementSize, size_t n,const void *data);
-    ContainerMemoryManager *(*GetAllocator)(const Dlist *l);
+    const ContainerMemoryManager *(*GetAllocator)(const Dlist *l);
     void *(*Back)(const Dlist *l);
     void *(*Front)(const Dlist *l);
     int (*RemoveRange)(Dlist *l,size_t start, size_t end);
@@ -717,7 +717,7 @@ typedef struct tagVector {
     int (*Reverse)(Vector *AL);
     int (*Append)(Vector *AL1, Vector *AL2);
     int (*Mismatch)(Vector *a1,Vector *a2,size_t *mismatch);
-    ContainerMemoryManager *(*GetAllocator)(Vector *AL);
+    const ContainerMemoryManager *(*GetAllocator)(const Vector *AL);
     DestructorFunction (*SetDestructor)(Vector *v,DestructorFunction fn);
     int (*SearchWithKey)(Vector *vec,size_t startByte,size_t sizeKey,size_t startIndex,void *item,size_t *result);
     int (*Select)(Vector *src,Mask *m);
@@ -773,7 +773,7 @@ typedef struct tagDictionary {
     Dictionary *(*Init)(Dictionary *dict,size_t ElementSize,size_t hint);
     Dictionary *(*InitWithAllocator)(Dictionary *D,size_t elemsize,size_t hint,const ContainerMemoryManager *mm);
     strCollection *(*GetKeys)(const Dictionary *Dict);
-    ContainerMemoryManager *(*GetAllocator)(const Dictionary *Dict);
+    const ContainerMemoryManager *(*GetAllocator)(const Dictionary *Dict);
     DestructorFunction (*SetDestructor)(Dictionary *v,DestructorFunction fn);
     Dictionary *(*InitializeWith)(size_t elementSize,size_t n, const char **Keys,const void *Values);
     HashFunction (*SetHashFunction)(Dictionary *d,HashFunction newFn);
@@ -906,21 +906,16 @@ typedef struct tagTreeMapInterface {
     int (*Save)(const TreeMap *src,FILE *stream, SaveFunction saveFn,void *arg);
     int (*Add)(TreeMap *ST, void *Data,void *ExtraArgs); /* Adds one element. Given data is copied */
     int (*AddRange)(TreeMap *ST,size_t n, void *Data,void *ExtraArgs);
-    /* Like Add but allows for an extra argument to be passed to the
-     comparison function */
     int (*Insert)(TreeMap *RB, const void *Data, void *ExtraArgs);
-    /* Calls the given function for all nodes. "Arg" is a used supplied argument */
-    /* that can be NULL that is passed to the function to call */
-
-    void *(*Find)(TreeMap *tree,void *element,void *ExtraArgs);
+    void *(*GetElement)(TreeMap *tree,const void *element,void *ExtraArgs);
     CompareFunction (*SetCompareFunction)(TreeMap *ST,CompareFunction fn);
-    TreeMap *(*CreateWithAllocator)(size_t ElementSize,ContainerMemoryManager *m);
+    TreeMap *(*CreateWithAllocator)(size_t ElementSize,const ContainerMemoryManager *m);
     TreeMap *(*Create)(size_t ElementSize);
     size_t (*GetElementSize)(TreeMap *d);
     TreeMap *(*Load)(FILE *stream, ReadFunction loadFn,void *arg);
     DestructorFunction (*SetDestructor)(TreeMap *v,DestructorFunction fn);
     TreeMap *(*InitializeWith)(size_t ElementSize, size_t n, void *data);
-    ContainerMemoryManager *(*GetAllocator)(TreeMap *t);
+    const ContainerMemoryManager *(*GetAllocator)(const TreeMap *t);
     
 } TreeMapInterface;
 
@@ -999,7 +994,7 @@ typedef struct tagBitString {
     unsigned char *(*GetData)(BitString *BitStr);
     int        (*CopyBits)(BitString *bitstr,void *buf);
     int (*AddRange)(BitString *b, size_t bitSize, void *data);
-    ContainerMemoryManager *(*GetAllocator)(BitString *b);
+    const ContainerMemoryManager *(*GetAllocator)(const BitString *b);
 } BitStringInterface;
 
 extern BitStringInterface iBitString;

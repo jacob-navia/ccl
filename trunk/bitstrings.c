@@ -1330,7 +1330,7 @@ static BitString *Init(BitString *set, size_t bitlen)
 	return set;
 }
 
-static ContainerMemoryManager *GetAllocator(BitString *b)
+static const ContainerMemoryManager *GetAllocator(const BitString *b)
 {
     if (b == NULL)
         return NULL;

@@ -9,7 +9,7 @@ struct tagHeapObject {
 	char **Heap;
 	size_t ElementSize;
 	void *FreeList;
-	ContainerMemoryManager *Allocator;
+	const ContainerMemoryManager *Allocator;
 	size_t MemoryUsed;
 };	
 #ifndef CHUNK_SIZE 
@@ -109,7 +109,7 @@ static void AddToFreeList(ContainerHeap *heap,void *element)
 static void DestroyHeap(ContainerHeap *l)
 {
 	size_t i;
-	ContainerMemoryManager *m = l->Allocator;
+	const ContainerMemoryManager *m = l->Allocator;
 	
 	for (i=0;i<l->BlockCount;i++) {
 		m->free(l->Heap[i]);
@@ -135,7 +135,7 @@ static size_t GetHeapSize(ContainerHeap *heap)
 	return result;
 }
 
-static ContainerHeap *InitHeap(void *pHeap,size_t ElementSize,ContainerMemoryManager *m)
+static ContainerHeap *InitHeap(void *pHeap,size_t ElementSize,const ContainerMemoryManager *m)
 {
 	ContainerHeap *heap = pHeap;
 	memset(heap,0,sizeof(*heap));
@@ -147,7 +147,7 @@ static ContainerHeap *InitHeap(void *pHeap,size_t ElementSize,ContainerMemoryMan
 	return heap;
 }
 
-static ContainerHeap *newHeap(size_t ElementSize,ContainerMemoryManager *m)
+static  ContainerHeap *newHeap(size_t ElementSize,const ContainerMemoryManager *m)
 {
 	ContainerHeap *result = m->malloc(sizeof(ContainerHeap));
 	if (result == NULL)
@@ -272,7 +272,7 @@ static Iterator *NewIterator(ContainerHeap *heap)
 	result = heap->Allocator->malloc(sizeof(struct HeapIterator));
 	if (result == NULL)
 		return NULL;
-	memset(result,0,sizeof(result));
+	memset(result,0,sizeof(*result));
 	result->Heap = heap;
 	result->timestamp = heap->CurrentBlock+heap->BlockIndex;
 	result->it.GetFirst = GetFirst;
