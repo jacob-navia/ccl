@@ -728,6 +728,8 @@ typedef struct tagVector {
     void *(*Back)(const Vector *AL);
     void *(*Front)(const Vector *AL);
     int (*RemoveRange)(Vector *SC,size_t start,size_t end);
+    int (*RotateLeft)(Vector *V,size_t n);
+    int (*RotateRight)(Vector *V,size_t n);
 } VectorInterface;
 
 extern VectorInterface iVector;

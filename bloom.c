@@ -189,7 +189,6 @@ static int Finalize(BloomFilter *b)
 	if (b == NULL)
 		return CONTAINER_ERROR_BADARG;
 	b->Allocator->free(b->bits);
-	memset(b,0,sizeof(*b));
 	b->Allocator->free(b);
 	return 1;
 

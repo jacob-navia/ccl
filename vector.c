@@ -1709,6 +1709,111 @@ static size_t SizeofIterator(Vector *v)
 	return sizeof(struct VectorIterator)+v->ElementSize;
 }
 
+static int RotateLeft(Vector *AL, size_t n)
+{
+        char *p,*q,*t;
+
+	if (AL == NULL) return NullPtrError("RotateLeft");
+	if (AL->count == 0 || n == 0) return 0;
+        n %= AL->count;
+        if (n == 0)
+                return 1;
+        /* Reverse the first partition */
+	t = AL->Allocator->malloc(AL->ElementSize);
+	if (t == NULL) {
+		AL->RaiseError("RotateLeft",CONTAINER_ERROR_NOMEMORY);
+		return CONTAINER_ERROR_NOMEMORY;
+	}
+
+        p = AL->contents;
+        q = (char *)AL->contents+(n-1)*AL->ElementSize;
+        while (p < q) {
+		memcpy(t,p,AL->ElementSize);
+		memcpy(p,q,AL->ElementSize);
+		memcpy(q,t,AL->ElementSize);
+		p += AL->ElementSize;
+		q -= AL->ElementSize;
+        }
+        /* Reverse the second partition */
+        p = AL->contents;
+        p += n*AL->ElementSize;
+        q = AL->contents;
+        q+=AL->ElementSize*(AL->count-1);
+        if (n < AL->count-1) {
+                while (p<q) {
+			memcpy(t,p,AL->ElementSize);
+			memcpy(p,q,AL->ElementSize);
+			memcpy(q,t,AL->ElementSize);
+			p += AL->ElementSize;
+			q -= AL->ElementSize;
+                }
+        }
+        /* Now reverse the whole */
+        p = AL->contents;
+        q = p+AL->ElementSize*(AL->count-1);
+        while (p<q) {
+		memcpy(t,p,AL->ElementSize);
+		memcpy(p,q,AL->ElementSize);
+		memcpy(q,t,AL->ElementSize);
+		p += AL->ElementSize;
+		q -= AL->ElementSize;
+        }
+	AL->Allocator->free(t);
+        return 1;
+}
+
+static int RotateRight(Vector *AL, size_t n)
+{
+        char *p,*q,*t;
+
+	if (AL == NULL) return NullPtrError("RotateLeft");
+	if (AL->count == 0 || n == 0) return 0;
+        n %= AL->count;
+        if (n == 0)
+                return 1;
+        /* Reverse the first partition */
+	t = AL->Allocator->malloc(AL->ElementSize);
+	if (t == NULL) {
+		AL->RaiseError("RotateLeft",CONTAINER_ERROR_NOMEMORY);
+		return CONTAINER_ERROR_NOMEMORY;
+	}
+        p = AL->contents;
+        q = (char *)AL->contents+(AL->count-1)*AL->ElementSize;
+        while (p < q) {
+		memcpy(t,p,AL->ElementSize);
+		memcpy(p,q,AL->ElementSize);
+		memcpy(q,t,AL->ElementSize);
+		p += AL->ElementSize;
+		q -= AL->ElementSize;
+        }
+        /* Reverse the second partition */
+        p = AL->contents;
+        q = AL->contents;
+        p+=AL->ElementSize*(AL->count-n-1);
+        if (n < AL->count-1) {
+                while (p<q) {
+			memcpy(t,p,AL->ElementSize);
+			memcpy(p,q,AL->ElementSize);
+			memcpy(q,t,AL->ElementSize);
+			p += AL->ElementSize;
+			q -= AL->ElementSize;
+                }
+        }
+        /* Now reverse the whole */
+        p = AL->contents;
+        q = p+AL->ElementSize*(AL->count-1);
+        while (p<q) {
+		memcpy(t,p,AL->ElementSize);
+		memcpy(p,q,AL->ElementSize);
+		memcpy(q,t,AL->ElementSize);
+		p += AL->ElementSize;
+		q -= AL->ElementSize;
+        }
+	AL->Allocator->free(t);
+        return 1;
+}
+
+
 VectorInterface iVector = {
 	Size,
 	GetFlags, 
@@ -1768,4 +1873,6 @@ VectorInterface iVector = {
 	Back,
 	Front,
 	RemoveRange,
+	RotateLeft,
+	RotateRight,
 };
