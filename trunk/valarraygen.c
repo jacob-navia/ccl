@@ -926,16 +926,14 @@ static int RotateRight(ValArray *AL, size_t n)
 	if (n == 0)
 		return 1;
 	/* Reverse the first partition */
-	if (n > 1) {
-		p = AL->contents+AL->count-n;
-		q = AL->contents+AL->count-1;
-		while (p < q) {
-			t =*p;
-			*p = *q;
-			*q = t;
-			p++;
-			q--;
-		}
+	p = AL->contents+AL->count-n;
+	q = AL->contents+AL->count-1;
+	while (p < q) {
+		t =*p;
+		*p = *q;
+		*q = t;
+		p++;
+		q--;
 	}
 	/* Reverse the second partition */
 	p = AL->contents;
