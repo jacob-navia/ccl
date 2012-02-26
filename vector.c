@@ -1714,6 +1714,8 @@ static int RotateLeft(Vector *AL, size_t n)
         char *p,*q,*t;
 
 	if (AL == NULL) return NullPtrError("RotateLeft");
+	if (AL->Flags & CONTAINER_READONLY)
+		return ErrorReadOnly(AL,"RotateLeft");
 	if (AL->count == 0 || n == 0) return 0;
         n %= AL->count;
         if (n == 0)
@@ -1767,6 +1769,8 @@ static int RotateRight(Vector *AL, size_t n)
         char *p,*q,*t;
 
 	if (AL == NULL) return NullPtrError("RotateLeft");
+	if (AL->Flags & CONTAINER_READONLY)
+		return ErrorReadOnly(AL,"RotateRight");
 	if (AL->count == 0 || n == 0) return 0;
         n %= AL->count;
         if (n == 0)
@@ -1778,7 +1782,8 @@ static int RotateRight(Vector *AL, size_t n)
 		return CONTAINER_ERROR_NOMEMORY;
 	}
         p = AL->contents;
-        q = (char *)AL->contents+(AL->count-1)*AL->ElementSize;
+        q = p+(AL->count-1)*AL->ElementSize;
+	p = p + AL->ElementSize*(AL->count-n);
         while (p < q) {
 		memcpy(t,p,AL->ElementSize);
 		memcpy(p,q,AL->ElementSize);
@@ -1788,8 +1793,7 @@ static int RotateRight(Vector *AL, size_t n)
         }
         /* Reverse the second partition */
         p = AL->contents;
-        q = AL->contents;
-        p+=AL->ElementSize*(AL->count-n-1);
+        q = p + AL->ElementSize*(AL->count-n-1);
         if (n < AL->count-1) {
                 while (p<q) {
 			memcpy(t,p,AL->ElementSize);

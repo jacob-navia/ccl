@@ -530,6 +530,8 @@ typedef struct tagList {
     void *(*Back)(const List *l);
     void *(*Front)(const List *l);
     int (*RemoveRange)(List *l,size_t start, size_t end);
+    int (*RotateLeft)(List *l, size_t n);
+    int (*RotateRight)(List *l,size_t n);
 } ListInterface;
 
 extern ListInterface iList;
