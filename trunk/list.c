@@ -1744,6 +1744,60 @@ static int RemoveRange(List *l,size_t start, size_t end)
     return 1;
 }
 
+static int RotateLeft(List *l, size_t n)
+{
+	ListElement *rvp,*oldStart,*last=NULL;
+	if (l == NULL) return NullPtrError("RotateLeft");
+	if (l->Flags & CONTAINER_READONLY)
+		return ErrorReadOnly(l,"RotateLeft");
+	if (l->count < 2 || n == 0)
+		return 0;
+	n %= l->count;
+	if (n == 0) return 0;
+	rvp = l->First;
+	oldStart = rvp;
+	while (n > 0) {
+		last = rvp;
+		rvp = rvp->Next;
+		n--;
+	}
+	l->First = rvp;
+	last->Next = NULL;
+	l->Last->Next = oldStart;
+	l->Last = last;
+	return 1;
+}
+
+
+static int RotateRight(List *l, size_t n)
+{
+	ListElement *rvp,*oldStart,*last=NULL;
+	if (l == NULL) return NullPtrError("RotateRight");
+	if (l->Flags & CONTAINER_READONLY)
+		return ErrorReadOnly(l,"RotateRight");
+	if (l->count < 2 || n == 0)
+		return 0;
+	n %= l->count;
+	if (n == 0) return 0;
+	rvp = l->First;
+	oldStart = rvp;
+	n = l->count - n;
+	while (n > 0) {
+		last = rvp;
+		rvp = rvp->Next;
+		n--;
+	}
+	l->First = rvp;
+    if (last == NULL) {
+        iError.RaiseError("RotateRight",CONTAINER_INTERNAL_ERROR);
+        return CONTAINER_INTERNAL_ERROR;
+    }
+	last->Next = NULL;
+	l->Last->Next = oldStart;
+	l->Last = last;
+	return 1;
+}
+
 ListInterface iList = {
     Size,
     GetFlags,
@@ -1797,4 +1851,6 @@ ListInterface iList = {
     Back,
     Front,
     RemoveRange,
+    RotateLeft,
+    RotateRight,
 };
