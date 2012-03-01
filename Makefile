@@ -8,7 +8,7 @@ CFLAGS=-Os -Wno-pointer-sign -DUNIX -Wall -D__MAC_OSX
 CC=gcc
 # Debug CFLAGS setting
 #CFLAGS=-Wno-pointer-sign -DUNIX -Wall -g
-SRC=	vector.c bloom.c containererror.c dlist.c qsortex.c heap.c \
+SRC=	vector.c bloom.c containererror.c dlist.c qsortex.c heap.c dictionary.c wdictionary.c \
 	deque.c hashtable.c malloc_debug.c containers.h ccl_internal.h \
 	stdint.h pool.c pooldebug.c redblacktree.c scapegoat.c smallpool.c ccl_internal.h \
 	bitstrings.c dictionarygen.c list.c memorymanager.c strcollection.c searchtree.c \
