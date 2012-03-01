@@ -4,13 +4,14 @@
 # 
 #---------------------------------------------------
 # Optimized CFLAGS setting
-#CFLAGS=-Os -Wno-pointer-sign -DUNIX -Wall -D__MAC_OSX
+CFLAGS=-Os -Wno-pointer-sign -DUNIX -Wall -D__MAC_OSX
+CC=gcc
 # Debug CFLAGS setting
-CFLAGS=-g -Wno-pointer-sign -DUNIX -Wall 
+#CFLAGS=-Wno-pointer-sign -DUNIX -Wall -g
 SRC=	vector.c bloom.c containererror.c dlist.c qsortex.c heap.c \
 	deque.c hashtable.c malloc_debug.c containers.h ccl_internal.h \
 	stdint.h pool.c pooldebug.c redblacktree.c scapegoat.c smallpool.c ccl_internal.h \
-	bitstrings.c dictionary.c list.c memorymanager.c strcollection.c searchtree.c \
+	bitstrings.c dictionarygen.c list.c memorymanager.c strcollection.c searchtree.c \
 	containers.h ccl_internal.h redblacktree.c fgetline.c generic.c queue.c buffer.c observer.c \
 	valarraydouble.c valarraysize_t.c valarrayint.c valarraylongdouble.c valarraygen.c \
 	valarrayshort.c valarrayfloat.c valarrayuint.c valarraylonglong.c \
@@ -20,7 +21,7 @@ DOCS=
 MAKEFILES=Makefile Makefile.lcc Makefile.msvc
 
 OBJS=vector.o containererror.o dlist.o qsortex.o bitstrings.o generic.o \
-    dictionary.o list.o strcollection.o searchtree.o heap.o malloc_debug.o \
+    dictionary.o wdictionary.o list.o strcollection.o searchtree.o heap.o malloc_debug.o \
     bloom.o fgetline.o pool.o pooldebug.o redblacktree.o scapegoat.o queue.o \
     buffer.o observer.o valarraydouble.o valarrayint.o valarraysize_t.o \
     valarraylongdouble.o valarrayshort.o valarrayfloat.o valarrayuint.o \
@@ -57,7 +58,8 @@ deque.o:	deque.c containers.h ccl_internal.h
 hashtable.o:	hashtable.c	containers.h ccl_internal.h
 dlist.o:	dlist.c containers.h ccl_internal.h
 list.o:		list.c containers.h ccl_internal.h
-dictionary.o:	dictionary.c containers.h ccl_internal.h
+dictionary.o:	dictionary.c dictionarygen.c containers.h ccl_internal.h
+wdictionary.o:	wdictionary.c dictionarygen.c containers.h ccl_internal.h
 qsortex.o:	qsortex.c containers.h ccl_internal.h
 generic.o:	generic.c containers.h ccl_internal.h
 heap.o:	heap.c containers.h ccl_internal.h
