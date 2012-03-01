@@ -65,6 +65,7 @@ typedef enum { FALSE,TRUE}  bool;
 typedef void (*ErrorFunction)(const char *,int,...);
 typedef int (*DestructorFunction)(void *);
 typedef size_t (*HashFunction)(const char *); /* For the dictionary container */
+typedef size_t (*WHashFunction)(const wchar_t *); /* For the dictionary container */
 
 typedef struct tagError {
     ErrorFunction RaiseError;
@@ -784,6 +785,54 @@ typedef struct tagDictionary {
 } DictionaryInterface;
 
 extern DictionaryInterface iDictionary;
+
+typedef struct _WDictionary WDictionary;
+typedef struct tagWDictionary {
+    size_t (*Size)(const WDictionary *Dict);
+    unsigned (*GetFlags)(const WDictionary *Dict);
+    unsigned (*SetFlags)(WDictionary *Dict,unsigned flags);
+    int (*Clear)(WDictionary *Dict);
+    int (*Contains)(const WDictionary *dict,const wchar_t *key);
+    int (*Erase)(WDictionary *Dict,const wchar_t *);
+    int (*Finalize)(WDictionary *Dict);
+    int (*Apply)(WDictionary *Dict,int (*Applyfn)(const wchar_t *Key,
+                                                  const void *data,void *arg),void *arg);
+    int (*Equal)(const WDictionary *d1,const WDictionary *d2);
+    WDictionary *(*Copy)(const WDictionary *dict);
+    ErrorFunction (*SetErrorFunction)(WDictionary *Dict,ErrorFunction fn);
+    size_t (*Sizeof)(const WDictionary *dict);
+    Iterator *(*NewIterator)(WDictionary *dict);
+    int (*InitIterator)(WDictionary *dict,void *buf);
+    int (*deleteIterator)(Iterator *);
+    size_t (*SizeofIterator)(const WDictionary *);
+    int (*Save)(const WDictionary *Dict,FILE *stream, SaveFunction saveFn,void *arg);
+    WDictionary * (*Load)(FILE *stream, ReadFunction readFn, void *arg);
+    size_t (*GetElementSize)(const WDictionary *d);
+
+    /* Hierarchical container specific fields */
+
+    int (*Add)(WDictionary *Dict,const wchar_t *key,const void *Data);
+    void *(*GetElement)(const WDictionary *Dict,const wchar_t *Key);
+    int (*Replace)(WDictionary *dict,const wchar_t *Key,const void *Data);
+    int (*Insert)(WDictionary *Dict,const wchar_t *key,const void *Data);
+
+    /* WDictionary specific fields */
+
+    Vector *(*CastToArray)(const WDictionary *);
+    int (*CopyElement)(const WDictionary *Dict,const wchar_t *Key,void *outbuf);
+    int (*InsertIn)(WDictionary *dst,WDictionary *src);
+    WDictionary *(*Create)(size_t ElementSize,size_t hint);
+    WDictionary *(*CreateWithAllocator)(size_t elementsize,size_t hint,const ContainerMemoryManager *mm);
+    WDictionary *(*Init)(WDictionary *dict,size_t ElementSize,size_t hint);
+    WDictionary *(*InitWithAllocator)(WDictionary *D,size_t elemsize,size_t hint,const ContainerMemoryManager *mm);
+    WstrCollection *(*GetKeys)(const WDictionary *Dict);
+    const ContainerMemoryManager *(*GetAllocator)(const WDictionary *Dict);
+    DestructorFunction (*SetDestructor)(WDictionary *v,DestructorFunction fn);
+    WDictionary *(*InitializeWith)(size_t elementSize,size_t n, const wchar_t **Keys,const void *Values);
+    WHashFunction (*SetHashFunction)(WDictionary *d,WHashFunction newFn);
+} WDictionaryInterface;
+extern WDictionaryInterface iWDictionary;
+
 /* ----------------------------------Hash table interface -----------------------*/
 typedef struct _HashTable HashTable;
 typedef unsigned int (*GeneralHashFunction)(const char *char_key, size_t *klen);

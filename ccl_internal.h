@@ -261,6 +261,34 @@ struct DictionaryIterator {
 	unsigned long Flags;
 };
 
+/*----------------------------------------------------------------------------*/
+/* Wide character dictionary (key is wchar_t)                                 */
+/*----------------------------------------------------------------------------*/
+struct _WDictionary {
+	WDictionaryInterface *VTable;
+	size_t count;
+	unsigned Flags;
+	size_t size;
+	ErrorFunction RaiseError;
+	unsigned timestamp;
+	size_t ElementSize;
+	const ContainerMemoryManager *Allocator;
+	DestructorFunction DestructorFn;
+	WHashFunction hash;
+	struct WDataList {
+		struct WDataList *Next;
+		wchar_t *Key;
+		void *Value;
+	} **buckets;
+};
+struct WDictionaryIterator {
+	Iterator it;
+	WDictionary *Dict;
+	size_t index;
+	struct WDataList *dl;
+	unsigned timestamp;
+	unsigned long Flags;
+};
 
 /*----------------------------------------------------------------------------*/
 /* Hash table                                                                 */
