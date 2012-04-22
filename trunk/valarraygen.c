@@ -2108,8 +2108,7 @@ static ValArray  *SelectCopy(const ValArray *src,const Mask *m)
 	}
 	for (i=0; i<m->length;i++) {
 		if (m->data[i]) {
-			if (i != offset)
-				result->contents[offset] = src->contents[i];
+			result->contents[offset] = src->contents[i];
 			offset++;
 		}
 	}

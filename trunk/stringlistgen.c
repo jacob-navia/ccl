@@ -1668,6 +1668,101 @@ static size_t SizeofIterator(LIST_TYPE *l)
 {
 	return sizeof(struct LIST_TYPEIterator);
 }
+
+static int Select(LIST_TYPE *src,const Mask *m)
+{
+    size_t i,offset=0;
+    LIST_ELEMENT *dst,*s,*removed;
+
+    if (src == NULL || m == NULL) {
+        return NullPtrError("Select");
+    }
+    if (src->Flags & CONTAINER_READONLY)
+        return ErrorReadOnly(src,"Select");
+    if (m->length != src->count) {
+        iError.RaiseError("Select",CONTAINER_ERROR_INCOMPATIBLE);
+        return CONTAINER_ERROR_INCOMPATIBLE;
+    }
+    if (src->count == 0) return 0;
+    i=0;
+    dst = src->First;
+    while (i < m->length) {
+        if (m->data[i]) break;
+        if (src->DestructorFn)
+            src->DestructorFn(dst->Data);
+        removed = dst;
+        dst = dst->Next;
+        if (src->Heap) {
+                iHeap.AddToFreeList(src->Heap, removed);
+        } else
+                src->Allocator->free(removed);
+        i++;
+    }
+    if (i >= m->length) {
+        src->First = src->Last = NULL;
+        src->count = 0;
+        src->timestamp++;
+        return 1;
+    }
+    src->First = dst;
+    i++;
+    offset++;
+    s = dst->Next;
+    for (; i<m->length;i++) {
+        if (m->data[i]) {
+            dst->Next = s;
+            offset++;
+            dst = s;
+            s = s->Next;
+        }
+        else {
+            if (src->DestructorFn) src->DestructorFn(s->Data);
+            removed = s;
+            s = s->Next;
+            if (src->Heap) iHeap.AddToFreeList(src->Heap,removed);
+            else src->Allocator->free(removed);
+        }
+    }
+    dst->Next = NULL;
+    src->Last = dst;
+    src->count = offset;
+    src->timestamp++;
+    return 1;
+}
+
+
+static LIST_TYPE *SelectCopy(const LIST_TYPE *src,const Mask *m)
+{
+    LIST_TYPE *result;
+    LIST_ELEMENT *rvp;
+    size_t i;
+    int r;
+
+    if (src == NULL || m == NULL) {
+        NullPtrError("SelectCopy");
+        return NULL;
+    }
+    if (m->length != src->count) {
+        iError.RaiseError("SelectCopy",CONTAINER_ERROR_INCOMPATIBLE);
+        return NULL;
+    }
+    result = Create();
+    if (result == NULL) return NULL;
+    rvp = src->First;
+    for (i=0; i<m->length;i++) {
+        if (m->data[i]) {
+            r = Add_nd(result,rvp->Data);
+            if (r < 0) {
+                Finalize(result);
+                return NULL;
+            }
+        }
+        rvp = rvp->Next;
+    }
+    return result;
+}
+
+
 iSTRINGLIST INTERFACE = {
     Size,
     GetFlags,
@@ -1719,4 +1814,6 @@ iSTRINGLIST INTERFACE = {
     InitializeWith,
     Back,
     Front,
+    Select,
+    SelectCopy,
 };

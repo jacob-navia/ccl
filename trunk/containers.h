@@ -386,6 +386,10 @@ typedef struct tagstrCollection {
     char *(*Back)(const strCollection *str);
     char *(*Front)(const strCollection *str);
     int (*RemoveRange)(strCollection *SC,size_t start,size_t end);
+    Mask *(*CompareEqual)(const strCollection *left, const strCollection *right,Mask *m);
+    Mask *(*CompareEqualScalar)(const strCollection *left, const char *str,Mask *m);
+    int (*Select)(strCollection *src, const Mask *m);
+    strCollection *(*SelectCopy)(const strCollection *src,const Mask *m);
 //    unsigned char *(*Find)(strCollection *SC,unsigned char *str,CompareInfo *ci);
 } strCollectionInterface;
 
@@ -467,6 +471,10 @@ typedef struct tagWstrCollection {
     wchar_t *(*Back)(const WstrCollection *SC);
     wchar_t *(*Front)(const WstrCollection *SC);
     int (*RemoveRange)(WstrCollection *SC,size_t start,size_t end); 
+    Mask *(*CompareEqual)(const WstrCollection *left, const WstrCollection *right,Mask *m);
+    Mask *(*CompareEqualScalar)(const WstrCollection *left, const wchar_t *str,Mask *m);
+    int (*Select)(WstrCollection *src,const Mask*m);
+    WstrCollection *(*SelectCopy)(const WstrCollection *src, const Mask *m);
 //    wchar_t *Find(WstrCollection *SC,wchar_t *data,CompareInfo *ci);
 } WstrCollectionInterface;
 
@@ -533,6 +541,8 @@ typedef struct tagList {
     int (*RemoveRange)(List *l,size_t start, size_t end);
     int (*RotateLeft)(List *l, size_t n);
     int (*RotateRight)(List *l,size_t n);
+    int (*Select)(List *src,const Mask *m);
+    List *(*SelectCopy)(const List *src,const Mask *m);
 } ListInterface;
 
 extern ListInterface iList;
@@ -723,7 +733,7 @@ typedef struct tagVector {
     const ContainerMemoryManager *(*GetAllocator)(const Vector *AL);
     DestructorFunction (*SetDestructor)(Vector *v,DestructorFunction fn);
     int (*SearchWithKey)(Vector *vec,size_t startByte,size_t sizeKey,size_t startIndex,void *item,size_t *result);
-    int (*Select)(Vector *src,Mask *m);
+    int (*Select)(Vector *src,const Mask *m);
     Vector *(*SelectCopy)(Vector *src,Mask *m);
     int (*Resize)(Vector *AL,size_t newcapacity);
     Vector *(*InitializeWith)(size_t elementSize, size_t n,const void *Data);
@@ -733,6 +743,8 @@ typedef struct tagVector {
     int (*RemoveRange)(Vector *SC,size_t start,size_t end);
     int (*RotateLeft)(Vector *V,size_t n);
     int (*RotateRight)(Vector *V,size_t n);
+    Mask *(*CompareEqual)(const Vector *left,const Vector *right,Mask *m);
+    Mask *(*CompareEqualScalar)(const Vector *left, const void *right,Mask *m);
 } VectorInterface;
 
 extern VectorInterface iVector;
