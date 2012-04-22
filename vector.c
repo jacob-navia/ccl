@@ -321,6 +321,8 @@ static int Contains(const Vector *AL,const void *data,void *ExtraArgs)
 
 static int Equal(const Vector *AL1,const Vector *AL2)
 {
+	size_t i;
+	unsigned char *left,*right;
 	if (AL1 == AL2)
 		return 1;
 	if (AL1 == NULL || AL2 == NULL)
@@ -333,8 +335,20 @@ static int Equal(const Vector *AL1,const Vector *AL2)
 		return 0;
 	if (AL1->count == 0)
 		return 1;
-	if (memcmp(AL1->contents,AL2->contents,AL1->ElementSize*AL1->count) != 0)
+	if (AL1->CompareFn != AL2->CompareFn)
 		return 0;
+	if (AL1->CompareFn == DefaultVectorCompareFunction) {
+		if (memcmp(AL1->contents,AL2->contents,AL1->ElementSize*AL1->count) != 0)
+		return 0;
+	}
+	left =  (char *)AL1->contents;
+	right = (char *)AL2->contents;
+	for (i=0; i<AL1->count;i++) {
+		if (AL1->CompareFn(left,right,NULL) != 0)
+			return 0;
+		left += AL1->ElementSize;
+		right += AL2->ElementSize;
+	}
 	return 1;
 }
 
@@ -1596,35 +1610,6 @@ static DestructorFunction SetDestructor(Vector *cb,DestructorFunction fn)
 	return oldfn;
 }
 
-static int Select(Vector *src,Mask *m)
-{
-    size_t i,offset=0,siz;
-	char *p;
-
-    if (src == NULL || m == NULL) {
-        return NullPtrError("Select");
-    }
-    if (m->length != src->count) {
-        return ErrorIncompatible(src,"Select");
-    }
-    siz = src->ElementSize;
-	p = src->contents;
-    for (i=0; i<m->length;i++) {
-        if (m->data[i]) {
-            if (i != offset)
-               memcpy(p+offset*siz , 
-                      p+i*siz,siz);
-            offset++;
-        }
-    }
-    if (offset < i) {
-        memset(p+offset*siz,0,
-               siz*(i-offset));
-    }
-    src->count = offset;
-    return 1;
-}
-
 static Vector * SelectCopy(Vector *src,Mask *m)
 {
     size_t i,offset=0,siz;
@@ -1641,8 +1626,8 @@ static Vector * SelectCopy(Vector *src,Mask *m)
     }
     siz = src->ElementSize;
     result = Create(siz,src->count);
-	dst = result->contents;
-	s = src->contents;
+    dst = result->contents;
+    s = src->contents;
     if (result == NULL) {
         NoMemory(src,"SelectCopy");
         return NULL;
@@ -1650,8 +1635,7 @@ static Vector * SelectCopy(Vector *src,Mask *m)
     for (i=0; i<m->length;i++) {
         if (m->data[i]) {
             if (i != offset)
-               memcpy(dst+offset*siz ,
-                      s+i*siz,siz);
+               memcpy(dst+offset*siz , s+i*siz,siz);
             offset++;
         }
     }
@@ -1817,6 +1801,102 @@ static int RotateRight(Vector *AL, size_t n)
         return 1;
 }
 
+static Mask *CompareEqual(const Vector *left,const Vector *right,Mask *bytearray)
+{
+	
+	size_t left_len;
+	size_t right_len;
+	size_t i;
+	char *pleft,*pright;
+	
+	if (left == NULL || right == NULL) {
+		NullPtrError("CompareEqual");
+		return NULL;
+	}
+	left_len = left->count; right_len = right->count;
+	if (left_len != right_len || left->ElementSize != right->ElementSize) {
+		iError.RaiseError("iVector.CompareEqual",CONTAINER_ERROR_INCOMPATIBLE);
+		return NULL;
+	}
+	if (bytearray == NULL || iMask.Size(bytearray) < left_len) {
+		if (bytearray) iMask.Finalize(bytearray);
+		bytearray = iMask.Create(left_len);
+	}
+	else iMask.Clear(bytearray);
+	if (bytearray == NULL) {
+		NoMemory(left,"CompareEqual");
+		return NULL;
+	}
+	pleft = left->contents;
+	pright = right->contents;
+	for (i=0; i<left_len;i++) {
+		bytearray->data[i] = left->CompareFn(left,right,NULL);
+		pleft += left->ElementSize;
+		pright += right->ElementSize;
+	}
+	return bytearray;
+}
+
+static Mask *CompareEqualScalar(const Vector *left,const void *right,Mask *bytearray)
+{
+	
+	size_t left_len;
+	size_t i;
+	char *pleft;
+	
+	if (left == NULL || right == NULL) {
+		NullPtrError("CompareEqual");
+		return NULL;
+	}
+	left_len = left->count;
+	if (bytearray == NULL || iMask.Size(bytearray) < left_len) {
+		if (bytearray) iMask.Finalize(bytearray);
+		bytearray = iMask.Create(left_len);
+	}
+	else iMask.Clear(bytearray);
+	if (bytearray == NULL) {
+		NoMemory(left,"CompareEqual");
+		return NULL;
+	}
+	pleft = left->contents;
+	for (i=0; i<left_len;i++) {
+		bytearray->data[i] = left->CompareFn(left,right,NULL);
+		pleft += left->ElementSize;
+	}
+	return bytearray;
+}
+
+
+static int Select(Vector *src,const Mask *m)
+{
+	size_t i,offset=0;
+	char *p,*q;
+
+	if (src == NULL || m == NULL)
+		return NullPtrError("Select");
+	if (m->length != src->count) {
+		iError.RaiseError("iVector.Select",CONTAINER_ERROR_INCOMPATIBLE);
+		return CONTAINER_ERROR_INCOMPATIBLE;
+	}
+	q = p = src->contents;
+	for (i=0; i<m->length;i++) {
+		if (m->data[i]) {
+			if (i != offset) {
+				if (src->DestructorFn)
+					src->DestructorFn(p);
+				memcpy(p , q, src->ElementSize);
+				p += src->ElementSize;
+			}
+			offset++;
+			q += src->ElementSize;
+		}
+	}
+	if (offset < i) {
+		memset(src->contents+offset*src->ElementSize,0,src->ElementSize*(i-offset));
+	}
+	src->count = offset;
+	return 1;
+}
 
 VectorInterface iVector = {
 	Size,
@@ -1879,4 +1959,6 @@ VectorInterface iVector = {
 	RemoveRange,
 	RotateLeft,
 	RotateRight,
+	CompareEqual,
+	CompareEqualScalar,
 };
