@@ -1688,6 +1688,71 @@ static int RemoveRange(Dlist *l,size_t start, size_t end)
 }
 
 
+static int Select(Dlist *src,const Mask *m)
+{
+    size_t i,offset=0;
+    dlist_element *dst,*s,*removed;
+
+    if (src == NULL || m == NULL) {
+        return iError.NullPtrError("iDlist.Select");
+    }
+    if (src->Flags & CONTAINER_READONLY) {
+        iError.RaiseError("Select",CONTAINER_ERROR_READONLY);
+        return CONTAINER_ERROR_READONLY;
+    }
+    if (m->length != src->count) {
+        iError.RaiseError("Select",CONTAINER_ERROR_INCOMPATIBLE);
+        return CONTAINER_ERROR_INCOMPATIBLE;
+    }
+    if (src->count == 0) return 0;
+    i=0;
+    dst = src->First;
+    while (i < m->length) {
+        if (m->data[i]) break;
+        if (src->DestructorFn)
+            src->DestructorFn(dst->Data);
+        removed = dst;
+        dst = dst->Next;
+        if (src->Heap) {
+                iHeap.AddToFreeList(src->Heap, removed);
+        } else
+                src->Allocator->free(removed);
+        i++;
+    }
+    if (i >= m->length) {
+        // The mask was composed of only zeroes
+        src->First = src->Last = NULL;
+        src->count = 0;
+        src->timestamp = 0;
+        return 1;
+    }
+    src->First = dst;
+    dst->Previous = NULL;
+    i++;
+    offset++;
+    s = dst->Next;
+    for (; i<m->length;i++) {
+        if (m->data[i]) {
+            dst->Next = s;
+            s->Previous = dst;
+            offset++;
+            dst = s;
+            s = s->Next;
+        }
+        else {
+            if (src->DestructorFn) src->DestructorFn(s->Data);
+            removed = s;
+            s = s->Next;
+            if (src->Heap) iHeap.AddToFreeList(src->Heap,removed);
+            else src->Allocator->free(removed);
+        }
+    }
+    dst->Next = NULL;
+    src->Last = dst;
+    src->count = offset;
+    return 1;
+}
+
 static Dlist *SelectCopy(const Dlist *src,const Mask *m)
 {
     Dlist *result;
@@ -1696,7 +1761,7 @@ static Dlist *SelectCopy(const Dlist *src,const Mask *m)
     int r;
 
     if (src == NULL || m == NULL) {
-        iError.RaiseError("iDlist.SelectCopy",CONTAINER_ERROR_BADARG);
+        iError.NullPtrError("iDlist.SelectCopy");
         return NULL;
     }
     if (m->length != src->count) {
@@ -1770,9 +1835,10 @@ DlistInterface iDlist = {
     SetDestructor,
     InitializeWith,
     GetAllocator,
-	Back,
-	Front,
+    Back,
+    Front,
     RemoveRange,
+    Select,
     SelectCopy,
 };
 
