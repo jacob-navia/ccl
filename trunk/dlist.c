@@ -1688,6 +1688,39 @@ static int RemoveRange(Dlist *l,size_t start, size_t end)
 }
 
 
+static Dlist *SelectCopy(const Dlist *src,const Mask *m)
+{
+    Dlist *result;
+    dlist_element *rvp;
+    size_t i;
+    int r;
+
+    if (src == NULL || m == NULL) {
+        iError.RaiseError("iDlist.SelectCopy",CONTAINER_ERROR_BADARG);
+        return NULL;
+    }
+    if (m->length != src->count) {
+        iError.RaiseError("iDlist.SelectCopy",CONTAINER_ERROR_INCOMPATIBLE);
+        return NULL;
+    }
+    result = Create(src->ElementSize);
+    if (result == NULL) return NULL;
+    rvp = src->First;
+    for (i=0; i<m->length;i++) {
+        if (m->data[i]) {
+            r = Add_nd(result,rvp->Data);
+            if (r < 0) {
+                Finalize(result);
+                return NULL;
+            }
+        }
+        rvp = rvp->Next;
+    }
+    return result;
+}
+
+
+
 DlistInterface iDlist = {
     Size,
     GetFlags,
@@ -1740,5 +1773,6 @@ DlistInterface iDlist = {
 	Back,
 	Front,
     RemoveRange,
+    SelectCopy,
 };
 
