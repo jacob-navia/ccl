@@ -668,6 +668,7 @@ typedef struct tagDlist {
     void *(*Back)(const Dlist *l);
     void *(*Front)(const Dlist *l);
     int (*RemoveRange)(Dlist *l,size_t start, size_t end);
+    int (*Select)(Dlist *src,const Mask *m);
     Dlist *(*SelectCopy)(const Dlist *src,const Mask *m);
 } DlistInterface;
 
