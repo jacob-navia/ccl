@@ -107,6 +107,7 @@ typedef struct tagMaskInterface {
     int (*Set)(Mask *m,size_t idx,int val);
     int (*Clear)(Mask *m);
     int (*Finalize)(Mask *m);
+    size_t (*PopulationCount)(const Mask *m);
 } MaskInterface;
 
 extern MaskInterface iMask;
@@ -667,6 +668,7 @@ typedef struct tagDlist {
     void *(*Back)(const Dlist *l);
     void *(*Front)(const Dlist *l);
     int (*RemoveRange)(Dlist *l,size_t start, size_t end);
+    Dlist *(*SelectCopy)(const Dlist *src,const Mask *m);
 } DlistInterface;
 
 extern DlistInterface iDlist;
