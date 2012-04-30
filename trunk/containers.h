@@ -72,7 +72,7 @@ typedef struct tagError {
     void (*EmptyErrorFunction)(const char *fname,int errcode,...);
     char *(*StrError)(int errcode);
     ErrorFunction (*SetErrorFunction)(ErrorFunction);
-    int (*NullPtrError)(char *fname);
+    int (*NullPtrError)(const char *fname);
 } ErrorInterface;
 
 extern ErrorInterface iError;
@@ -569,6 +569,25 @@ typedef struct tagQueueInterface {
 } QueueInterface;
 
 extern QueueInterface iQueue;
+/* -------------------------------------------------------------------
+ *                      PRIORITY  QUEUES
+ * -------------------------------------------------------------------*/
+typedef struct _PQueue PQueue;
+
+typedef struct tagPQueueInterface {
+    PQueue *(*Create)(size_t elementSize);
+    PQueue *(*CreateWithAllocator)(size_t elementSize, ContainerMemoryManager *allocator);
+    size_t (*Size)(PQueue *Q);
+    size_t (*Sizeof)(PQueue *Q);
+    int (*Push)(PQueue *Q,intptr_t key,void *Element);
+    int (*Clear)(PQueue *Q);
+    int (*Finalize)(PQueue *Q);
+    intptr_t (*Pop)(PQueue *Q,void *result);
+    intptr_t (*Front)(PQueue *Q,void *result);
+} PQueueInterface;
+
+extern PQueueInterface iPriorityQueue;
+
 /* --------------------------------------------------------------------
  *                           Double Ended QUEues                      *
  * -------------------------------------------------------------------*/

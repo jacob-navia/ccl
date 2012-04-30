@@ -4,11 +4,11 @@
 # 
 #---------------------------------------------------
 # Optimized CFLAGS setting
-CFLAGS=-Os -Wno-pointer-sign -DUNIX -Wall -D__MAC_OSX
+CFLAGS=-O2 -Wno-pointer-sign -DUNIX -Wall -D__MAC_OSX
 CC=gcc
 # Debug CFLAGS setting
 #CFLAGS=-Wno-pointer-sign -DUNIX -Wall -g
-SRC=	vector.c bloom.c containererror.c dlist.c qsortex.c heap.c dictionary.c wdictionary.c \
+SRC=	vector.c bloom.c containererror.c dlist.c qsortex.c heap.c \
 	deque.c hashtable.c malloc_debug.c containers.h ccl_internal.h \
 	stdint.h pool.c pooldebug.c redblacktree.c scapegoat.c smallpool.c ccl_internal.h \
 	bitstrings.c dictionarygen.c list.c memorymanager.c strcollection.c searchtree.c \
@@ -16,7 +16,8 @@ SRC=	vector.c bloom.c containererror.c dlist.c qsortex.c heap.c dictionary.c wdi
 	valarraydouble.c valarraysize_t.c valarrayint.c valarraylongdouble.c valarraygen.c \
 	valarrayshort.c valarrayfloat.c valarrayuint.c valarraylonglong.c \
 	valarrayulonglong.c sequential.c iMask.c wstrcollection.c strcollectiongen.c \
-	stringlistgen.c stringlistgen.h stringlist.c stringlist.h wstringlist.h 
+	stringlistgen.c stringlistgen.h stringlist.c stringlist.h wstringlist.h \
+        priorityqueue.c
 DOCS=
 MAKEFILES=Makefile Makefile.lcc Makefile.msvc
 
@@ -26,7 +27,8 @@ OBJS=vector.o containererror.o dlist.o qsortex.o bitstrings.o generic.o \
     buffer.o observer.o valarraydouble.o valarrayint.o valarraysize_t.o \
     valarraylongdouble.o valarrayshort.o valarrayfloat.o valarrayuint.o \
     valarraylonglong.o valarrayulonglong.o memorymanager.o sequential.o \
-    iMask.o deque.o hashtable.o wstrcollection.o stringlist.o wstringlist.o
+    iMask.o deque.o hashtable.o wstrcollection.o stringlist.o wstringlist.o \
+    priorityqueue.o
 
 dotest:	libccl.a test.o
 	gcc -o dotest -g $(CFLAGS) test.c libccl.a -lm
@@ -71,3 +73,4 @@ wstrcollection.o:	wstrcollection.c strcollectiongen.c containers.h ccl_internal.
 strcollection.o:       strcollection.c strcollectiongen.c containers.h ccl_internal.h
 stringlist.o:	stringlist.c stringlistgen.c containers.h ccl_internal.h stringlist.h stringlistgen.h
 wstringlist.o:	wstringlist.c stringlistgen.c stringlistgen.h wstringlist.h containers.h ccl_internal.h
+priorityqueue.o: priorityqueue.c ccl_internal.h containers.h
