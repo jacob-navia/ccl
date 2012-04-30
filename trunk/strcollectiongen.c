@@ -1655,7 +1655,7 @@ static Mask *CompareEqual(const ElementType *left,const ElementType *right,Mask 
         return NULL;
     }
     for (i=0; i<left_len;i++) {
-        bytearray->data[i] = STRCMP(left->contents[i],right->contents[i]);
+        bytearray->data[i] = !STRCMP(left->contents[i],right->contents[i]);
     }
     return bytearray;
 }
@@ -1674,6 +1674,10 @@ static Mask *CompareEqualScalar(const ElementType *left,const CHAR_TYPE *right,M
     if (bytearray == NULL || iMask.Size(bytearray) < left_len) {
         if (bytearray) iMask.Finalize(bytearray);
         bytearray = iMask.Create(left_len);
+        if (bytearray == NULL) {
+       	    iError.RaiseError("CompareEqual",CONTAINER_ERROR_NOMEMORY);
+            return NULL;
+        }
     }
     else iMask.Clear(bytearray);
     if (bytearray == NULL) {
@@ -1681,7 +1685,7 @@ static Mask *CompareEqualScalar(const ElementType *left,const CHAR_TYPE *right,M
         return NULL;
     }
     for (i=0; i<left_len;i++) {
-        bytearray->data[i] = STRCMP(left->contents[i],right);
+        bytearray->data[i] = !STRCMP(left->contents[i],right);
     }
     return bytearray;
 }
