@@ -76,6 +76,7 @@ static unsigned SetFlags(ValArray *AL,unsigned newval)
 	return oldval;
 }
 
+
 static int ResizeTo(ValArray *AL,size_t newcapacity)
 {
 	ElementType *oldcontents;
@@ -92,11 +93,26 @@ static int ResizeTo(ValArray *AL,size_t newcapacity)
 	return 1;
 }
 
-static int Resize(ValArray *AL)
+static int grow(ValArray *AL)
 {
 	return ResizeTo(AL,AL->capacity+1+AL->capacity/4);
 }
 
+static int Resize(ValArray *AL, size_t newSize)
+{
+	ElementType *p;
+
+	if (AL->count < newSize) return ResizeTo(AL,newSize);
+	p = AL->Allocator->realloc(AL->contents,newSize*sizeof(ElementType));
+	if (p == NULL) {
+		iError.RaiseError("iVector.Resize",CONTAINER_ERROR_NOMEMORY);
+		return CONTAINER_ERROR_NOMEMORY;
+	}
+	AL->count = newSize;
+	AL->capacity = newSize;
+	AL->contents = (newSize ? p : NULL);
+	return 1;
+}
 /*------------------------------------------------------------------------
  Procedure:     Add ID:1
  Purpose:       Adds an item at the end of the ValArray
@@ -115,7 +131,7 @@ static int Add(ValArray *AL,ElementType newval)
 		if (pos != AL->count)
 			r = ResizeTo(AL,pos+pos/2);
 		else
-			r = Resize(AL);
+			r = grow(AL);
 		if (r <= 0)
 			return r;
 	}
@@ -438,7 +454,7 @@ static int InsertAt(ValArray *AL,size_t idx,ElementType newval)
 		return IndexError(".InsertAt");
 	}
 	if (AL->count >= (AL->capacity-1)) {
-		int r = Resize(AL);
+		int r = grow(AL);
 		if (r <= 0)
 			return r;
 	}
@@ -2261,4 +2277,5 @@ ValArrayInterface iValArrayInterface = {
 	Back,
 	Front,
 	RemoveRange,
+	Resize,
 };
