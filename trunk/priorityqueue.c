@@ -27,7 +27,7 @@ typedef int (*voidcmp)(void *, void *);
 PQueue *Create(size_t ElementSize);
 static int Add(PQueue *, intptr_t, void *);
 static int Front(PQueue *);
-intptr_t fh_replacekey(PQueue *, struct FibHeapElement *, intptr_t);
+static intptr_t Replace(PQueue *, struct FibHeapElement *, intptr_t);
 void *fh_replacekeydata(PQueue *, struct FibHeapElement *, intptr_t, void *);
 
 /* functions for void * heaps */
@@ -59,6 +59,7 @@ following properties:
 struct _PQueue {
     PQueueInterface *VTable;
     size_t count;
+    unsigned Flags;
     size_t ElementSize;
     int    fh_Dl;
     struct    FibHeapElement **lognTable;
@@ -87,7 +88,7 @@ static void fh_deleteel(PQueue *h, struct FibHeapElement *x);
  * specific node operations
  */
 struct FibHeapElement {
-    int    fhe_degree;
+    int    degree;
 /*
 We say that x is marked if its mark is set to true, and that it is unmarked 
 if its mark is set to false. A root is always unmarked. We mark x if it is 
@@ -100,13 +101,13 @@ that node as well. Whenever we promote a marked node, we
 unmark it; this is the only way to unmark a node (if splicing 
 nodes into the root list during a delete-min is not considered a promotion).
 */
-    int    fhe_mark;
+    int    Mark;
     struct    FibHeapElement *Parent;
     struct    FibHeapElement *Child;
     struct    FibHeapElement *Left;
     struct    FibHeapElement *Right;
-    intptr_t    fhe_key;
-    char fhe_data[1];
+    intptr_t    Key;
+    char Data[1];
 };
 
 static struct FibHeapElement *NewElement(PQueue *);
@@ -160,10 +161,10 @@ static void fh_deleteel(PQueue *h, struct FibHeapElement *x)
     void *data;
     intptr_t key;
 
-    data = x->fhe_data;
-    key = x->fhe_key;
+    data = x->Data;
+    key = x->Key;
 
-    fh_replacekey(h, x, INT_MIN);
+    Replace(h, x, INT_MIN);
     if (ExtractMin(h) != x) {
         /*
          * XXX - This should never happen as fh_replace should set it
@@ -242,8 +243,8 @@ static int Add(PQueue *h, intptr_t key, void *data)
     }
 
     /* just insert on root list, and make sure it's not the new min */
-    if (data) memcpy(x->fhe_data , data,h->ElementSize);
-    x->fhe_key = key;
+    if (data) memcpy(x->Data , data,h->ElementSize);
+    x->Key = key;
 
     fh_insertel(h, x);
 
@@ -254,15 +255,15 @@ static int Front(PQueue *h)
 {
     if (h->fh_min == NULL)
         return INT_MIN;
-    return h->fh_min->fhe_key;
+    return h->fh_min->Key;
 }
 
-intptr_t fh_replacekey(PQueue *h, struct FibHeapElement *x, intptr_t key)
+intptr_t Replace(PQueue *h, struct FibHeapElement *x, intptr_t key)
 {
     intptr_t ret;
 
-    ret = x->fhe_key;
-    (void)fh_replacekeydata(h, x, key, x->fhe_data);
+    ret = x->Key;
+    (void)fh_replacekeydata(h, x, key, x->Data);
 
     return ret;
 }
@@ -274,8 +275,8 @@ void * fh_replacekeydata(PQueue *h, struct FibHeapElement *x, intptr_t key, void
     struct FibHeapElement *y;
     int r;
 
-    odata = x->fhe_data;
-    okey = x->fhe_key;
+    odata = x->Data;
+    okey = x->Key;
 
     /*
      * we can increase a key by deleting and reinserting, that
@@ -286,16 +287,16 @@ void * fh_replacekeydata(PQueue *h, struct FibHeapElement *x, intptr_t key, void
         abort();
         fh_deleteel(h, x);
 
-        if (data) memcpy(x->fhe_data , data,h->ElementSize);
-        x->fhe_key = key;
+        if (data) memcpy(x->Data , data,h->ElementSize);
+        x->Key = key;
 
         fh_insertel(h, x);
 
         return odata;
     }
 
-    if (data) memcpy(x->fhe_data , data, h->ElementSize);
-    x->fhe_key = key;
+    if (data) memcpy(x->Data , data, h->ElementSize);
+    x->Key = key;
 
     /* because they are equal, we don't have to do anything */
     if (r == 0)
@@ -337,7 +338,7 @@ struct FibHeapElement * fh_insert(PQueue *h, void *data)
         return NULL;
 
     /* just insert on root list, and make sure it's not the new min */
-    if (data) memcpy(x->fhe_data , data, h->ElementSize);
+    if (data) memcpy(x->Data , data, h->ElementSize);
 
     fh_insertel(h, x);
 
@@ -348,7 +349,7 @@ void * fh_min(PQueue *h)
 {
     if (h->fh_min == NULL)
         return NULL;
-    return h->fh_min->fhe_data;
+    return h->fh_min->Data;
 }
 
 void * fh_extractmin(PQueue *h)
@@ -360,7 +361,7 @@ void * fh_extractmin(PQueue *h)
 
     if (h->fh_min != NULL) {
         z = ExtractMin(h);
-        ret = z->fhe_data;
+        ret = z->Data;
         fhe_destroy(z);
     }
 
@@ -369,15 +370,15 @@ void * fh_extractmin(PQueue *h)
 
 void * fh_replacedata(PQueue *h, struct FibHeapElement *x, void *data)
 {
-    return fh_replacekeydata(h, x, x->fhe_key, data);
+    return fh_replacekeydata(h, x, x->Key, data);
 }
 
 void * fh_delete(PQueue *h, struct FibHeapElement *x)
 {
     void *k;
 
-    k = x->fhe_data;
-    fh_replacekey(h, x, INT_MIN);
+    k = x->Data;
+    Replace(h, x, INT_MIN);
     fh_extractmin(h);
 
     return k;
@@ -479,8 +480,8 @@ static void fh_heaplink(PQueue *h, struct FibHeapElement *y, struct FibHeapEleme
     else
         fhe_insertbefore(x->Child, y);
     y->Parent = x;
-    x->fhe_degree++;
-    y->fhe_mark = 0;
+    x->degree++;
+    y->Mark = 0;
 }
 
 /*
@@ -518,7 +519,7 @@ static int fh_consolidate(PQueue *h)
     while ((w = h->fh_root) != NULL) {
         x = w;
         fh_removerootlist(h, w);
-        degree = x->fhe_degree;
+        degree = x->degree;
         /* Assert(degree < D); */
         while(B[degree] != NULL) {
             y = B[degree];
@@ -544,10 +545,10 @@ static int fh_consolidate(PQueue *h)
 static void fh_cut(PQueue *h, struct FibHeapElement *x, struct FibHeapElement *y)
 {
     fhe_remove(x);
-    y->fhe_degree--;
+    y->degree--;
     fh_insertrootlist(h, x);
     x->Parent = NULL;
-    x->fhe_mark = 0;
+    x->Mark = 0;
 }
 
 static void fh_cascading_cut(PQueue *h, struct FibHeapElement *y)
@@ -555,8 +556,8 @@ static void fh_cascading_cut(PQueue *h, struct FibHeapElement *y)
     struct FibHeapElement *z;
 
     while ((z = y->Parent) != NULL) {
-        if (y->fhe_mark == 0) {
-            y->fhe_mark = 1;
+        if (y->Mark == 0) {
+            y->Mark = 1;
             return;
         } else {
             fh_cut(h, y, z);
@@ -646,9 +647,9 @@ static int fh_checkcons(PQueue *h)
 
 static int fh_compare(PQueue *h, struct FibHeapElement *a, struct FibHeapElement *b)
 {
-        if (a->fhe_key < b->fhe_key)
+        if (a->Key < b->Key)
             return -1;
-        if (a->fhe_key == b->fhe_key)
+        if (a->Key == b->Key)
             return 0;
         return 1;
 }
@@ -657,7 +658,7 @@ static int fh_comparedata(PQueue *h, int key, void *data, struct FibHeapElement 
 {
     struct FibHeapElement a;
 
-    a.fhe_key = key;
+    a.Key = key;
 
     return fh_compare(h, &a, b);
 }
@@ -666,7 +667,7 @@ static void fh_insertel(PQueue *h, struct FibHeapElement *x)
 {
     fh_insertrootlist(h, x);
 
-    if (h->fh_min == NULL || (x->fhe_key < h->fh_min->fhe_key))
+    if (h->fh_min == NULL || (x->Key < h->fh_min->Key))
         h->fh_min = x;
 
     h->count++;
@@ -702,20 +703,43 @@ intptr_t Pop(PQueue *p,void *result)
 	struct FibHeapElement *x = ExtractMin(p);
 
 	if (x == NULL) return INT_MIN;
-	if (result) memcpy(result,x->fhe_data,p->ElementSize);
-	return x->fhe_key;
+	if (result) memcpy(result,x->Data,p->ElementSize);
+	return x->Key;
+}
+
+PQueue *Copy(PQueue *src)
+{
+	PQueue *result;
+	Iterator *it;
+	int r;
+	struct FibHeapElement *obj;
+
+	if (src == NULL) return NULL;
+	result = CreateWithAllocator(src->ElementSize,src->Allocator);
+	if (result == NULL) return NULL;
+	it = iHeap.NewIterator(src->Heap);
+	for (obj = it->GetFirst(it); obj != NULL; it = it->GetNext(it)) {
+		r = Add(result,obj->Key,obj->Data);
+		if (r < 0) {
+			Finalize(result);
+			return NULL;
+		}
+	}
+	iHeap.deleteIterator(it);
+	return result;
 }
 
 PQueueInterface iPriorityQueue = {
+	Size,
 	Create,
 	CreateWithAllocator,
-	Size,
 	Sizeof,
 	Add,
 	Clear,
 	Finalize,
 	Pop,
 	Front,
+	Copy,
 };
 #ifdef TEST
 
@@ -737,56 +761,56 @@ void testreplace(void)
 	  }
      
 	printf(" \n");
-	 fh_replacekey(a, arr[1],-1);
-         fh_replacekey(a, arr[6],-1);
-	 fh_replacekey(a, arr[4],-1);
-         fh_replacekey(a, arr[2],-1); 
-         fh_replacekey(a, arr[8],-1); 
+	 Replace(a, arr[1],-1);
+         Replace(a, arr[6],-1);
+	 Replace(a, arr[4],-1);
+         Replace(a, arr[2],-1); 
+         Replace(a, arr[8],-1); 
 	  
         printf("value(minkey) %d\n",Front(a));
 	printf("id: %d\n\n", (int)fh_extractmin(a));          
      
-	 fh_replacekey(a, arr[7],-33);
+	 Replace(a, arr[7],-33);
 /* -> node 7 becomes root node, but is still pointed to by node 6 */
-         fh_replacekey(a, arr[4],-36);
-	 fh_replacekey(a, arr[3],-1);
-         fh_replacekey(a, arr[9],-81); 	
+         Replace(a, arr[4],-36);
+	 Replace(a, arr[3],-1);
+         Replace(a, arr[9],-81); 	
 	
         printf("value(minkey) %d\n",Front(a));
         printf("id: %d\n\n", (int)fh_extractmin(a));
 	
-	 fh_replacekey(a, arr[6],-68);
-         fh_replacekey(a, arr[2],-69);
+	 Replace(a, arr[6],-68);
+         Replace(a, arr[2],-69);
 
         printf("value(minkey) %d\n",Front(a));
         printf("id: %d\n\n", (int)fh_extractmin(a));
 
-	 fh_replacekey(a, arr[1],-52);
-         fh_replacekey(a, arr[3],-2);
-	 fh_replacekey(a, arr[4],-120);
-         fh_replacekey(a, arr[5],-48); 	
+	 Replace(a, arr[1],-52);
+         Replace(a, arr[3],-2);
+	 Replace(a, arr[4],-120);
+         Replace(a, arr[5],-48); 	
 
         printf("value(minkey) %d\n",Front(a));
 	printf("id: %d\n\n", (int)fh_extractmin(a));
 
-	 fh_replacekey(a, arr[3],-3);
-         fh_replacekey(a, arr[5],-63);
+	 Replace(a, arr[3],-3);
+         Replace(a, arr[5],-63);
 
         printf("value(minkey) %d\n",Front(a));
 	printf("id: %d\n\n", (int)fh_extractmin(a));
 
-	 fh_replacekey(a, arr[5],-110);
-         fh_replacekey(a, arr[7],-115);
+	 Replace(a, arr[5],-110);
+         Replace(a, arr[7],-115);
 
         printf("value(minkey) %d\n",Front(a));
 	printf("id: %d\n\n", (int)fh_extractmin(a));
 
-         fh_replacekey(a, arr[5],-188);
+         Replace(a, arr[5],-188);
 
         printf("value(minkey) %d\n",Front(a));
 	printf("id: %d\n\n", (int)fh_extractmin(a));
 
-         fh_replacekey(a, arr[3],-4);
+         Replace(a, arr[3],-4);
 
         printf("value(minkey) %d\n",Front(a));
 	printf("id: %d\n\n", (int)fh_extractmin(a));

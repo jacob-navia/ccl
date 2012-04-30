@@ -575,15 +575,16 @@ extern QueueInterface iQueue;
 typedef struct _PQueue PQueue;
 
 typedef struct tagPQueueInterface {
+    size_t (*Size)(PQueue *Q);
     PQueue *(*Create)(size_t elementSize);
     PQueue *(*CreateWithAllocator)(size_t elementSize, ContainerMemoryManager *allocator);
-    size_t (*Size)(PQueue *Q);
     size_t (*Sizeof)(PQueue *Q);
     int (*Push)(PQueue *Q,intptr_t key,void *Element);
     int (*Clear)(PQueue *Q);
     int (*Finalize)(PQueue *Q);
     intptr_t (*Pop)(PQueue *Q,void *result);
     intptr_t (*Front)(PQueue *Q,void *result);
+    PQueue *(*Copy)(PQueue *src);
 } PQueueInterface;
 
 extern PQueueInterface iPriorityQueue;
@@ -757,7 +758,7 @@ typedef struct tagVector {
     int (*SearchWithKey)(Vector *vec,size_t startByte,size_t sizeKey,size_t startIndex,void *item,size_t *result);
     int (*Select)(Vector *src,const Mask *m);
     Vector *(*SelectCopy)(Vector *src,Mask *m);
-    int (*Resize)(Vector *AL,size_t newcapacity);
+    int (*Resize)(Vector *AL,size_t newSize);
     Vector *(*InitializeWith)(size_t elementSize, size_t n,const void *Data);
     void **(*GetData)(const Vector *AL);
     void *(*Back)(const Vector *AL);
@@ -767,6 +768,7 @@ typedef struct tagVector {
     int (*RotateRight)(Vector *V,size_t n);
     Mask *(*CompareEqual)(const Vector *left,const Vector *right,Mask *m);
     Mask *(*CompareEqualScalar)(const Vector *left, const void *right,Mask *m);
+    int (*Reserve)(Vector *src,size_t newCapacity);
 } VectorInterface;
 
 extern VectorInterface iVector;
