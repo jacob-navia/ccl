@@ -321,8 +321,7 @@ SetCompareFunction(List * l, CompareFunction fn)
  Output:        A pointer to the new list
  Errors:        None. Returns NULL if therfe is no memory left.
 ------------------------------------------------------------------------*/
-static List    *
-Copy(const List * l)
+static List    *Copy(const List * l)
 {
 	List           *result;
 	ListElement    *elem, *newElem;
