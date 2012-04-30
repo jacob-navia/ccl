@@ -1520,7 +1520,7 @@ static Mask *CompareEqual(const ValArray *left,const ValArray *right,Mask *bytea
 	
 	size_t left_len = left->count,left_incr = 1,left_start=0;
 	size_t right_len = right->count,right_incr=1,right_start = 0;
-	size_t siz,i,j,k;
+	size_t siz,i,j;
 	
 	if (left->Slice) {
 		left_start = left->Slice->start;
@@ -1537,20 +1537,18 @@ static Mask *CompareEqual(const ValArray *left,const ValArray *right,Mask *bytea
 		return NULL;
 	}
 	siz = left_len;
-	if (bytearray == NULL)
-		bytearray = CurrentMemoryManager->malloc(left_len+sizeof(Mask));
-	if (bytearray == NULL) {
-		NoMemory("Compare");
-		return NULL;
+	if (bytearray == NULL || bytearray->length < left_len) {
+		if (bytearray) iMask.Finalize(bytearray);
+		bytearray = iMask.Create(left_len);
+		if (bytearray == NULL) {
+			NoMemory("Compare");
+			return NULL;
+		}
 	}
-	memset(bytearray->data,0,siz);
+	else memset(bytearray->data,0,siz);
 	j=right_start;
-	k=0;
 	for (i=left_start; i<left_len;i += left_incr) {
-		bytearray->data[i/CHAR_BIT] |= (left->contents[i] == right->contents[j]);
-		if ((CHAR_BIT-1) != (i&(CHAR_BIT-1)))
-			bytearray->data[k] <<= 1;
-		k++;
+		bytearray->data[i] = (left->contents[i] == right->contents[j]);
 		j += right_incr;
 	}
 	bytearray->length = left_len;
