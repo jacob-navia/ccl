@@ -8,7 +8,8 @@ static Mask *CreateFromMask(size_t n,char *data)
         iError.RaiseError("iMask.Copy",CONTAINER_ERROR_NOMEMORY);
         return NULL;
     }
-    memcpy(result->data,data,n);
+    if (data) memcpy(result->data,data,n);
+    else memset(result->data,0,n);
     result->Allocator = CurrentMemoryManager;
     result->length = n;
     return result;
@@ -18,27 +19,16 @@ static Mask *Copy(Mask *src)
 {
     Mask *result;
     if (src == NULL) return NULL;
-    result = src->Allocator->malloc(src->length+sizeof(Mask));
-    if (result == NULL) {
-        iError.RaiseError("iMask.Copy",CONTAINER_ERROR_NOMEMORY);
-        return NULL;
+    result = CreateFromMask(src->length, src->data);
+    if (result) {
+        result->Allocator = src->Allocator;
     }
-    memcpy(result,src,src->length+sizeof(Mask));
-    result->Allocator = src->Allocator;
     return result;
 }
 
 static Mask *Create(size_t n)
 {
-    Mask *result = CurrentMemoryManager->malloc(n+sizeof(Mask));
-    if (result == NULL) {
-        iError.RaiseError("iMask.Create",CONTAINER_ERROR_NOMEMORY);
-        return NULL;
-    }
-    result->Allocator = CurrentMemoryManager;
-    memset(result->data,0,n);
-    result->length = n;
-    return result;
+    return CreateFromMask(n,NULL);
 }
 
 static int Set(Mask *m,size_t idx,int val)
@@ -68,18 +58,24 @@ static size_t Size(Mask *m)
     return (m == NULL) ? 0 : m->length;
 }
 
+static int Verify(const Mask *src1, const Mask *src2,const char *name)
+{
+    if (src1 == NULL || src2 == NULL) {
+        return iError.NullPtrError(name);
+    }
+    if (src1->length != src2->length) {
+        iError.RaiseError(name,CONTAINER_ERROR_INCOMPATIBLE);
+        return CONTAINER_ERROR_INCOMPATIBLE;
+    }
+    return 0;
+}
+
 static int And(Mask *src1,Mask *src2)
 {
     size_t i;
+    int r = Verify(src1,src2,"iMask.And");
 
-    if (src1 == NULL || src2 == NULL) {
-        iError.RaiseError("iMask.And",CONTAINER_ERROR_BADARG);
-        return CONTAINER_ERROR_BADARG;
-    }
-    if (src1->length != src2->length) {
-        iError.RaiseError("iMask.And",CONTAINER_ERROR_INCOMPATIBLE);
-        return CONTAINER_ERROR_INCOMPATIBLE;
-    }
+    if (r) return r;
     for (i=0; i<src1->length;i++) {
         src1->data[i] &= src2->data[i];
     }
@@ -91,8 +87,7 @@ static int Not(Mask *src1)
     size_t i;
 
     if (src1 == NULL ) {
-        iError.RaiseError("iMask.And",CONTAINER_ERROR_BADARG);
-        return CONTAINER_ERROR_BADARG;
+        return iError.NullPtrError("iMask.And");
     }
     for (i=0; i<src1->length;i++) {
         src1->data[i] = src1->data[i] ? 0 : 1;
@@ -104,15 +99,9 @@ static int Not(Mask *src1)
 static int Or(Mask *src1,Mask *src2)
 {
     size_t i;
+    int r = Verify(src1,src2,"iMask.or");
 
-    if (src1 == NULL || src2 == NULL) {
-            iError.RaiseError("iMask.And",CONTAINER_ERROR_BADARG);
-            return CONTAINER_ERROR_BADARG;
-    }
-    if (src1->length != src2->length) {
-            iError.RaiseError("iMask.And",CONTAINER_ERROR_INCOMPATIBLE);
-            return CONTAINER_ERROR_INCOMPATIBLE;
-    }
+    if (r) return r;
     for (i=0; i<src1->length;i++) {
             src1->data[i] |= src2->data[i];
     }
