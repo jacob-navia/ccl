@@ -1821,16 +1821,16 @@ static Mask *CompareEqual(const Vector *left,const Vector *right,Mask *bytearray
 	if (bytearray == NULL || iMask.Size(bytearray) < left_len) {
 		if (bytearray) iMask.Finalize(bytearray);
 		bytearray = iMask.Create(left_len);
+		if (bytearray == NULL) {
+			NoMemory(left,"CompareEqual");
+			return NULL;
+		}
 	}
 	else iMask.Clear(bytearray);
-	if (bytearray == NULL) {
-		NoMemory(left,"CompareEqual");
-		return NULL;
-	}
 	pleft = left->contents;
 	pright = right->contents;
 	for (i=0; i<left_len;i++) {
-		bytearray->data[i] = left->CompareFn(left,right,NULL);
+		bytearray->data[i] = !left->CompareFn(left,right,NULL);
 		pleft += left->ElementSize;
 		pright += right->ElementSize;
 	}
@@ -1839,7 +1839,6 @@ static Mask *CompareEqual(const Vector *left,const Vector *right,Mask *bytearray
 
 static Mask *CompareEqualScalar(const Vector *left,const void *right,Mask *bytearray)
 {
-	
 	size_t left_len;
 	size_t i;
 	char *pleft;
@@ -1859,8 +1858,14 @@ static Mask *CompareEqualScalar(const Vector *left,const void *right,Mask *bytea
 		return NULL;
 	}
 	pleft = left->contents;
-	for (i=0; i<left_len;i++) {
-		bytearray->data[i] = left->CompareFn(left,right,NULL);
+	if (left->CompareFn == DefaultVectorCompareFunction) {
+		for (i=0; i<left_len; i++) {
+			bytearray->data[i] = !memcmp(left,right,left->ElementSize);
+			pleft += left->ElementSize;
+		}
+	}
+	else for (i=0; i<left_len;i++) {
+		bytearray->data[i] = !left->CompareFn(left,right,NULL);
 		pleft += left->ElementSize;
 	}
 	return bytearray;
@@ -1892,7 +1897,7 @@ static int Select(Vector *src,const Mask *m)
 		}
 	}
 	if (offset < i) {
-		memset(src->contents+offset*src->ElementSize,0,src->ElementSize*(i-offset));
+		memset((char *)(src->contents)+offset*src->ElementSize,0,src->ElementSize*(i-offset));
 	}
 	src->count = offset;
 	return 1;
