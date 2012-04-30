@@ -1251,14 +1251,12 @@ Sizeof(const List * l)
 	return sizeof(List) + l->ElementSize * l->count + l->count * sizeof(ListElement);
 }
 
-static size_t 
-SizeofIterator(const List * l)
+static size_t SizeofIterator(const List * l)
 {
 	return sizeof(struct ListIterator);
 }
 
-static int 
-UseHeap(List * L, const ContainerMemoryManager * m)
+static int UseHeap(List * L, const ContainerMemoryManager * m)
 {
 	if (L == NULL) {
 		return NullPtrError("UseHeap");
@@ -1275,17 +1273,14 @@ UseHeap(List * L, const ContainerMemoryManager * m)
 
 /*
  * ---------------------------------------------------------------------------
- * ---
- */
-/* Iterators                                       */
-/*
+ *
+ *                           Iterators
+ *
  * ---------------------------------------------------------------------------
- * ---
  */
 
 
-static void    *
-Seek(Iterator * it, size_t idx)
+static void    * Seek(Iterator * it, size_t idx)
 {
 	struct ListIterator *li = (struct ListIterator *) it;
 	ListElement    *rvp;
@@ -1668,8 +1663,7 @@ GetElementSize(const List * l)
 	            routine is called. If there is no memory result is
 	            NULL.
  ------------------------------------------------------------------------*/
-static List    *
-CreateWithAllocator(size_t elementsize, const ContainerMemoryManager * allocator)
+static List    *CreateWithAllocator(size_t elementsize, const ContainerMemoryManager * allocator)
 {
 	List           *result;
 
@@ -1690,8 +1684,7 @@ CreateWithAllocator(size_t elementsize, const ContainerMemoryManager * allocator
 	return result;
 }
 
-static List    *
-Create(size_t elementsize)
+static List    * Create(size_t elementsize)
 {
 	return CreateWithAllocator(elementsize, CurrentMemoryManager);
 }
