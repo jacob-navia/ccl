@@ -95,28 +95,23 @@ static unsigned SetFlags(Vector *AL,unsigned newval)
 }
 
 
-static int Resize(Vector *AL)
+static int grow(Vector *AL)
 {
 	size_t newcapacity;
 	void **oldcontents;
 	int r = 1;
 
-	if (AL == NULL) {
-		r = NullPtrError("Resize");
+	newcapacity = AL->capacity + 1+AL->capacity/4;
+	oldcontents = AL->contents;
+	AL->contents = AL->Allocator->realloc(AL->contents,newcapacity*AL->ElementSize);
+	if (AL->contents == NULL) {
+		NoMemory(AL,"Resize");
+		AL->contents = oldcontents;
+		r = CONTAINER_ERROR_NOMEMORY;
 	}
 	else {
-		newcapacity = AL->capacity + 1+AL->capacity/4;
-		oldcontents = AL->contents;
-		AL->contents = AL->Allocator->realloc(AL->contents,newcapacity*AL->ElementSize);
-		if (AL->contents == NULL) {
-			NoMemory(AL,"Resize");
-			AL->contents = oldcontents;
-			r = CONTAINER_ERROR_NOMEMORY;
-		}
-		else {
-			AL->capacity = newcapacity;
-			AL->timestamp++;
-		}
+		AL->capacity = newcapacity;
+		AL->timestamp++;
 	}
 	return r;
 }
@@ -129,8 +124,10 @@ static int ResizeTo(Vector *AL,size_t newcapacity)
 		return NullPtrError("ResizeTo");
 	}
 	if (AL->Flags & CONTAINER_READONLY)
-		return ErrorReadOnly(AL,"Resize");
-	if (AL->capacity == newcapacity)
+		return ErrorReadOnly(AL,"ResizeTo");
+	if (AL->capacity >= newcapacity)
+		return 0;
+	if (newcapacity <= AL->count)
 		return 0;
 	oldcontents = AL->contents;
 	AL->contents = AL->Allocator->realloc(AL->contents,newcapacity*AL->ElementSize);
@@ -143,6 +140,28 @@ static int ResizeTo(Vector *AL,size_t newcapacity)
 	return 1;
 }
 
+static int Resize(Vector *AL, size_t newSize)
+{
+	char *p;
+	size_t i;
+	if (AL == NULL) return iError.NullPtrError("iVector.Resize");
+	if (AL->count < newSize) return ResizeTo(AL,newSize);
+	p = AL->contents;
+	if (AL->DestructorFn) {
+		for (i=newSize; i<AL->count; i++) {
+			AL->DestructorFn(p + i*AL->ElementSize);
+		}
+	}
+	p = AL->Allocator->realloc(AL->contents,newSize*AL->ElementSize);
+	if (p == NULL) {
+		iError.RaiseError("iVector.Resize",CONTAINER_ERROR_NOMEMORY);
+		return CONTAINER_ERROR_NOMEMORY;
+	}
+	AL->count = newSize;
+	AL->capacity = newSize;
+	AL->contents = (newSize ? p : NULL);
+	return 1;
+}
 /*------------------------------------------------------------------------
  Procedure:     Add ID:1
  Purpose:       Adds an item at the end of the Vector
@@ -166,7 +185,7 @@ static int Add(Vector *AL,const void *newval)
 		return CONTAINER_ERROR_BADARG;
 	}
 	if (AL->count >= AL->capacity) {
-		int r = Resize(AL);
+		int r = grow(AL);
 		if (r <= 0)
 			return r;
 	}
@@ -533,7 +552,7 @@ static int InsertAt(Vector *AL,size_t idx,void *newval)
 		return CONTAINER_ERROR_INDEX;
 	}
 	if (AL->count >= (AL->capacity-1)) {
-		int r = Resize(AL);
+		int r = grow(AL);
 		if (r <= 0)
 			return r;
 	}
@@ -1956,7 +1975,7 @@ VectorInterface iVector = {
 	SearchWithKey,
 	Select,
 	SelectCopy,
-	ResizeTo,
+	Resize,
 	InitializeWith,
 	GetData,
 	Back,
@@ -1966,4 +1985,5 @@ VectorInterface iVector = {
 	RotateRight,
 	CompareEqual,
 	CompareEqualScalar,
+	ResizeTo, // Reserve
 };
