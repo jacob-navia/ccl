@@ -585,6 +585,7 @@ typedef struct tagPQueueInterface {
     intptr_t (*Pop)(PQueue *Q,void *result);
     intptr_t (*Front)(PQueue *Q,void *result);
     PQueue *(*Copy)(PQueue *src);
+    PQueue *(*Union)(PQueue *left, PQueue *right);
 } PQueueInterface;
 
 extern PQueueInterface iPriorityQueue;

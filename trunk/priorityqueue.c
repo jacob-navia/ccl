@@ -19,28 +19,19 @@ for all nodes in the tree.
 */
 #include "containers.h"
 
-struct fibheap;
 struct FibHeapElement;
-typedef int (*voidcmp)(void *, void *);
 
 /* functions for key heaps */
 PQueue *Create(size_t ElementSize);
 static int Add(PQueue *, intptr_t, void *);
-static int Front(PQueue *);
+static intptr_t Front(PQueue *,void *result);
 static intptr_t Replace(PQueue *, struct FibHeapElement *, intptr_t);
 void *fh_replacekeydata(PQueue *, struct FibHeapElement *, intptr_t, void *);
 
-/* functions for void * heaps */
-struct fibheap *fh_makeheap(void);
-struct FibHeapElement *fh_insert(PQueue *, void *);
-
 /* shared functions */
-void *fh_extractmin(PQueue *);
-void *fh_min(PQueue *);
-void *fh_replacedata(PQueue *, struct FibHeapElement *, void *);
-void *fh_delete(PQueue *, struct FibHeapElement *);
+static void *fh_extractmin(PQueue *);
 static int Finalize(PQueue *);
-PQueue *fh_union(PQueue *, PQueue *);
+static PQueue *Union(PQueue *, PQueue *);
 
 struct FibHeapElement;
 
@@ -195,7 +186,7 @@ PQueue *CreateWithAllocator(size_t ElementSize,ContainerMemoryManager *allocator
     return n;
 }
 
-PQueue * fh_union(PQueue *ha, PQueue *hb)
+PQueue *Union(PQueue *ha, PQueue *hb)
 {
     struct FibHeapElement *x;
 
@@ -251,10 +242,11 @@ static int Add(PQueue *h, intptr_t key, void *data)
     return 1;
 }
 
-static int Front(PQueue *h)
+static intptr_t Front(PQueue *h,void *result)
 {
     if (h->fh_min == NULL)
         return INT_MIN;
+    memcpy(result,h->fh_min->Data,h->ElementSize);
     return h->fh_min->Key;
 }
 
@@ -322,36 +314,6 @@ void * fh_replacekeydata(PQueue *h, struct FibHeapElement *x, intptr_t key, void
     return odata;
 }
 
-/*
- * Public void * Heap Functions
- */
-/*
- * this will return these values:
- *    NULL    failed for some reason
- *    ptr    token to use for manipulation of data
- */
-struct FibHeapElement * fh_insert(PQueue *h, void *data)
-{
-    struct FibHeapElement *x;
-
-    if ((x = NewElement(h)) == NULL)
-        return NULL;
-
-    /* just insert on root list, and make sure it's not the new min */
-    if (data) memcpy(x->Data , data, h->ElementSize);
-
-    fh_insertel(h, x);
-
-    return x;
-}
-
-void * fh_min(PQueue *h)
-{
-    if (h->fh_min == NULL)
-        return NULL;
-    return h->fh_min->Data;
-}
-
 void * fh_extractmin(PQueue *h)
 {
     struct FibHeapElement *z;
@@ -367,44 +329,6 @@ void * fh_extractmin(PQueue *h)
 
     return ret;
 }
-
-void * fh_replacedata(PQueue *h, struct FibHeapElement *x, void *data)
-{
-    return fh_replacekeydata(h, x, x->Key, data);
-}
-
-void * fh_delete(PQueue *h, struct FibHeapElement *x)
-{
-    void *k;
-
-    k = x->Data;
-    Replace(h, x, INT_MIN);
-    fh_extractmin(h);
-
-    return k;
-}
-
-/*
- * Statistics Functions
- */
-#ifdef FH_STATS
-int
-fh_maxn(PQueue *h)
-{
-    return h->fh_maxn;
-}
-
-int fh_ninserts(PQueue *h)
-{
-    return h->fh_ninserts;
-}
-
-int
-fh_nextracts(PQueue *h)
-{
-    return h->fh_nextracts;
-}
-#endif
 
 /*
 First, we remove the minimum key from the root list and splice its 
@@ -702,7 +626,7 @@ intptr_t Pop(PQueue *p,void *result)
 {
 	struct FibHeapElement *x = ExtractMin(p);
 
-	if (x == NULL) return INT_MIN;
+	if (x == NULL) return INT_MAX;
 	if (result) memcpy(result,x->Data,p->ElementSize);
 	return x->Key;
 }
@@ -740,6 +664,7 @@ PQueueInterface iPriorityQueue = {
 	Pop,
 	Front,
 	Copy,
+	Union,
 };
 #ifdef TEST
 
