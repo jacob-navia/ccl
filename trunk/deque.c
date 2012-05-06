@@ -18,8 +18,8 @@ struct deque_t {
     size_t count;
     unsigned Flags;
     size_t ElementSize;
-    dlist_element *head;
-    dlist_element *tail;
+    DlistElement *head;
+    DlistElement *tail;
     CompareFunction compare;
     ErrorFunction RaiseError;   /* Error function */
     ContainerMemoryManager *Allocator;
@@ -27,7 +27,7 @@ struct deque_t {
     DestructorFunction DestructorFn;
 };
 
-typedef dlist_element *DequeNode;
+typedef DlistElement *DequeNode;
 
 static int default_comparator(const void *left,const void *right,CompareInfo *ExtraArgs)
 {
@@ -91,7 +91,7 @@ static int Add(Deque * d,const void* item)
         iObserver.Notify(d,CCL_ADD,item,NULL);
 
     /* allocate memory for the new node and put it in a valid state */
-    newNode = d->Allocator->malloc(sizeof(dlist_element)+d->ElementSize);
+    newNode = d->Allocator->malloc(sizeof(DlistElement)+d->ElementSize);
     if (newNode == NULL) {
     	iError.RaiseError("iDeque.Add",CONTAINER_ERROR_BADARG);
     	return CONTAINER_ERROR_BADARG;
@@ -118,7 +118,7 @@ static int AddLeft(Deque * d, void* item) {
     assert(d != NULL);
 
     /* create the new node and put it in a valid state */
-    newNode = d->Allocator->malloc(sizeof(dlist_element)+d->ElementSize);
+    newNode = d->Allocator->malloc(sizeof(DlistElement)+d->ElementSize);
     newNode->Next = d->tail;
     newNode->Previous = NULL;
     memcpy(newNode->Data, item,d->ElementSize);

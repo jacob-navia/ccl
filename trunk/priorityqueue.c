@@ -149,12 +149,6 @@ static int ceillog2(unsigned int a)
  */
 static void fh_deleteel(PQueue *h, struct FibHeapElement *x)
 {
-    void *data;
-    intptr_t key;
-
-    data = x->Data;
-    key = x->Key;
-
     Replace(h, x, INT_MIN);
     if (ExtractMin(h) != x) {
         /*
@@ -172,7 +166,7 @@ static void fh_destroyheap(PQueue *h)
     free(h);
 }
 
-PQueue *CreateWithAllocator(size_t ElementSize,ContainerMemoryManager *allocator)
+static PQueue *CreateWithAllocator(size_t ElementSize,ContainerMemoryManager *allocator)
 {
     PQueue *n;
 
@@ -615,14 +609,14 @@ static size_t Sizeof(PQueue *p)
 	return result;
 }
 
-int Clear(PQueue *p)
+static int Clear(PQueue *p)
 {
 	if (p == NULL) return 0;
 	p->count = 0;
 	return 1;
 }
 
-intptr_t Pop(PQueue *p,void *result)
+static intptr_t Pop(PQueue *p,void *result)
 {
 	struct FibHeapElement *x = ExtractMin(p);
 

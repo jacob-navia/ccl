@@ -27,7 +27,7 @@ static const guid ListGuid = {0x672abd64, 0xe231, 0x486b,
 	{0xbc, 0x72, 0x9b, 0x3a, 0x88, 0x20, 0x10, 0x35}
 };
 
-static int ErrorReadOnly(List * L, char *fnName)
+static int ErrorReadOnly(const List * L, char *fnName)
 {
 	char            buf[512];
 
@@ -145,15 +145,13 @@ Clear_nd(List * l)
 	return 1;
 }
 
-static int 
-Clear(List * l)
+static int Clear(List * l)
 {
 	if (l == NULL) {
 		return NullPtrError("Clear");
 	}
 	if (l->Flags & CONTAINER_READONLY) {
-		l->RaiseError("iList.Clear", CONTAINER_ERROR_READONLY);
-		return CONTAINER_ERROR_READONLY;
+		return ErrorReadOnly(l,"Clear");
 	}
 	return Clear_nd(l);
 }
@@ -268,7 +266,7 @@ SetAllocator(List * l, ContainerMemoryManager * allocator)
 	if (allocator != NULL) {
 		List           *newList;
 		if (l->Flags & CONTAINER_READONLY) {
-			l->RaiseError("iList.SetAllocator", CONTAINER_READONLY);
+			ErrorReadOnly(l,"SetAllocator");
 			return NULL;
 		}
 		newList = allocator->malloc(sizeof(List));
@@ -300,13 +298,13 @@ SetCompareFunction(List * l, CompareFunction fn)
 
 
 	if (l == NULL) {
-		NullPtrError("iList.SetCompareFunction");
+		NullPtrError("SetCompareFunction");
 		return NULL;
 	}
 	if (fn != NULL) {	/* Treat NULL as an enquiry to get the
 				 * compare function */
 		if (l->Flags & CONTAINER_READONLY) {
-			l->RaiseError("iList.SetCompareFunction", CONTAINER_READONLY);
+			ErrorReadOnly(l,"SetCompareFunction");
 		} else
 			l->Compare = fn;
 	}
@@ -398,8 +396,7 @@ Finalize(List * l)
  Output:        A pointer to the data
  Errors:        NULL if error in the positgion index
 ------------------------------------------------------------------------*/
-static void    *
-GetElement(const List * l, size_t position)
+static void    *GetElement(const List * l, size_t position)
 {
 	ListElement    *rvp;
 
@@ -412,7 +409,7 @@ GetElement(const List * l, size_t position)
 		return NULL;
 	}
 	if (l->Flags & CONTAINER_READONLY) {
-		l->RaiseError("iList.GetElement", CONTAINER_ERROR_READONLY);
+		ErrorReadOnly(l,"GetElement");
 		return NULL;
 	}
 	rvp = l->First;
@@ -423,8 +420,7 @@ GetElement(const List * l, size_t position)
 	return rvp->Data;
 }
 
-static void    *
-Back(const List * l)
+static void    *Back(const List * l)
 {
 	if (l == NULL) {
 		NullPtrError("Back");
@@ -434,14 +430,13 @@ Back(const List * l)
 		return NULL;
 	}
 	if (l->Flags & CONTAINER_READONLY) {
-		l->RaiseError("iList.Back", CONTAINER_ERROR_READONLY);
+		ErrorReadOnly(l,"Back");
 		return NULL;
 	}
 	return l->Last->Data;
 }
 
-static void    *
-Front(const List * l)
+static void    *Front(const List * l)
 {
 	if (l == NULL) {
 		NullPtrError("Front");
@@ -451,7 +446,7 @@ Front(const List * l)
 		return NULL;
 	}
 	if (l->Flags & CONTAINER_READONLY) {
-		l->RaiseError("iList.Front", CONTAINER_ERROR_READONLY);
+		ErrorReadOnly(l,"Front");
 		return NULL;
 	}
 	return l->First->Data;
@@ -507,8 +502,7 @@ ReplaceAt(List * l, size_t position, const void *data)
 		return CONTAINER_ERROR_INDEX;
 	}
 	if (l->Flags & CONTAINER_READONLY) {
-		l->RaiseError("iList.ReplaceAt", CONTAINER_ERROR_READONLY);
-		return CONTAINER_ERROR_READONLY;
+		return ErrorReadOnly(l,"ReplaceAt");
 	}
 	/* Position at the right data item */
 	if (position == l->count - 1)
@@ -540,8 +534,7 @@ ReplaceAt(List * l, size_t position, const void *data)
 	            empty too.
  Errors:        None
 ------------------------------------------------------------------------*/
-static List    *
-GetRange(const List * l, size_t start, size_t end)
+static List    *GetRange(const List * l, size_t start, size_t end)
 {
 	size_t          counter;
 	List           *result;
@@ -981,8 +974,7 @@ static int RemoveAt(List * l, size_t position)
 }
 
 
-static int 
-Append(List * l1, List * l2)
+static int Append(List * l1, List * l2)
 {
 
 	if (l1 == NULL || l2 == NULL) {
@@ -993,7 +985,7 @@ Append(List * l1, List * l2)
 		return CONTAINER_ERROR_BADARG;
 	}
 	if ((l1->Flags & CONTAINER_READONLY) || (l2->Flags & CONTAINER_READONLY)) {
-		l1->RaiseError("iList.Append", CONTAINER_ERROR_READONLY);
+		return ErrorReadOnly(l1,"Append");
 		return CONTAINER_ERROR_READONLY;
 	}
 	if (l2->ElementSize != l1->ElementSize) {
@@ -1947,6 +1939,70 @@ static List *SelectCopy(const List *src,const Mask *m)
     return result;
 }
 
+static ListElement *FirstElement(List *l)
+{
+	if (l == NULL) {
+		NullPtrError("FirstElement");
+		return NULL;
+	}
+	if (l->Flags&CONTAINER_READONLY) {
+		ErrorReadOnly(l,"FirstElement");
+		return NULL;
+	}
+	return l->First;
+}
+
+static ListElement *LastElement(List *l)
+{
+	if (l == NULL) {
+		NullPtrError("FirstElement");
+		return NULL;
+	}
+	if (l->Flags&CONTAINER_READONLY) {
+		ErrorReadOnly(l,"FirstElement");
+		return NULL;
+	}
+	return l->Last;
+}
+
+static ListElement *NextElement(ListElement *le)
+{
+	if (le == NULL) return NULL;
+	return le->Next;
+}
+
+static void *ElementData(ListElement *le)
+{
+	if (le == NULL) return NULL;
+	return le->Data;
+}
+
+static int SetElementData(List *l,ListElement *le,void *data)
+{
+	if (l == NULL || le == NULL || data == NULL) {
+		return iError.NullPtrError("iList.SetElementData");
+	}
+	memcpy(le->Data,data,l->ElementSize);
+	l->timestamp++;
+	return 1;
+}
+
+static void *Advance(ListElement **ple)
+{
+	ListElement *le;
+	void *result;
+
+	if (ple == NULL)
+		return NULL;
+	le = *ple;
+	if (le == NULL) return NULL;
+	result = le->Data;
+	le = le->Next;
+	*ple = le;
+	return result;
+}
+	
+	
 
 ListInterface   iList = {
 	Size,
@@ -2005,4 +2061,11 @@ ListInterface   iList = {
 	RotateRight,
 	Select,
 	SelectCopy,
+	FirstElement,
+	LastElement,
+	NextElement,
+	ElementData,
+	SetElementData,
+	Advance,
+
 };
