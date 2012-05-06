@@ -29,9 +29,9 @@ static int Add_nd(Dlist *l,const void *elem);
  Output:        A pointer to the new Dlist element (can be NULL)
  Errors:        If there is no memory returns NULL
 ------------------------------------------------------------------------*/
-static dlist_element *new_dlink(Dlist *l,const void *data,const char *fname)
+static DlistElement *new_dlink(Dlist *l,const void *data,const char *fname)
 {
-    dlist_element *result;
+    DlistElement *result;
 
     if (l->Heap == NULL) {
     	result = l->Allocator->malloc(sizeof(*result)+l->ElementSize);
@@ -130,7 +130,7 @@ static int UseHeap(Dlist *L,const ContainerMemoryManager *m)
     }
     if (m == NULL)
     	m = L->Allocator;
-    L->Heap = iHeap.Create(L->ElementSize+sizeof(dlist_element), m);
+    L->Heap = iHeap.Create(L->ElementSize+sizeof(DlistElement), m);
     if (L->Heap == NULL) {
     	L->RaiseError("iDlist.UseHeap",CONTAINER_ERROR_NOMEMORY);
     	return CONTAINER_ERROR_NOMEMORY;
@@ -142,7 +142,7 @@ static int UseHeap(Dlist *L,const ContainerMemoryManager *m)
 /* This function was proposed by Ben Pfaff in c.l.c if I remember correctly */
 static Dlist *Splice ( Dlist *list, void *ppos, Dlist *toInsert, int dir )
 {
-    dlist_element *pos = ppos;
+    DlistElement *pos = ppos;
     if (( list == NULL ) || ( pos == NULL ) || toInsert == NULL) {
     	iError.NullPtrError("iDlist.Splice");
     	return NULL;
@@ -195,7 +195,7 @@ static int Clear(Dlist *l)
     if (l->Heap)
     	iHeap.Finalize(l->Heap);
     else {
-    	dlist_element *rvp = l->First,*tmp;
+    	DlistElement *rvp = l->First,*tmp;
 
     	while (rvp) {
     		tmp = rvp;
@@ -226,7 +226,7 @@ static int Clear(Dlist *l)
 ------------------------------------------------------------------------*/
 static int Add_nd(Dlist *l,const void *elem)
 {
-        dlist_element *newl = new_dlink(l,elem,"iList.Add");
+        DlistElement *newl = new_dlink(l,elem,"iList.Add");
         if (newl == 0)
                 return CONTAINER_ERROR_NOMEMORY;
         if (l->count ==  0) {
@@ -383,7 +383,7 @@ static CompareFunction SetCompareFunction(Dlist *l,CompareFunction fn)
 static Dlist *Copy(const Dlist *l)
 {
     Dlist *result;
-    dlist_element *rvp,*newRvp,*last;
+    DlistElement *rvp,*newRvp,*last;
 
     if (l == NULL) {
     	iError.NullPtrError("iDlist.Size");
@@ -457,7 +457,7 @@ static int Finalize(Dlist *l)
 ------------------------------------------------------------------------*/
 static void * GetElement(const Dlist *l,int position)
 {
-    dlist_element *rvp;
+    DlistElement *rvp;
 
 
     if (l == NULL) {
@@ -482,7 +482,7 @@ static void * GetElement(const Dlist *l,int position)
 
 static int ReplaceAt(Dlist *l,size_t position,const void *data)
 {
-    dlist_element *rvp;
+    DlistElement *rvp;
 
     if (l == NULL || data == NULL) {
     	if (l)
@@ -532,7 +532,7 @@ static Dlist *GetRange(Dlist *l,size_t start,size_t end)
 {
     size_t counter;
     Dlist *result;
-    dlist_element *rvp;
+    DlistElement *rvp;
 
     if (l == NULL) {
     	iError.NullPtrError("iDlist.GetRange");
@@ -580,7 +580,7 @@ static Dlist *GetRange(Dlist *l,size_t start,size_t end)
 ------------------------------------------------------------------------*/
 static bool Equal(const Dlist *l1,const Dlist *l2)
 {
-    dlist_element *link1,*link2;
+    DlistElement *link1,*link2;
     CompareInfo ci;
     CompareFunction fn;
 
@@ -625,7 +625,7 @@ static bool Equal(const Dlist *l1,const Dlist *l2)
 ------------------------------------------------------------------------*/
 static int PushFront(Dlist *l,const void *pdata)
 {
-    dlist_element *rvp;
+    DlistElement *rvp;
 
     if (l == NULL || pdata == NULL) {
     	if (l)
@@ -659,7 +659,7 @@ static int PushFront(Dlist *l,const void *pdata)
 
 static int PushBack(Dlist *l,const void *pdata)
 {
-    dlist_element *rvp;
+    DlistElement *rvp;
 
     if (l == NULL) {
     	iError.NullPtrError("iDlist.Size");
@@ -698,7 +698,7 @@ static int PushBack(Dlist *l,const void *pdata)
 ------------------------------------------------------------------------*/
 static int PopFront(Dlist *l,void *result)
 {
-    dlist_element *le;
+    DlistElement *le;
 
     if (l == NULL) return iError.NullPtrError("iDlist.PopFront");
     
@@ -730,7 +730,7 @@ static int PopFront(Dlist *l,void *result)
 
 static int PopBack(Dlist *l,void *result)
 {
-    dlist_element *le;
+    DlistElement *le;
 
     if (l == NULL) return iError.NullPtrError("iDlist.PopBack");
     
@@ -759,7 +759,7 @@ static int PopBack(Dlist *l,void *result)
 
 static int InsertAt(Dlist *l,size_t pos,const void *pdata)
 {
-    dlist_element *elem;
+    DlistElement *elem;
 
     if (l == NULL || pdata == NULL) {
     	if (l)
@@ -789,7 +789,7 @@ static int InsertAt(Dlist *l,size_t pos,const void *pdata)
     	l->First = elem;
     }
     else {
-    	dlist_element *rvp = l->First;
+    	DlistElement *rvp = l->First;
     	while (pos > 0) {
     		rvp = rvp->Next;
     		pos--;
@@ -811,7 +811,7 @@ static int InsertAt(Dlist *l,size_t pos,const void *pdata)
 static int InsertIn(Dlist *l, size_t idx,Dlist *newData)
 {
     size_t newCount;
-    dlist_element *le,*nle;
+    DlistElement *le,*nle;
 
     if (l == NULL || newData == NULL) {
     	if (l)
@@ -866,7 +866,7 @@ static int InsertIn(Dlist *l, size_t idx,Dlist *newData)
 
 static int EraseAt(Dlist *l,size_t position)
 {
-    dlist_element *rvp=NULL,*last;
+    DlistElement *rvp=NULL,*last;
     void *removed=NULL;
 
     if (l == NULL) return iError.NullPtrError("iDlist.InsertIn");
@@ -920,7 +920,7 @@ static int EraseAt(Dlist *l,size_t position)
 
 static int Reverse(Dlist *l)
 {
-    dlist_element *tmp,*rvp;
+    DlistElement *tmp,*rvp;
 
     if (l == NULL)  {
 		return iError.NullPtrError("iDlist.Reverse");
@@ -954,7 +954,7 @@ static int Reverse(Dlist *l)
 */
 static int IndexOf(const Dlist *l,const void *ElementToFind, void * args,size_t *result)
 {
-    dlist_element *rvp;
+    DlistElement *rvp;
     int r,i=0;
     CompareFunction fn;
     CompareInfo ci;
@@ -988,7 +988,7 @@ static int EraseInternal(Dlist *l,const void *elem,int all)
     int r,result = CONTAINER_ERROR_NOTFOUND;
     CompareFunction fn;
     CompareInfo ci;
-    dlist_element *rvp,*previous;
+    DlistElement *rvp,*previous;
     size_t position;
 
     if (l == NULL || elem == NULL) {
@@ -1084,7 +1084,7 @@ static int Contains(const Dlist *l,const void *data)
 
 static int CopyElement(const Dlist *l,size_t position,void *outBuffer)
 {
-    dlist_element *rvp;
+    DlistElement *rvp;
 
     if (l == NULL || outBuffer == NULL) {
     	if (l)
@@ -1120,8 +1120,8 @@ static int CopyElement(const Dlist *l,size_t position,void *outBuffer)
 
 static int dlcompar (const void *elem1, const void *elem2,CompareInfo *ExtraArgs)
 {
-    dlist_element *Elem1 = *(dlist_element **)elem1;
-    dlist_element *Elem2 = *(dlist_element **)elem2;
+    DlistElement *Elem1 = *(DlistElement **)elem1;
+    DlistElement *Elem2 = *(DlistElement **)elem2;
     Dlist *l = (Dlist *)ExtraArgs->ContainerLeft;
     CompareFunction fn = l->Compare;
     return fn(Elem1->Data,Elem2->Data,ExtraArgs);
@@ -1129,9 +1129,9 @@ static int dlcompar (const void *elem1, const void *elem2,CompareInfo *ExtraArgs
 
 static int Sort(Dlist *l)
 {
-    dlist_element **tab;
+    DlistElement **tab;
     size_t i;
-    dlist_element *rvp;
+    DlistElement *rvp;
     CompareInfo ci;
 
     if (l == NULL) return iError.NullPtrError("iDlist.Sort");
@@ -1142,7 +1142,7 @@ static int Sort(Dlist *l)
     }
     if (l->count < 2)
     	return 1;
-    tab = l->Allocator->malloc(l->count * sizeof(dlist_element *));
+    tab = l->Allocator->malloc(l->count * sizeof(DlistElement *));
     if (tab == NULL) {
     	l->RaiseError("iDlist.Sort",CONTAINER_ERROR_NOMEMORY);
     	return 0;
@@ -1155,7 +1155,7 @@ static int Sort(Dlist *l)
     ci.ContainerLeft = l;
     ci.ContainerRight = NULL;
     ci.ExtraArgs = NULL;
-    qsortEx(tab,l->count,sizeof(dlist_element *),dlcompar,&ci);
+    qsortEx(tab,l->count,sizeof(DlistElement *),dlcompar,&ci);
     for (i=1; i<l->count-1;i++) {
     	tab[i]->Next = tab[i+1];
     	tab[i]->Previous = tab[i-1];
@@ -1171,7 +1171,7 @@ static int Sort(Dlist *l)
 }
 static int Apply(Dlist *L,int (Applyfn)(void *,void *),void *arg)
 {
-    dlist_element *le;
+    DlistElement *le;
 
     if (L == NULL)  return iError.NullPtrError("iDist.Apply");
     if (Applyfn == NULL) {
@@ -1322,7 +1322,7 @@ static void *GetCurrent(Iterator *it)
 static void *Seek(Iterator *it,size_t idx)
 {
     struct DListIterator *li = (struct DListIterator *)it;
-    dlist_element *rvp;
+    DlistElement *rvp;
 
         if (it == NULL) {
                 iError.NullPtrError("iDlist.Seek");
@@ -1442,7 +1442,7 @@ static size_t Sizeof(const Dlist *dl)
     if (dl == NULL) {
     	return sizeof(Dlist);
     }
-    return sizeof(Dlist) + dl->count * (sizeof(dlist_element)+dl->ElementSize);
+    return sizeof(Dlist) + dl->count * (sizeof(DlistElement)+dl->ElementSize);
 }
 
 static int deleteIterator(Iterator *it)
@@ -1467,7 +1467,7 @@ static int DefaultSaveFunction(const void *element,void *arg, FILE *Outfile)
 static int Save(const Dlist *L,FILE *stream, SaveFunction saveFn,void *arg)
 {
     size_t i;
-    dlist_element *rvp;
+    DlistElement *rvp;
     size_t elmsiz;
 
     if (stream == NULL || L == NULL ) {
@@ -1509,7 +1509,7 @@ static Dlist *Load(FILE *stream, ReadFunction loadFn,void *arg)
 {
     size_t i;
     Dlist *result,L;
-    dlist_element *newl;
+    DlistElement *newl;
     char *buf;
     guid Guid;
 
@@ -1625,7 +1625,7 @@ static size_t SizeofIterator(const Dlist *l)
 
 static int RemoveRange(Dlist *l,size_t start, size_t end)
 {
-    dlist_element *rvp,*rvpS,*rvpE;
+    DlistElement *rvp,*rvpS,*rvpE;
     size_t position=0,tmp;
 
     if (l == NULL) {
@@ -1691,7 +1691,7 @@ static int RemoveRange(Dlist *l,size_t start, size_t end)
 static int Select(Dlist *src,const Mask *m)
 {
     size_t i,offset=0;
-    dlist_element *dst,*s,*removed;
+    DlistElement *dst,*s,*removed;
 
     if (src == NULL || m == NULL) {
         return iError.NullPtrError("iDlist.Select");
@@ -1756,7 +1756,7 @@ static int Select(Dlist *src,const Mask *m)
 static Dlist *SelectCopy(const Dlist *src,const Mask *m)
 {
     Dlist *result;
-    dlist_element *rvp;
+    DlistElement *rvp;
     size_t i;
     int r;
 
@@ -1785,6 +1785,73 @@ static Dlist *SelectCopy(const Dlist *src,const Mask *m)
 }
 
 
+static DlistElement *FirstElement(Dlist *l)
+{
+	if (l == NULL) {
+		iError.NullPtrError("FirstElement");
+		return NULL;
+	}
+	if (l->Flags&CONTAINER_READONLY) {
+		iError.RaiseError("FirstElement",CONTAINER_ERROR_READONLY);
+		return NULL;
+	}
+	return l->First;
+}
+
+static DlistElement *LastElement(Dlist *l)
+{
+	if (l == NULL) {
+		iError.NullPtrError("FirstElement");
+		return NULL;
+	}
+	if (l->Flags&CONTAINER_READONLY) {
+		iError.RaiseError("FirstElement",CONTAINER_ERROR_READONLY);
+		return NULL;
+	}
+	return l->Last;
+}
+
+static DlistElement *NextElement(DlistElement *le)
+{
+	if (le == NULL) return NULL;
+	return le->Next;
+}
+
+static DlistElement *PreviousElement(DlistElement *le)
+{
+	if (le == NULL) return NULL;
+	return le->Previous;
+}
+static void *ElementData(DlistElement *le)
+{
+	if (le == NULL) return NULL;
+	return le->Data;
+}
+
+static void *AdvanceInternal(DlistElement **ple,int goback)
+{
+	DlistElement *le;
+	void *result;
+
+	if (ple == NULL)
+		return NULL;
+	le = *ple;
+	if (le == NULL) return NULL;
+	result = le->Data;
+	if (goback) le = le->Previous;
+	else le = le->Next;
+	*ple = le;
+	return result;
+}
+
+static void *MoveBack(DlistElement **ple)
+{
+	return AdvanceInternal(ple,1);
+}
+static void *Advance(DlistElement **ple)
+{
+	return AdvanceInternal(ple,0);
+}
 
 DlistInterface iDlist = {
     Size,
@@ -1840,5 +1907,12 @@ DlistInterface iDlist = {
     RemoveRange,
     Select,
     SelectCopy,
+    FirstElement,
+    LastElement,
+    NextElement,
+    PreviousElement,
+    ElementData,
+    Advance,
+    MoveBack,
 };
 

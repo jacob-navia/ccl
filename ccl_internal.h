@@ -99,13 +99,13 @@ struct _BitString {
 /*----------------------------------------------------------------------------*/
 /* Definition of the list and list element type                               */
 /*----------------------------------------------------------------------------*/
-typedef struct _ListElement {
+struct _ListElement {
     struct _ListElement *Next;
 #ifdef SPARC32
     void *alignment;
 #endif
     char Data[MINIMUM_ARRAY_INDEX];
-} ListElement;
+};
 
 struct _List {
     ListInterface *VTable;      /* Methods table */
@@ -202,11 +202,11 @@ struct WStringListIterator {
 /*----------------------------------------------------------------------------*/
 /* dlist                                                                      */
 /*----------------------------------------------------------------------------*/
-typedef struct _dlist_element {
-    struct _dlist_element *Next;
-    struct _dlist_element *Previous;
+struct _DlistElement {
+    struct _DlistElement *Next;
+    struct _DlistElement *Previous;
     char Data[MINIMUM_ARRAY_INDEX];
-} dlist_element;
+};
 
 struct Dlist {
     DlistInterface *VTable;
@@ -214,9 +214,9 @@ struct Dlist {
     unsigned Flags;
     unsigned timestamp;
     size_t ElementSize;
-    dlist_element *Last;         /* The last item */
-    dlist_element *First;        /* The contents of the Dlist start here */
-    dlist_element *FreeList;
+    DlistElement *Last;         /* The last item */
+    DlistElement *First;        /* The contents of the Dlist start here */
+    DlistElement *FreeList;
     CompareFunction Compare;     /* Element comparison function */
     ErrorFunction RaiseError;        /* Error function */
     ContainerHeap *Heap;
@@ -228,7 +228,7 @@ struct DListIterator {
     Iterator it;
     Dlist *L;
     size_t index;
-    dlist_element *Current;
+    DlistElement *Current;
     unsigned timestamp;
     char ElementBuffer[1];
 };

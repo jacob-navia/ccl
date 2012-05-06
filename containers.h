@@ -487,6 +487,7 @@ extern WstrCollectionInterface iWstrCollection;
  * Each list objects has a list composed of list elements.                 *
  *-------------------------------------------------------------------------*/
 typedef struct _List List;
+typedef struct _ListElement ListElement;
 typedef struct tagList {
     size_t (*Size)(const List *L);
     unsigned (*GetFlags)(const List *L);
@@ -544,6 +545,12 @@ typedef struct tagList {
     int (*RotateRight)(List *l,size_t n);
     int (*Select)(List *src,const Mask *m);
     List *(*SelectCopy)(const List *src,const Mask *m);
+    ListElement *(*FirstElement)(List *l);
+    ListElement *(*LastElement)(List *l);
+    ListElement *(*NextElement)(ListElement *le);
+    void *(*ElementData)(ListElement *le);
+    int (*SetElementData)(List *l, ListElement *le,void *data);
+    void *(*Advance)(ListElement **pListElement);
 } ListInterface;
 
 extern ListInterface iList;
@@ -586,6 +593,7 @@ typedef struct tagPQueueInterface {
     intptr_t (*Front)(PQueue *Q,void *result);
     PQueue *(*Copy)(PQueue *src);
     PQueue *(*Union)(PQueue *left, PQueue *right);
+//  int (*Replace)(PQueue *src,intptr_t key,void *data);
 } PQueueInterface;
 
 extern PQueueInterface iPriorityQueue;
@@ -635,6 +643,7 @@ extern DequeInterface iDeque;
  * Each list objects has a list composed of list elemants.                 *
  *-------------------------------------------------------------------------*/
 typedef struct Dlist Dlist;
+typedef struct _DlistElement DlistElement;
 typedef struct tagDlist {
     size_t (*Size)(const Dlist *dl);
     unsigned (*GetFlags)(const Dlist *AL);
@@ -691,6 +700,13 @@ typedef struct tagDlist {
     int (*RemoveRange)(Dlist *l,size_t start, size_t end);
     int (*Select)(Dlist *src,const Mask *m);
     Dlist *(*SelectCopy)(const Dlist *src,const Mask *m);
+    DlistElement *(*FirstElement)(Dlist *l);
+    DlistElement *(*LastElement)(Dlist *l);
+    DlistElement *(*NextElement)(DlistElement *le);
+    DlistElement *(*PreviousElement)(DlistElement *le);
+    void *(*ElementData)(DlistElement *le);
+    void *(*Advance)(DlistElement **pDlistElement);
+    void *(*MoveBack)(DlistElement **pDlistElement);
 } DlistInterface;
 
 extern DlistInterface iDlist;
