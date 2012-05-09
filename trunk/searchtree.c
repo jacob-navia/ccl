@@ -68,7 +68,7 @@ struct tagBinarySearchTree {
 	size_t               ElementSize;
 	ErrorFunction        RaiseError;
 	BinarySearchTreeNode *root;
-	ContainerMemoryManager *Allocator;
+	ContainerAllocator *Allocator;
 	DestructorFunction DestructorFn;
 } ;
 
@@ -78,12 +78,12 @@ static const guid BinarySearchTreeGuid = {0x9a011719, 0x22ac, 0x461d,
 
 static BinarySearchTree * Create(size_t ElementSize)
 {
-	BinarySearchTree *result = CurrentMemoryManager->malloc(sizeof(BinarySearchTree));
+	BinarySearchTree *result = CurrentAllocator->malloc(sizeof(BinarySearchTree));
 	if (result) {
 		memset(result,0,sizeof(BinarySearchTree));
 		result->ElementSize = ElementSize;
 		result->VTable = &iBinarySearchTree;
-		result->Allocator = CurrentMemoryManager;
+		result->Allocator = CurrentAllocator;
 	}
 	return result;
 }
@@ -681,7 +681,7 @@ static int Clear(BinarySearchTree *tree)
 static int Finalize(BinarySearchTree *tree)
 {
 	Clear(tree);
-	CurrentMemoryManager->free(tree);
+	CurrentAllocator->free(tree);
 	return 1;
 }
 

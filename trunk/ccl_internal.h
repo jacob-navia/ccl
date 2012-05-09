@@ -17,8 +17,8 @@ int snprintf(char *restrict s, size_t n, const char *restrict format, ...);
 /* This function is needed to read a line from a file.
    The resulting line is allocated with the given memory manager
 */
-int GetLine(char **LinePointer,int *n, FILE *stream,ContainerMemoryManager *mm);
-int WGetLine(wchar_t **LinePointer,int *n, FILE *stream,ContainerMemoryManager *mm);
+int GetLine(char **LinePointer,int *n, FILE *stream,ContainerAllocator *mm);
+int WGetLine(wchar_t **LinePointer,int *n, FILE *stream,ContainerAllocator *mm);
 /* GUIDs used to mark saved container files */
 typedef struct {
     uint32_t Data1;
@@ -32,7 +32,7 @@ typedef struct {
 /*----------------------------------------------------------------------------*/
 struct _Mask {
     size_t length;
-    const ContainerMemoryManager *Allocator;
+    const ContainerAllocator *Allocator;
     char data[MINIMUM_ARRAY_INDEX];
 };
 
@@ -68,7 +68,7 @@ struct _Vector {
     unsigned timestamp;            /* Incremented at each change */
     CompareFunction CompareFn;     /* Element comparison function */
     ErrorFunction RaiseError;      /* Error function */
-    const ContainerMemoryManager *Allocator;
+    const ContainerAllocator *Allocator;
     DestructorFunction DestructorFn;
 } ;
 
@@ -93,7 +93,7 @@ struct _BitString {
     size_t capacity;                /* allocated space in the contents vector */
     unsigned timestamp;
     unsigned int Flags;             /* Read-only or other flags */
-    const ContainerMemoryManager *Allocator;
+    const ContainerAllocator *Allocator;
 } ;
 
 /*----------------------------------------------------------------------------*/
@@ -118,7 +118,7 @@ struct _List {
     CompareFunction Compare;    /* Element comparison function */
     ErrorFunction RaiseError;   /* Error function */
     ContainerHeap *Heap;
-    const ContainerMemoryManager *Allocator;
+    const ContainerAllocator *Allocator;
     DestructorFunction DestructorFn;
 };
 
@@ -151,7 +151,7 @@ struct _StringList {
     CompareFunction Compare;    /* Element comparison function */
     ErrorFunction RaiseError;   /* Error function */
     ContainerHeap *Heap;
-    const ContainerMemoryManager *Allocator;
+    const ContainerAllocator *Allocator;
     DestructorFunction DestructorFn;
 };
 
@@ -184,7 +184,7 @@ struct _WStringList {
     CompareFunction Compare;    /* Element comparison function */
     ErrorFunction RaiseError;   /* Error function */
     ContainerHeap *Heap;
-    const ContainerMemoryManager *Allocator;
+    const ContainerAllocator *Allocator;
     DestructorFunction DestructorFn;
 };
 
@@ -220,7 +220,7 @@ struct Dlist {
     CompareFunction Compare;     /* Element comparison function */
     ErrorFunction RaiseError;        /* Error function */
     ContainerHeap *Heap;
-    const ContainerMemoryManager *Allocator;
+    const ContainerAllocator *Allocator;
     DestructorFunction DestructorFn;
 };
 
@@ -243,7 +243,7 @@ struct _Dictionary {
 	ErrorFunction RaiseError;
 	unsigned timestamp;
 	size_t ElementSize;
-	const ContainerMemoryManager *Allocator;
+	const ContainerAllocator *Allocator;
 	DestructorFunction DestructorFn;
 	HashFunction hash;
 	struct DataList {
@@ -272,7 +272,7 @@ struct _WDictionary {
 	ErrorFunction RaiseError;
 	unsigned timestamp;
 	size_t ElementSize;
-	const ContainerMemoryManager *Allocator;
+	const ContainerAllocator *Allocator;
 	DestructorFunction DestructorFn;
 	WHashFunction hash;
 	struct WDataList {
@@ -331,7 +331,7 @@ struct _HashTable {
     ErrorFunction  RaiseError;
     unsigned       timestamp;
     size_t         ElementSize;
-    const ContainerMemoryManager *Allocator;
+    const ContainerAllocator *Allocator;
     DestructorFunction DestructorFn;
 };
 
@@ -370,7 +370,7 @@ struct tagTreeMap {
     unsigned Flags;
     unsigned timestamp;
     ContainerHeap *Heap;
-    const ContainerMemoryManager *Allocator;
+    const ContainerAllocator *Allocator;
     DestructorFunction DestructorFn;
 };
 
@@ -400,7 +400,7 @@ struct strCollection {
     ErrorFunction RaiseError;
     StringCompareFn strcompare;
     CompareInfo *StringCompareContext;
-    const ContainerMemoryManager *Allocator;
+    const ContainerAllocator *Allocator;
     DestructorFunction DestructorFn;
 };
 
@@ -415,7 +415,7 @@ struct WstrCollection {
     ErrorFunction RaiseError;
     StringCompareFn strcompare;
     CompareInfo *StringCompareContext;
-    const ContainerMemoryManager *Allocator;
+    const ContainerAllocator *Allocator;
     DestructorFunction DestructorFn;
 };
 #endif

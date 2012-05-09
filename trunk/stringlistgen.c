@@ -18,7 +18,7 @@ the proposed interface COULD be done.
 #endif
 static int IndexOf_nd(LIST_TYPE *AL,CHARTYPE *SearchedElement,void *ExtraArgs,size_t *result);
 static int RemoveAt_nd(LIST_TYPE *AL,size_t idx);
-static LIST_TYPE *CreateWithAllocator(const ContainerMemoryManager *allocator);
+static LIST_TYPE *CreateWithAllocator(const ContainerAllocator *allocator);
 static LIST_TYPE *Create(void);
 static int Finalize(LIST_TYPE *l);
 #define CONTAINER_LIST_SMALL    2
@@ -241,7 +241,7 @@ static size_t Size(LIST_TYPE *l)
     return l->count;
 }
 
-static LIST_TYPE *SetAllocator(LIST_TYPE *l,ContainerMemoryManager  *allocator)
+static LIST_TYPE *SetAllocator(LIST_TYPE *l,ContainerAllocator  *allocator)
 {
     if (l == NULL) {
         NullPtrError("SetAllocator");
@@ -1204,7 +1204,7 @@ static size_t Sizeof(LIST_TYPE *l)
     return sizeof(LIST_TYPE) + sum + l->count *sizeof(LIST_ELEMENT);
 }
 
-static int UseHeap(LIST_TYPE *L, ContainerMemoryManager *m)
+static int UseHeap(LIST_TYPE *L, ContainerAllocator *m)
 {
     return CONTAINER_ERROR_NOT_EMPTY;
 }
@@ -1596,7 +1596,7 @@ static size_t GetElementSize(LIST_TYPE *l)
                 routine is called. If there is no memory result is
                 NULL.
  ------------------------------------------------------------------------*/
-static LIST_TYPE *CreateWithAllocator(const ContainerMemoryManager *allocator)
+static LIST_TYPE *CreateWithAllocator(const ContainerAllocator *allocator)
 {
     LIST_TYPE *result;
 
@@ -1615,7 +1615,7 @@ static LIST_TYPE *CreateWithAllocator(const ContainerMemoryManager *allocator)
 
 static LIST_TYPE *Create(void)
 {
-    return CreateWithAllocator(CurrentMemoryManager);
+    return CreateWithAllocator(CurrentAllocator);
 }
 
 static LIST_TYPE *InitializeWith(size_t n,CHARTYPE **Data)
@@ -1632,7 +1632,7 @@ static LIST_TYPE *InitializeWith(size_t n,CHARTYPE **Data)
     return result;
 }
 
-static LIST_TYPE *InitWithAllocator(LIST_TYPE *result,ContainerMemoryManager *allocator)
+static LIST_TYPE *InitWithAllocator(LIST_TYPE *result,ContainerAllocator *allocator)
 {
     memset(result,0,sizeof(LIST_TYPE));
     result->VTable = &INTERFACE;
@@ -1644,10 +1644,10 @@ static LIST_TYPE *InitWithAllocator(LIST_TYPE *result,ContainerMemoryManager *al
 
 static LIST_TYPE *Init(LIST_TYPE *result)
 {
-    return InitWithAllocator(result,CurrentMemoryManager);
+    return InitWithAllocator(result,CurrentAllocator);
 }
 
-static const ContainerMemoryManager *GetAllocator(LIST_TYPE *l)
+static const ContainerAllocator *GetAllocator(LIST_TYPE *l)
 {
     if (l == NULL)
         return NULL;

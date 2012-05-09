@@ -1319,24 +1319,41 @@ static BitString *Init(BitString *set, size_t bitlen)
 	memset(set,0,sizeof(BitString));
 	bytesiz = 8+bytesizeFromBitLen(bitlen);
 	bytesiz = roundup(bytesiz);
-	set->contents = CurrentMemoryManager->malloc(bytesiz);
+	set->contents = CurrentAllocator->malloc(bytesiz);
 	if (set->contents == NULL) {
 		return NULL;
 	}
 	memset(set->contents,0,bytesiz);
 	set->VTable = &iBitString;
-	set->Allocator = CurrentMemoryManager;
+	set->Allocator = CurrentAllocator;
 	set->capacity = bytesiz;
 	return set;
 }
 
-static const ContainerMemoryManager *GetAllocator(const BitString *b)
+static const ContainerAllocator *GetAllocator(const BitString *b)
 {
     if (b == NULL)
         return NULL;
     return b->Allocator;
 }
 
+static BitString *CreateWithAllocator(size_t bitlen,const ContainerAllocator *allocator)
+{
+	BitString *set,*result;
+
+	set = 	CurrentAllocator->malloc(sizeof(BitString));
+	if (set == NULL)
+		return NULL;
+	result = Init(set,bitlen);
+	if (result == NULL)
+		CurrentAllocator->free(set);
+	return result;
+}
+
+static BitString    *Create(size_t elementsize)
+{
+    return CreateWithAllocator(elementsize, CurrentAllocator);
+}
 
 BitStringInterface iBitString = {
 	GetCount,
@@ -1391,6 +1408,7 @@ BitStringInterface iBitString = {
 	Print,
 	Append,
 	Memset,
+	CreateWithAllocator,
 	Create,
 	Init,
 	GetData,
@@ -1399,18 +1417,3 @@ BitStringInterface iBitString = {
 	GetAllocator,
 };
 
-
-
-
-static BitString *Create(size_t bitlen)
-{
-	BitString *set,*result;
-
-	set = 	CurrentMemoryManager->malloc(sizeof(BitString));
-	if (set == NULL)
-		return NULL;
-	result = Init(set,bitlen);
-	if (result == NULL)
-		CurrentMemoryManager->free(set);
-	return result;
-}

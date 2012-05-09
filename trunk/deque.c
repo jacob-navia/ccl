@@ -22,7 +22,7 @@ struct deque_t {
     DlistElement *tail;
     CompareFunction compare;
     ErrorFunction RaiseError;   /* Error function */
-    ContainerMemoryManager *Allocator;
+    ContainerAllocator *Allocator;
     unsigned timestamp;
     DestructorFunction DestructorFn;
 };
@@ -48,13 +48,13 @@ static Deque * Init(Deque *d, size_t elementsize)
 
     d->ElementSize = elementsize;
     d->VTable =&iDeque;
-    d->Allocator = CurrentMemoryManager;
+    d->Allocator = CurrentAllocator;
     return d;
 }
 
 static Deque * Create(size_t elementsize) 
 {
-    Deque * d = CurrentMemoryManager->malloc(sizeof(struct deque_t));
+    Deque * d = CurrentAllocator->malloc(sizeof(struct deque_t));
     if (d == NULL)	{
     	iError.RaiseError("iDeque.Create",CONTAINER_ERROR_BADARG);
     	return NULL;

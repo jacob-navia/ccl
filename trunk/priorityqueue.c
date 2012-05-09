@@ -18,22 +18,13 @@ that maintains the heap property, that is, where key(parent) ≤ key(child)
 for all nodes in the tree.
 */
 #include "containers.h"
-
-struct FibHeapElement;
-
-/* functions for key heaps */
-PQueue *Create(size_t ElementSize);
+static PQueue *Create(size_t ElementSize);
 static int Add(PQueue *, intptr_t, void *);
 static intptr_t Front(PQueue *,void *result);
-static intptr_t Replace(PQueue *, struct FibHeapElement *, intptr_t);
-void *fh_replacekeydata(PQueue *, struct FibHeapElement *, intptr_t, void *);
+static intptr_t Replace(PQueue *, PQueueElement *, intptr_t);
 
-/* shared functions */
-static void *fh_extractmin(PQueue *);
 static int Finalize(PQueue *);
 static PQueue *Union(PQueue *, PQueue *);
-
-struct FibHeapElement;
 
 /*
 A Fibonacci heap H is a collection of heap-ordered trees that have the 
@@ -52,34 +43,21 @@ struct _PQueue {
     size_t count;
     unsigned Flags;
     size_t ElementSize;
-    int    fh_Dl;
-    struct    FibHeapElement **lognTable;
-    struct    FibHeapElement *fh_min;
-    struct    FibHeapElement *fh_root;
+    int    Log2N;
+    struct    _PQueueElement **lognTable;
+    struct    _PQueueElement *Minimum;
+    struct    _PQueueElement *Root;
     ContainerHeap *Heap;
     unsigned timestamp;
-    ContainerMemoryManager *Allocator;
+    ContainerAllocator *Allocator;
 };
 
-static void fh_insertrootlist(PQueue *, struct FibHeapElement *);
-static void fh_removerootlist(PQueue *, struct FibHeapElement *);
-static int fh_consolidate(PQueue *);
-static void fh_heaplink(PQueue *h, struct FibHeapElement *y, struct FibHeapElement *x);
-static void fh_cut(PQueue *, struct FibHeapElement *, struct FibHeapElement *);
-static void fh_cascading_cut(PQueue *, struct FibHeapElement *);
-static struct FibHeapElement *ExtractMin(PQueue *);
-static int fh_checkcons(PQueue *h);
-static void fh_destroyheap(PQueue *h);
-static int fh_compare(PQueue *h, struct FibHeapElement *a, struct FibHeapElement *b);
-static int fh_comparedata(PQueue *h, int key, void *data, struct FibHeapElement *b);
-static void fh_insertel(PQueue *h, struct FibHeapElement *x);
-static void fh_deleteel(PQueue *h, struct FibHeapElement *x);
+static void Cut(PQueue *, PQueueElement *, PQueueElement *);
+static PQueueElement *ExtractMin(PQueue *);
+static void DeleteElement(PQueue *h, PQueueElement *x);
 
-/*
- * specific node operations
- */
-struct FibHeapElement {
-    int    degree;
+struct _PQueueElement {
+    int        degree;
 /*
 We say that x is marked if its mark is set to true, and that it is unmarked 
 if its mark is set to false. A root is always unmarked. We mark x if it is 
@@ -92,24 +70,16 @@ that node as well. Whenever we promote a marked node, we
 unmark it; this is the only way to unmark a node (if splicing 
 nodes into the root list during a delete-min is not considered a promotion).
 */
-    int    Mark;
-    struct    FibHeapElement *Parent;
-    struct    FibHeapElement *Child;
-    struct    FibHeapElement *Left;
-    struct    FibHeapElement *Right;
+    int        Mark;
+    PQueueElement *Parent;
+    PQueueElement *Child;
+    PQueueElement *Left;
+    PQueueElement *Right;
     intptr_t    Key;
     char Data[1];
 };
 
-static struct FibHeapElement *NewElement(PQueue *);
-static void fhe_insertafter(struct FibHeapElement *a, struct FibHeapElement *b);
-static inline void fhe_insertbefore(struct FibHeapElement *a, struct FibHeapElement *b);
-static struct FibHeapElement *fhe_remove(struct FibHeapElement *a);
-#define    fhe_destroy(x)    free((x))
-
-/*
- * general functions
- */
+static PQueueElement *NewElement(PQueue *);
 
 #define swap(type, a, b)        \
         do {            \
@@ -119,6 +89,7 @@ static struct FibHeapElement *fhe_remove(struct FibHeapElement *a);
             b = c;        \
         } while (0)        \
 
+#if SLOW
 #define INT_BITS        (sizeof(int) * 8)
 static int ceillog2(unsigned int a)
 {
@@ -143,72 +114,105 @@ static int ceillog2(unsigned int a)
     else
         return i + 1;
 }
-
-/*
- * Private Heap Functions
- */
-static void fh_deleteel(PQueue *h, struct FibHeapElement *x)
+#else
+// http://graphics.stanford.edu/~seander/bithacks.html
+#define SYSTEM_LITTLE_ENDIAN 1
+static int ceillog2(unsigned v)
 {
+    union { unsigned int u[2]; double d; } t; // temp
+
+    t.u[SYSTEM_LITTLE_ENDIAN] = 0x43300000;
+    t.u[!SYSTEM_LITTLE_ENDIAN] = v;
+    t.d -= 4503599627370496.0;
+    return  ((t.u[SYSTEM_LITTLE_ENDIAN] >> 20) - 0x3FF) + ((v&(v-1))!=0);
+}
+
+#endif
+static void DeleteElement(PQueue *h, PQueueElement *x)
+{
+    void *data;
+    intptr_t key;
+
+    data = x->Data;
+    key = x->Key;
+
     Replace(h, x, INT_MIN);
     if (ExtractMin(h) != x) {
-        /*
-         * XXX - This should never happen as fh_replace should set it
-         * to min.
-         */
         abort();
     }
 }
 
 
-static void fh_destroyheap(PQueue *h)
+static void destroyheap(PQueue *h)
 {
     free(h->lognTable);
     free(h);
 }
 
-static PQueue *CreateWithAllocator(size_t ElementSize,ContainerMemoryManager *allocator)
+static PQueue *CreateWithAllocator(size_t ElementSize,ContainerAllocator *allocator)
 {
     PQueue *n;
 
     if ((n = allocator->calloc(1,sizeof *n)) == NULL)
         return NULL;
 
-    n->fh_Dl = -1;
+    n->Log2N = -1;
     n->ElementSize = ElementSize;
-    n->Heap = iHeap.Create(n->ElementSize + sizeof(struct FibHeapElement), allocator);
+    n->Heap = iHeap.Create(n->ElementSize + sizeof(PQueueElement), allocator);
     n->Allocator = allocator;
     return n;
 }
 
-PQueue *Union(PQueue *ha, PQueue *hb)
+static PQueue *Create(size_t ElementSize)
 {
-    struct FibHeapElement *x;
+    return CreateWithAllocator(ElementSize, CurrentAllocator);
+}
+static int compare(PQueue *h, PQueueElement *a, PQueueElement *b)
+{
+        if (a->Key < b->Key)
+            return -1;
+        if (a->Key == b->Key)
+            return 0;
+        return 1;
+}
+static int comparedata(PQueue *h, int key, void *data, PQueueElement *b)
+{
+    PQueueElement a;
 
-    if (ha->fh_root == NULL || hb->fh_root == NULL) {
+    a.Key = key;
+
+    return compare(h, &a, b);
+}
+
+static PQueue *Union(PQueue *ha, PQueue *hb)
+{
+    PQueueElement *x;
+
+    if (ha->Root == NULL || hb->Root == NULL) {
         /* either one or both are empty */
-        if (ha->fh_root == NULL) {
-            fh_destroyheap(ha);
+        if (ha->Root == NULL) {
+            destroyheap(ha);
             return hb;
         } else {
-            fh_destroyheap(hb);
+            destroyheap(hb);
             return ha;
         }
     }
-    ha->fh_root->Left->Right = hb->fh_root;
-    hb->fh_root->Left->Right = ha->fh_root;
-    x = ha->fh_root->Left;
-    ha->fh_root->Left = hb->fh_root->Left;
-    hb->fh_root->Left = x;
+    ha->Root->Left->Right = hb->Root;
+    hb->Root->Left->Right = ha->Root;
+    x = ha->Root->Left;
+    ha->Root->Left = hb->Root->Left;
+    hb->Root->Left = x;
     ha->count += hb->count;
     /*
      * we probably should also keep stats on number of unions
      */
 
-    /* set fh_min if necessary */
-    if (fh_compare(ha, hb->fh_min, ha->fh_min) < 0)
-        ha->fh_min = hb->fh_min;
+    /* set Minimum if necessary */
+    if (compare(ha, hb->Minimum, ha->Minimum) < 0)
+        ha->Minimum = hb->Minimum;
 
-    fh_destroyheap(hb);
+    destroyheap(hb);
     return ha;
 }
 
@@ -219,9 +223,45 @@ static int Finalize(PQueue *h)
     return 1;
 }
 
+static void insertafter(PQueueElement *a, PQueueElement *b)
+{
+    if (a == a->Right) {
+        a->Right = b;
+        a->Left = b;
+        b->Right = a;
+        b->Left = a;
+    } else {
+        b->Right = a->Right;
+        a->Right->Left = b;
+        a->Right = b;
+        b->Left = a;
+    }
+}
+
+static void insertrootlist(PQueue *h, PQueueElement *x)
+{
+    if (h->Root == NULL) {
+        h->Root = x;
+        x->Left = x;
+        x->Right = x;
+        return;
+    }
+
+    insertafter(h->Root, x);
+}
+static void insertel(PQueue *h, PQueueElement *x)
+{
+    insertrootlist(h, x);
+
+    if (h->Minimum == NULL || (x->Key < h->Minimum->Key))
+        h->Minimum = x;
+
+    h->count++;
+    h->timestamp++;
+}
 static int Add(PQueue *h, intptr_t key, void *data)
 {
-    struct FibHeapElement *x;
+    PQueueElement *x;
 
     if ((x = NewElement(h)) == NULL) {
         return iError.NullPtrError("iPQueue.Add");
@@ -231,34 +271,38 @@ static int Add(PQueue *h, intptr_t key, void *data)
     if (data) memcpy(x->Data , data,h->ElementSize);
     x->Key = key;
 
-    fh_insertel(h, x);
+    insertel(h, x);
 
     return 1;
 }
 
 static intptr_t Front(PQueue *h,void *result)
 {
-    if (h->fh_min == NULL)
+    if (h->Minimum == NULL)
         return INT_MIN;
-    memcpy(result,h->fh_min->Data,h->ElementSize);
-    return h->fh_min->Key;
+    memcpy(result,h->Minimum->Data,h->ElementSize);
+    return h->Minimum->Key;
 }
 
-intptr_t Replace(PQueue *h, struct FibHeapElement *x, intptr_t key)
+static void CascadingCut(PQueue *h, PQueueElement *y)
 {
-    intptr_t ret;
+    PQueueElement *z;
 
-    ret = x->Key;
-    (void)fh_replacekeydata(h, x, key, x->Data);
-
-    return ret;
+    while ((z = y->Parent) != NULL) {
+        if (y->Mark == 0) {
+            y->Mark = 1;
+            return;
+        } else {
+            Cut(h, y, z);
+            y = z;
+        }
+    }
 }
-
-void * fh_replacekeydata(PQueue *h, struct FibHeapElement *x, intptr_t key, void *data)
+static void * ReplaceKeyData(PQueue *h, PQueueElement *x, intptr_t key, void *data)
 {
     void *odata;
     int okey;
-    struct FibHeapElement *y;
+    PQueueElement *y;
     int r;
 
     odata = x->Data;
@@ -268,15 +312,16 @@ void * fh_replacekeydata(PQueue *h, struct FibHeapElement *x, intptr_t key, void
      * we can increase a key by deleting and reinserting, that
      * requires O(lgn) time.
      */
-    if ((r = fh_comparedata(h, key, data, x)) > 0) {
+    if ((r = comparedata(h, key, data, x)) > 0) {
+
         /* XXX - bad code! */
         abort();
-        fh_deleteel(h, x);
+        DeleteElement(h, x);
 
         if (data) memcpy(x->Data , data,h->ElementSize);
         x->Key = key;
 
-        fh_insertel(h, x);
+        insertel(h, x);
 
         return odata;
     }
@@ -293,235 +338,33 @@ void * fh_replacekeydata(PQueue *h, struct FibHeapElement *x, intptr_t key, void
     if (okey == key)
         return odata;
 
-    if (y != NULL && fh_compare(h, x, y) <= 0) {
-        fh_cut(h, x, y);
-        fh_cascading_cut(h, y);
+    if (y != NULL && compare(h, x, y) <= 0) {
+        Cut(h, x, y);
+        CascadingCut(h, y);
     }
 
     /*
-     * the = is so that the call from fh_delete will delete the proper
+     * the = is so that the call from delete will delete the proper
      * element.
      */
-    if (fh_compare(h, x, h->fh_min) <= 0)
-        h->fh_min = x;
+    if (compare(h, x, h->Minimum) <= 0)
+        h->Minimum = x;
 
     return odata;
 }
 
-void * fh_extractmin(PQueue *h)
+intptr_t Replace(PQueue *h, PQueueElement *x, intptr_t key)
 {
-    struct FibHeapElement *z;
-    void *ret;
+    intptr_t ret;
 
-    ret = NULL;
-
-    if (h->fh_min != NULL) {
-        z = ExtractMin(h);
-        ret = z->Data;
-        fhe_destroy(z);
-    }
+    ret = x->Key;
+    (void)ReplaceKeyData(h, x, key, x->Data);
 
     return ret;
 }
-
-/*
-First, we remove the minimum key from the root list and splice its 
-children into the root list. Except for updating the parent pointers, 
-this takes O(1) time. Then we scan through the root list to find the 
-new smallest key and update the parent pointers of the new roots. 
-This scan could take O(n) time in the worst case. To bring down the 
-amortized deletion time (see further on), we apply a Cleanup 
-algorithm, which links trees of equal degree until there is only one 
-root node of any particular degree.
-*/
-static struct FibHeapElement * ExtractMin(PQueue *h)
+static PQueueElement *removeNode(PQueueElement *x)
 {
-    struct FibHeapElement *ret;
-    struct FibHeapElement *x, *y, *orig;
-
-    ret = h->fh_min;
-
-    orig = NULL;
-    /* put all the children on the root list */
-    /* for true consistancy, we should use fhe_remove */
-    for(x = ret->Child; x != orig && x != NULL;) {
-        if (orig == NULL)
-            orig = x;
-        y = x->Right;
-        x->Parent = NULL;
-        fh_insertrootlist(h, x);
-        x = y;
-    }
-    /* remove minimum from root list */
-    fh_removerootlist(h, ret);
-    h->count--;
-
-    /* if we aren't empty, consolidate the heap */
-    if (h->count == 0)
-        h->fh_min = NULL;
-    else {
-        h->fh_min = ret->Right;
-        fh_consolidate(h);
-    }
-
-    h->timestamp++;
-
-    return ret;
-}
-
-static void fh_insertrootlist(PQueue *h, struct FibHeapElement *x)
-{
-    if (h->fh_root == NULL) {
-        h->fh_root = x;
-        x->Left = x;
-        x->Right = x;
-        return;
-    }
-
-    fhe_insertafter(h->fh_root, x);
-}
-
-static void fh_removerootlist(PQueue *h, struct FibHeapElement *x)
-{
-    if (x->Left == x)
-        h->fh_root = NULL;
-    else
-        h->fh_root = fhe_remove(x);
-}
-
-
-static void fh_heaplink(PQueue *h, struct FibHeapElement *y, struct FibHeapElement *x)
-{
-    /* make y a child of x */
-    if (x->Child == NULL)
-        x->Child = y;
-    else
-        fhe_insertbefore(x->Child, y);
-    y->Parent = x;
-    x->degree++;
-    y->Mark = 0;
-}
-
-/*
-This algorithm maintains a global array B[1...⌊logn⌋], where B[i] is a 
-pointer to some previously-visited root node of degree i, or Null if 
-there is no such previously- visited root node. 
-
-Notice, the Cleanup algorithm simultaneously resets the parent pointers 
-of all the new roots and updates the pointer to the minimum key. The 
-part of the algorithm that links possible nodes of equal degree is given 
-in a separate subroutine LinkDupes. The subroutine
-ensures that no earlier root node has the same degree as the current. 
-By the possible swapping of the nodes v and w, we maintain the heap 
-property.
-*/
-static int fh_consolidate(PQueue *h)
-{
-    struct FibHeapElement **B;
-    struct FibHeapElement *w;
-    struct FibHeapElement *y;
-    struct FibHeapElement *x;
-    int i;
-    int degree;
-    int D;
-
-    i = fh_checkcons(h);
-    if (i < 0) return i;
-
-    D = h->fh_Dl + 1;
-    B = h->lognTable;
-
-    for (i = 0; i < D; i++)
-        B[i] = NULL;
-
-    while ((w = h->fh_root) != NULL) {
-        x = w;
-        fh_removerootlist(h, w);
-        degree = x->degree;
-        /* Assert(degree < D); */
-        while(B[degree] != NULL) {
-            y = B[degree];
-            if (fh_compare(h, x, y) > 0)
-                swap(struct FibHeapElement *, x, y);
-            fh_heaplink(h, y, x);
-            B[degree] = NULL;
-            degree++;
-        }
-        B[degree] = x;
-    }
-    h->fh_min = NULL;
-    for (i = 0; i < D; i++)
-        if (B[i] != NULL) {
-            fh_insertrootlist(h, B[i]);
-            if (h->fh_min == NULL || fh_compare(h, B[i],
-                h->fh_min) < 0)
-                h->fh_min = B[i];
-        }
-    return 1;
-}
-
-static void fh_cut(PQueue *h, struct FibHeapElement *x, struct FibHeapElement *y)
-{
-    fhe_remove(x);
-    y->degree--;
-    fh_insertrootlist(h, x);
-    x->Parent = NULL;
-    x->Mark = 0;
-}
-
-static void fh_cascading_cut(PQueue *h, struct FibHeapElement *y)
-{
-    struct FibHeapElement *z;
-
-    while ((z = y->Parent) != NULL) {
-        if (y->Mark == 0) {
-            y->Mark = 1;
-            return;
-        } else {
-            fh_cut(h, y, z);
-            y = z;
-        }
-    }
-}
-
-static struct FibHeapElement * NewElement(PQueue *h)
-{
-    struct FibHeapElement *e;
-
-    e = iHeap.newObject(h->Heap);
-    if (e == NULL) 
-        return NULL;
-
-    memset(e,0,sizeof(*e));
-    e->Left = e;
-    e->Right = e;
-    return e;
-}
-
-
-static void fhe_insertafter(struct FibHeapElement *a, struct FibHeapElement *b)
-{
-    if (a == a->Right) {
-        a->Right = b;
-        a->Left = b;
-        b->Right = a;
-        b->Left = a;
-    } else {
-        b->Right = a->Right;
-        a->Right->Left = b;
-        a->Right = b;
-        b->Left = a;
-    }
-}
-
-static inline void fhe_insertbefore(struct FibHeapElement *a, struct FibHeapElement *b)
-{
-    fhe_insertafter(a->Left, b);
-}
-
-static struct FibHeapElement * fhe_remove(struct FibHeapElement *x)
-{
-    struct FibHeapElement *ret;
+    PQueueElement *ret;
 
     if (x == x->Left)
         ret = NULL;
@@ -543,18 +386,44 @@ static struct FibHeapElement * fhe_remove(struct FibHeapElement *x)
     return ret;
 }
 
-static int fh_checkcons(PQueue *h)
+static void removerootlist(PQueue *h, PQueueElement *x)
+{
+    if (x->Left == x)
+        h->Root = NULL;
+    else
+        h->Root = removeNode(x);
+}
+
+
+static inline void insertbefore(PQueueElement *a, PQueueElement *b)
+{
+    insertafter(a->Left, b);
+}
+
+static void heaplink(PQueue *h, PQueueElement *y, PQueueElement *x)
+{
+    /* make y a child of x */
+    if (x->Child == NULL)
+        x->Child = y;
+    else
+        insertbefore(x->Child, y);
+    y->Parent = x;
+    x->degree++;
+    y->Mark = 0;
+}
+
+static int checkcons(PQueue *h)
 {
     int oDl;
 
     /* make sure we have enough memory allocated to "reorganize" */
-    if (h->fh_Dl == -1 || h->count > (1 << h->fh_Dl)) {
-        oDl = h->fh_Dl;
-        if ((h->fh_Dl = ceillog2(h->count) + 1) < 8)
-            h->fh_Dl = 8;
-        if (oDl != h->fh_Dl)
-            h->lognTable = (struct FibHeapElement **)realloc(h->lognTable,
-                sizeof *h->lognTable * (h->fh_Dl + 1));
+    if (h->Log2N == -1 || h->count > (1 << h->Log2N)) {
+        oDl = h->Log2N;
+        if ((h->Log2N = ceillog2(h->count) + 1) < 8)
+            h->Log2N = 8;
+        if (oDl != h->Log2N)
+            h->lognTable = (PQueueElement **)realloc(h->lognTable,
+                sizeof *h->lognTable * (h->Log2N + 1));
         if (h->lognTable == NULL) {
             iError.RaiseError("iPriorityQueue.Add",CONTAINER_ERROR_NOMEMORY);
             return CONTAINER_ERROR_NOMEMORY;
@@ -562,187 +431,220 @@ static int fh_checkcons(PQueue *h)
     }
     return 1;
 }
+/*
+This algorithm maintains a global array B[1...⌊logn⌋], where B[i] is a 
+pointer to some previously-visited root node of degree i, or Null if 
+there is no such previously- visited root node. 
 
-static int fh_compare(PQueue *h, struct FibHeapElement *a, struct FibHeapElement *b)
+Notice, the Cleanup algorithm simultaneously resets the parent pointers 
+of all the new roots and updates the pointer to the minimum key. The 
+part of the algorithm that links possible nodes of equal degree is given 
+in a separate subroutine LinkDupes. The subroutine
+ensures that no earlier root node has the same degree as the current. 
+By the possible swapping of the nodes v and w, we maintain the heap 
+property.
+*/
+static int consolidate(PQueue *h)
 {
-        if (a->Key < b->Key)
-            return -1;
-        if (a->Key == b->Key)
-            return 0;
-        return 1;
+    PQueueElement **B;
+    PQueueElement *w;
+    PQueueElement *y;
+    PQueueElement *x;
+    int i;
+    int degree;
+    int D;
+
+    i = checkcons(h);
+    if (i < 0) return i;
+
+    D = h->Log2N + 1;
+    B = h->lognTable;
+
+    for (i = 0; i < D; i++)
+        B[i] = NULL;
+
+    while ((w = h->Root) != NULL) {
+        x = w;
+        removerootlist(h, w);
+        degree = x->degree;
+        /* Assert(degree < D); */
+        while(B[degree] != NULL) {
+            y = B[degree];
+            if (compare(h, x, y) > 0)
+                swap(PQueueElement *, x, y);
+            heaplink(h, y, x);
+            B[degree] = NULL;
+            degree++;
+        }
+        B[degree] = x;
+    }
+    h->Minimum = NULL;
+    for (i = 0; i < D; i++)
+        if (B[i] != NULL) {
+            insertrootlist(h, B[i]);
+            if (h->Minimum == NULL || compare(h, B[i], h->Minimum) < 0)
+                h->Minimum = B[i];
+        }
+    return 1;
 }
-
-static int fh_comparedata(PQueue *h, int key, void *data, struct FibHeapElement *b)
+/*
+First, we remove the minimum key from the root list and splice its 
+children into the root list. Except for updating the parent pointers, 
+this takes O(1) time. Then we scan through the root list to find the 
+new smallest key and update the parent pointers of the new roots. 
+This scan could take O(n) time in the worst case. To bring down the 
+amortized deletion time (see further on), we apply a Cleanup 
+algorithm, which links trees of equal degree until there is only one 
+root node of any particular degree.
+*/
+static PQueueElement * ExtractMin(PQueue *h)
 {
-    struct FibHeapElement a;
+    PQueueElement *ret;
+    PQueueElement *x, *y, *orig;
 
-    a.Key = key;
+    ret = h->Minimum;
 
-    return fh_compare(h, &a, b);
-}
+    orig = NULL;
+    /* put all the children on the root list */
+    /* for true consistancy, we should use remove */
+    for(x = ret->Child; x != orig && x != NULL;) {
+        if (orig == NULL)
+            orig = x;
+        y = x->Right;
+        x->Parent = NULL;
+        insertrootlist(h, x);
+        x = y;
+    }
+    /* remove minimum from root list */
+    removerootlist(h, ret);
+    h->count--;
 
-static void fh_insertel(PQueue *h, struct FibHeapElement *x)
-{
-    fh_insertrootlist(h, x);
+    /* if we aren't empty, consolidate the heap */
+    if (h->count == 0)
+        h->Minimum = NULL;
+    else {
+        h->Minimum = ret->Right;
+        consolidate(h);
+    }
 
-    if (h->fh_min == NULL || (x->Key < h->fh_min->Key))
-        h->fh_min = x;
-
-    h->count++;
     h->timestamp++;
+
+    return ret;
 }
+
+
+static void Cut(PQueue *h, PQueueElement *x, PQueueElement *y)
+{
+    removeNode(x);
+    y->degree--;
+    insertrootlist(h, x);
+    x->Parent = NULL;
+    x->Mark = 0;
+}
+
+static PQueueElement * NewElement(PQueue *h)
+{
+    PQueueElement *e;
+
+    e = iHeap.newObject(h->Heap);
+    if (e == NULL) 
+        return NULL;
+
+    memset(e,0,sizeof(*e));
+    e->Left = e;
+    e->Right = e;
+    return e;
+}
+
 
 static size_t Size(PQueue *p)
 {
-	if (p == NULL)
-		return 0;
-	return p->count;
+    if (p == NULL)
+        return 0;
+    return p->count;
 }
 
 static size_t Sizeof(PQueue *p)
 {
-	size_t result = sizeof(PQueue);
+    size_t result = sizeof(PQueue);
 
-	if (p) {
-		result += p->count * sizeof(PQueue);
-	}
-	return result;
+    if (p) {
+        result += p->count * sizeof(PQueue);
+    }
+    return result;
 }
 
 static int Clear(PQueue *p)
 {
-	if (p == NULL) return 0;
-	p->count = 0;
-	return 1;
+    if (p == NULL) return 0;
+    p->count = 0;
+    return 1;
 }
 
 static intptr_t Pop(PQueue *p,void *result)
 {
-	struct FibHeapElement *x = ExtractMin(p);
+    PQueueElement *x = ExtractMin(p);
 
-	if (x == NULL) return INT_MAX;
-	if (result) memcpy(result,x->Data,p->ElementSize);
-	return x->Key;
+    if (x == NULL) return INT_MAX;
+    if (result) memcpy(result,x->Data,p->ElementSize);
+    return x->Key;
 }
 
-PQueue *Copy(PQueue *src)
+static PQueue *Copy(PQueue *src)
 {
-	PQueue *result;
-	Iterator *it;
-	int r;
-	struct FibHeapElement *obj;
+    PQueue *result;
+    Iterator *it;
+    int r;
+    PQueueElement *obj;
 
-	if (src == NULL) return NULL;
-	result = CreateWithAllocator(src->ElementSize,src->Allocator);
-	if (result == NULL) return NULL;
-	it = iHeap.NewIterator(src->Heap);
-	for (obj = it->GetFirst(it); obj != NULL; it = it->GetNext(it)) {
-		r = Add(result,obj->Key,obj->Data);
-		if (r < 0) {
-			Finalize(result);
-			return NULL;
-		}
-	}
-	iHeap.deleteIterator(it);
-	return result;
+    if (src == NULL) return NULL;
+    result = CreateWithAllocator(src->ElementSize,src->Allocator);
+    if (result == NULL) return NULL;
+    it = iHeap.NewIterator(src->Heap);
+    for (obj = it->GetFirst(it); obj != NULL; it = it->GetNext(it)) {
+        r = Add(result,obj->Key,obj->Data);
+        if (r < 0) {
+            Finalize(result);
+            return NULL;
+        }
+    }
+    iHeap.deleteIterator(it);
+    return result;
+}
+
+static PQueueElement *FindInLevel(PQueueElement *root,intptr_t key)
+{
+    PQueueElement *x;
+    
+    if (root == NULL) return NULL;
+    x = root->Right;
+    while (x != root) {
+        if (x->Key == key) return x;
+        x = x->Right;
+    }
+    return FindInLevel(x->Child, key);
+}
+
+
+static void *Find(PQueue *p,intptr_t key)
+{
+    PQueueElement *x;
+    
+    x = FindInLevel(p->Root,key);
+    return x;
 }
 
 PQueueInterface iPriorityQueue = {
-	Size,
-	Create,
-	CreateWithAllocator,
-	Sizeof,
-	Add,
-	Clear,
-	Finalize,
-	Pop,
-	Front,
-	Copy,
-	Union,
+    Size,
+    Create,
+    CreateWithAllocator,
+    Sizeof,
+    Add,
+    Clear,
+    Finalize,
+    Pop,
+    Front,
+    Copy,
+    Union,
+//  ReplaceKeyData,
 };
-#ifdef TEST
-
-#include <stdio.h>
-#include <stdlib.h>
-
-void testreplace(void)
-{
-	PQueue *a;
-	void *arr[10];
-	int i;
-
-	a = Create(sizeof(intptr_t));
-	
-	for (i=1 ; i < 10 ; i++)
-	  {
-              arr[i]= fh_insertkey(a,i,NULL);
-	      printf("adding: 0 %d \n",i);
-	  }
-     
-	printf(" \n");
-	 Replace(a, arr[1],-1);
-         Replace(a, arr[6],-1);
-	 Replace(a, arr[4],-1);
-         Replace(a, arr[2],-1); 
-         Replace(a, arr[8],-1); 
-	  
-        printf("value(minkey) %d\n",Front(a));
-	printf("id: %d\n\n", (int)fh_extractmin(a));          
-     
-	 Replace(a, arr[7],-33);
-/* -> node 7 becomes root node, but is still pointed to by node 6 */
-         Replace(a, arr[4],-36);
-	 Replace(a, arr[3],-1);
-         Replace(a, arr[9],-81); 	
-	
-        printf("value(minkey) %d\n",Front(a));
-        printf("id: %d\n\n", (int)fh_extractmin(a));
-	
-	 Replace(a, arr[6],-68);
-         Replace(a, arr[2],-69);
-
-        printf("value(minkey) %d\n",Front(a));
-        printf("id: %d\n\n", (int)fh_extractmin(a));
-
-	 Replace(a, arr[1],-52);
-         Replace(a, arr[3],-2);
-	 Replace(a, arr[4],-120);
-         Replace(a, arr[5],-48); 	
-
-        printf("value(minkey) %d\n",Front(a));
-	printf("id: %d\n\n", (int)fh_extractmin(a));
-
-	 Replace(a, arr[3],-3);
-         Replace(a, arr[5],-63);
-
-        printf("value(minkey) %d\n",Front(a));
-	printf("id: %d\n\n", (int)fh_extractmin(a));
-
-	 Replace(a, arr[5],-110);
-         Replace(a, arr[7],-115);
-
-        printf("value(minkey) %d\n",Front(a));
-	printf("id: %d\n\n", (int)fh_extractmin(a));
-
-         Replace(a, arr[5],-188);
-
-        printf("value(minkey) %d\n",Front(a));
-	printf("id: %d\n\n", (int)fh_extractmin(a));
-
-         Replace(a, arr[3],-4);
-
-        printf("value(minkey) %d\n",Front(a));
-	printf("id: %d\n\n", (int)fh_extractmin(a));
-	
-        printf("value(minkey) %d\n",Front(a));
-        printf("id: %d\n\n", (int)fh_extractmin(a));
-
-	Finalize(a);
-
-}
-
-int main(void)
-{
-    testreplace();
-}
-#endif

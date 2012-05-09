@@ -106,7 +106,7 @@ static void *Calloc(size_t n,size_t siz)
 	return Malloc(totalSize);
 }
 
-ContainerMemoryManager iDebugMalloc = {
+ContainerAllocator iDebugMalloc = {
 Malloc,
 Free,
 Realloc,

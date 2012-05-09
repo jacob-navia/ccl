@@ -955,7 +955,7 @@ static size_t GetElementSize(const DICTIONARY *d)
     return d->ElementSize;
 }
 
-static const ContainerMemoryManager *GetAllocator(const DICTIONARY *AL)
+static const ContainerAllocator *GetAllocator(const DICTIONARY *AL)
 {
     if (AL == NULL) {
         return NULL;
@@ -973,7 +973,7 @@ static const ContainerMemoryManager *GetAllocator(const DICTIONARY *AL)
  Output:        A pointer to a newly allocated table
  Errors:        If no more memory is available returns NULL
  ------------------------------------------------------------------------*/
-static DICTIONARY *InitWithAllocator(DICTIONARY *Dict,size_t elementsize,size_t hint,const ContainerMemoryManager *allocator)
+static DICTIONARY *InitWithAllocator(DICTIONARY *Dict,size_t elementsize,size_t hint,const ContainerAllocator *allocator)
 {
     size_t i,allocSiz;
     static size_t primes[] = { 509, 509, 1021, 2053, 4093, 8191, 16381,
@@ -999,10 +999,10 @@ static DICTIONARY *InitWithAllocator(DICTIONARY *Dict,size_t elementsize,size_t 
 
 static DICTIONARY *Init(DICTIONARY *dict,size_t elementsize,size_t hint)
 {
-    return InitWithAllocator(dict, elementsize, hint, CurrentMemoryManager);
+    return InitWithAllocator(dict, elementsize, hint, CurrentAllocator);
 }
 
-static DICTIONARY *CreateWithAllocator(size_t elementsize,size_t hint,const ContainerMemoryManager *allocator)
+static DICTIONARY *CreateWithAllocator(size_t elementsize,size_t hint,const ContainerAllocator *allocator)
 {
     DICTIONARY *Dict,*result;
 
@@ -1019,7 +1019,7 @@ static DICTIONARY *CreateWithAllocator(size_t elementsize,size_t hint,const Cont
 }
 static DICTIONARY *Create(size_t elementsize,size_t hint)
 {
-    return CreateWithAllocator(elementsize,hint,CurrentMemoryManager);
+    return CreateWithAllocator(elementsize,hint,CurrentAllocator);
 }
 
 static DICTIONARY *InitializeWith(size_t elementSize,size_t n, const CHARTYPE **Keys,const void *Values)
