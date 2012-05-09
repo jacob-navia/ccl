@@ -807,7 +807,7 @@ static int Finalize(Vector *AL)
 	return result;
 }
 
-static const ContainerMemoryManager *GetAllocator(const Vector *AL)
+static const ContainerAllocator *GetAllocator(const Vector *AL)
 {
 	if (AL == NULL) {
 		return NULL;
@@ -1510,7 +1510,7 @@ static Vector *Load(FILE *stream, ReadFunction loadFn,void *arg)
 
 
 
-static Vector *CreateWithAllocator(size_t elementsize,size_t startsize,const ContainerMemoryManager *allocator)
+static Vector *CreateWithAllocator(size_t elementsize,size_t startsize,const ContainerAllocator *allocator)
 {
 	Vector *result;
 	size_t es;
@@ -1538,14 +1538,14 @@ static Vector *CreateWithAllocator(size_t elementsize,size_t startsize,const Con
 		result->ElementSize = elementsize;
 		result->CompareFn = DefaultVectorCompareFunction;
 		result->RaiseError = iError.RaiseError;
-		result->Allocator = (ContainerMemoryManager *)allocator;
+		result->Allocator = (ContainerAllocator *)allocator;
 	}
 	return result;
 }
 
 static Vector *Create(size_t elementsize,size_t startsize)
 {
-	return CreateWithAllocator(elementsize,startsize,CurrentMemoryManager);
+	return CreateWithAllocator(elementsize,startsize,CurrentAllocator);
 }
 
 static Vector *InitializeWith(size_t elementSize,size_t n,const void *data)
@@ -1593,7 +1593,7 @@ static Vector *Init(Vector *result,size_t elementsize,size_t startsize)
 	if (startsize == 0)
 		startsize = DEFAULT_START_SIZE;
 	es = startsize * elementsize;
-	result->contents = CurrentMemoryManager->malloc(es);
+	result->contents = CurrentAllocator->malloc(es);
 	if (result->contents == NULL) {
 		iError.RaiseError("iVector.Init",CONTAINER_ERROR_NOMEMORY);
 		result = NULL;
@@ -1605,7 +1605,7 @@ static Vector *Init(Vector *result,size_t elementsize,size_t startsize)
 		result->ElementSize = elementsize;
 		result->CompareFn = DefaultVectorCompareFunction;
 		result->RaiseError = iError.RaiseError;
-		result->Allocator = CurrentMemoryManager;
+		result->Allocator = CurrentAllocator;
 	}
 	return result;
 }

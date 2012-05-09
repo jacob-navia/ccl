@@ -108,7 +108,7 @@ typedef struct {
 
 
 /** Create a new pool. */
-static Pool *newPool(ContainerMemoryManager *m);
+static Pool *newPool(ContainerAllocator *m);
 
 /**
  * Clear all memory in the pool and run all the cleanups. This also destroys all
@@ -145,7 +145,7 @@ static void *PoolAlloc(Pool *p, size_t size);
  * @remark Any memnodes not given back to the allocator prior to destroying
  *         will _not_ be free()d.
  */
-static void destroyAllocator(Allocator *allocator,ContainerMemoryManager *m);
+static void destroyAllocator(Allocator *allocator,ContainerAllocator *m);
 
 /**
  * Free a list of blocks of mem, giving them back to the allocator.
@@ -154,7 +154,7 @@ static void destroyAllocator(Allocator *allocator,ContainerMemoryManager *m);
  * @param allocator The allocator to give the mem back to
  * @param memnode The memory node to return
  */
-static void allocator_free(Allocator *allocator, MemoryNode_t *memnode,ContainerMemoryManager *m);
+static void allocator_free(Allocator *allocator, MemoryNode_t *memnode,ContainerAllocator *m);
 
 /*
  * Magic numbers
@@ -164,7 +164,7 @@ static void allocator_free(Allocator *allocator, MemoryNode_t *memnode,Container
 #define BOUNDARY_INDEX 12
 #define BOUNDARY_SIZE (1 << BOUNDARY_INDEX)
 
-static MemoryNode_t *newAllocator(Allocator *allocator, size_t in_size,ContainerMemoryManager *m)
+static MemoryNode_t *newAllocator(Allocator *allocator, size_t in_size,ContainerAllocator *m)
 {
     MemoryNode_t *node, **ref;
     uint32_t max_index;
@@ -279,7 +279,7 @@ static MemoryNode_t *newAllocator(Allocator *allocator, size_t in_size,Container
     return node;
 }
 
-static void allocator_free(Allocator *allocator, MemoryNode_t *node,ContainerMemoryManager *m)
+static void allocator_free(Allocator *allocator, MemoryNode_t *node,ContainerAllocator *m)
 {
     MemoryNode_t *next, *freelist = NULL;
     uint32_t idx, max_index;
@@ -347,12 +347,12 @@ struct Pool {
     MemoryNode_t        *active;
     MemoryNode_t        *self; /* The node containing the pool itself */
     char                 *self_first_avail;
-	ContainerMemoryManager *MemManager;
+	ContainerAllocator *MemManager;
 };
 
 #define SIZEOF_POOL_T       ALIGN_DEFAULT(sizeof(Pool))
 
-static void destroyAllocator(Allocator *allocator,ContainerMemoryManager *m)
+static void destroyAllocator(Allocator *allocator,ContainerAllocator *m)
 {
     uint32_t idx;
     MemoryNode_t *node, **ref;
@@ -510,14 +510,14 @@ static void PoolFinalize(Pool *pool)
     destroyAllocator(allocator,pool->MemManager);
 }
 
-static Pool *newPool(ContainerMemoryManager *m)
+static Pool *newPool(ContainerAllocator *m)
 {
     Pool *pool;
     MemoryNode_t *node;
     Allocator *pool_allocator;
 
 	if (m == NULL)
-		m = CurrentMemoryManager;
+		m = CurrentAllocator;
     if ((pool_allocator = m->calloc(1,sizeof(Allocator))) == NULL) {
         return NULL;
     }

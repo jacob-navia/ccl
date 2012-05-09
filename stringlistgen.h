@@ -51,15 +51,15 @@ typedef struct _INTERNAL_INTERFACE_NAME {
     /* Set the comparison function */
     CompareFunction (*SetCompareFunction)(EXTERNAL_NAME *l,CompareFunction fn);
     CompareFunction Compare;
-    int (*UseHeap)(EXTERNAL_NAME *L, ContainerMemoryManager *m);
+    int (*UseHeap)(EXTERNAL_NAME *L, ContainerAllocator *m);
     int (*AddRange)(EXTERNAL_NAME *L, size_t n,CHARTYPE **data);
     EXTERNAL_NAME *(*Create)(void);
-    EXTERNAL_NAME *(*CreateWithAllocator)(const ContainerMemoryManager *allocator);
+    EXTERNAL_NAME *(*CreateWithAllocator)(const ContainerAllocator *allocator);
     EXTERNAL_NAME *(*Init)(EXTERNAL_NAME *aEXTERNAL_NAME);
-    EXTERNAL_NAME *(*InitWithAllocator)(EXTERNAL_NAME *aEXTERNAL_NAME,ContainerMemoryManager *allocator);
-    EXTERNAL_NAME *(*SetAllocator)(EXTERNAL_NAME *l, ContainerMemoryManager  *allocator);
+    EXTERNAL_NAME *(*InitWithAllocator)(EXTERNAL_NAME *aEXTERNAL_NAME,ContainerAllocator *allocator);
+    EXTERNAL_NAME *(*SetAllocator)(EXTERNAL_NAME *l, ContainerAllocator  *allocator);
     int (*InitIterator)(EXTERNAL_NAME *list,void *storage);
-    const ContainerMemoryManager *(*GetAllocator)(EXTERNAL_NAME *list);
+    const ContainerAllocator *(*GetAllocator)(EXTERNAL_NAME *list);
     DestructorFunction (*SetDestructor)(EXTERNAL_NAME *v,DestructorFunction fn);
     EXTERNAL_NAME *(*InitializeWith)(size_t n,CHARTYPE **data);
     CHARTYPE *(*Back)(const EXTERNAL_NAME *l);

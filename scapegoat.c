@@ -24,7 +24,7 @@ static size_t count_nodes_in_subtree (const struct Node *);
 
 static size_t floor_log2 (size_t);
 static size_t calculate_h_alpha (size_t);
-static TreeMap *CreateWithAllocator(size_t ElementSize,const ContainerMemoryManager *m);
+static TreeMap *CreateWithAllocator(size_t ElementSize,const ContainerAllocator *m);
 
 
 /* Inserts the given NODE into BT.
@@ -807,12 +807,12 @@ static int Contains(TreeMap *d, void *element,void *ExtraArgs)
     return 0;
 }
 
-static TreeMap *CreateWithAllocator(size_t ElementSize,const ContainerMemoryManager *m)
+static TreeMap *CreateWithAllocator(size_t ElementSize,const ContainerAllocator *m)
 {
     TreeMap *result;
 
     if (m == NULL)
-    	m = CurrentMemoryManager;
+    	m = CurrentAllocator;
     result = m->malloc(sizeof(*result));
     if (result == NULL)
     	return NULL;
@@ -828,7 +828,7 @@ static TreeMap *CreateWithAllocator(size_t ElementSize,const ContainerMemoryMana
 
 static TreeMap *Create(size_t ElementSize)
 {
-    return CreateWithAllocator(ElementSize,CurrentMemoryManager);
+    return CreateWithAllocator(ElementSize,CurrentAllocator);
 }
 
 static TreeMap *InitializeWith(size_t ElementSize, size_t n, void *data)
@@ -966,7 +966,7 @@ static DestructorFunction SetDestructor(TreeMap *cb,DestructorFunction fn)
 		cb->DestructorFn = fn;
 	return oldfn;
 }
-static const ContainerMemoryManager *GetAllocator(const TreeMap *l)
+static const ContainerAllocator *GetAllocator(const TreeMap *l)
 {
     if (l == NULL)
         return NULL;

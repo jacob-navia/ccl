@@ -46,7 +46,7 @@ typedef struct {
     CompareFunction (*SetCompareFunction)(ValArray *l,CompareFunction fn);
     int (*Sort)(ValArray *AL);
     ValArray *(*Create)(size_t startsize);
-    ValArray *(*CreateWithAllocator)(size_t startsize, ContainerMemoryManager *allocator);
+    ValArray *(*CreateWithAllocator)(size_t startsize, ContainerAllocator *allocator);
     ValArray *(*Init)(ValArray *AL,size_t startsize);
     int (*AddRange)(ValArray *AL,size_t n, const ElementType *newvalues);
     ValArray *(*GetRange)(const ValArray *AL, size_t start, size_t end);
@@ -55,7 +55,7 @@ typedef struct {
     int (*Reverse)(ValArray *AL);
     int (*Append)(ValArray *AL1, ValArray *AL2);
     int (*Mismatch)(const ValArray *a1,const ValArray *a2,size_t *mismatch);
-    ContainerMemoryManager *(*GetAllocator)(const ValArray *AL);
+    ContainerAllocator *(*GetAllocator)(const ValArray *AL);
     DestructorFunction (*SetDestructor)(ValArray *cb,DestructorFunction fn);
 
     /* ValArray specific functions */
@@ -70,7 +70,7 @@ typedef struct {
     int (*SubtractFromScalar)(ElementType left, ValArray *right);
     int (*MultiplyWithScalar)(ValArray *left, ElementType right);
     int (*DivideByScalar)(ValArray *left, ElementType right);
-    int (*DivideScalarBy)(ElementType left,ValArray *right);
+    int (*DivideScalarBy)(ValArray *left,ElementType right);
     Mask *(*CompareEqual)(const ValArray *left,const ValArray *right,Mask *bytearray);
     Mask *(*CompareEqualScalar)(const ValArray *left, const ElementType right, Mask *bytearray);
     char *(*Compare)(const ValArray *left, const ValArray *right,char *bytearray);

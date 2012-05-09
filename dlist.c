@@ -65,7 +65,7 @@ static Dlist *Init(Dlist *result,size_t elementsize)
     result->VTable = &iDlist;
     result->Compare = DefaultDlistCompareFunction;
     result->RaiseError = iError.RaiseError;
-    result->Allocator = CurrentMemoryManager;
+    result->Allocator = CurrentAllocator;
     return result;
 }
 
@@ -82,7 +82,7 @@ static Dlist *Init(Dlist *result,size_t elementsize)
                 routine is called. If there is no memory result is
                 NULL.
 ------------------------------------------------------------------------*/
-static Dlist *CreateWithAllocator(size_t elementsize,const ContainerMemoryManager *allocator)
+static Dlist *CreateWithAllocator(size_t elementsize,const ContainerAllocator *allocator)
 {
     Dlist *result,*r;
 
@@ -98,13 +98,13 @@ static Dlist *CreateWithAllocator(size_t elementsize,const ContainerMemoryManage
     r = Init(result,elementsize);
     if (r == NULL)
     	allocator->free(result);
-    else r->Allocator = (ContainerMemoryManager *)allocator;
+    else r->Allocator = (ContainerAllocator *)allocator;
     return r;
 }
 
 static Dlist *Create(size_t elementsize)
 {
-    return CreateWithAllocator(elementsize,CurrentMemoryManager);
+    return CreateWithAllocator(elementsize,CurrentAllocator);
 }
 
 static Dlist *InitializeWith(size_t elementSize,size_t n,const void *Data)
@@ -122,7 +122,7 @@ static Dlist *InitializeWith(size_t elementSize,size_t n,const void *Data)
 }
 
 
-static int UseHeap(Dlist *L,const ContainerMemoryManager *m)
+static int UseHeap(Dlist *L,const ContainerAllocator *m)
 {
     if (L->Heap || L->count) {
     	L->RaiseError("iDlist.UseHeap",CONTAINER_ERROR_NOT_EMPTY);
@@ -1580,7 +1580,7 @@ static DestructorFunction SetDestructor(Dlist *cb,DestructorFunction fn)
     	cb->DestructorFn = fn;
     return oldfn;
 }
-static const ContainerMemoryManager *GetAllocator(const Dlist *l)
+static const ContainerAllocator *GetAllocator(const Dlist *l)
 {
     if (l == NULL)
         return NULL;

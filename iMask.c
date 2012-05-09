@@ -3,14 +3,14 @@
 
 static Mask *CreateFromMask(size_t n,char *data)
 {
-    Mask *result = CurrentMemoryManager->malloc(n+sizeof(Mask));
+    Mask *result = CurrentAllocator->malloc(n+sizeof(Mask));
     if (result == NULL) {
         iError.RaiseError("iMask.Copy",CONTAINER_ERROR_NOMEMORY);
         return NULL;
     }
     if (data) memcpy(result->data,data,n);
     else memset(result->data,0,n);
-    result->Allocator = CurrentMemoryManager;
+    result->Allocator = CurrentAllocator;
     result->length = n;
     return result;
 }
@@ -44,6 +44,7 @@ static int Set(Mask *m,size_t idx,int val)
 static int Clear(Mask *m)
 {
     memset(m->data,0,m->length);
+    m->length=0;
     return 1;
 }
 
@@ -110,8 +111,7 @@ static int Or(Mask *src1,Mask *src2)
 
 static size_t Sizeof(Mask *m)
 {
-    if (m == NULL)
-    return sizeof(Mask);
+    if (m == NULL) return sizeof(Mask);
     return sizeof(Mask) + m->length;
 }
 

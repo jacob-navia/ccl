@@ -4,7 +4,7 @@ struct _StreamBuffer {
 	size_t Size;
 	size_t Cursor;
 	unsigned Flags;
-	ContainerMemoryManager *Allocator;
+	ContainerAllocator *Allocator;
 	char *Data;
 } ;
 
@@ -16,7 +16,7 @@ struct _StreamBuffer {
 #define FCLOSE_DESTROYS 8
 
 static int Finalize(StreamBuffer *b);
-static StreamBuffer *CreateWithAllocator(size_t size,const ContainerMemoryManager *Allocator)
+static StreamBuffer *CreateWithAllocator(size_t size,const ContainerAllocator *Allocator)
 {
 	StreamBuffer *result;
 	
@@ -28,7 +28,7 @@ static StreamBuffer *CreateWithAllocator(size_t size,const ContainerMemoryManage
 		return NULL;
 	}
 	memset(result,0,sizeof(StreamBuffer));
-	result->Allocator = (ContainerMemoryManager *)Allocator;
+	result->Allocator = (ContainerAllocator *)Allocator;
 	result->Data = Allocator->malloc(size);
 	if (result->Data == NULL) {
 		Allocator->free(result);
@@ -41,7 +41,7 @@ static StreamBuffer *CreateWithAllocator(size_t size,const ContainerMemoryManage
 
 static StreamBuffer *Create(size_t size)
 {
-	return CreateWithAllocator(size,CurrentMemoryManager);
+	return CreateWithAllocator(size,CurrentAllocator);
 }
 
 static StreamBuffer *CreateFromFile(char *FileName)
@@ -195,8 +195,28 @@ static int Resize(StreamBuffer *b,size_t newSize)
 	b->Data = tmp;
 	b->Size = newSize;
 	return 1;
-	
 }
+
+static int ReadFromFile(StreamBuffer *b,FILE *infile)
+{
+	if (b == NULL) {
+		iError.RaiseError("iStreamBuffer.ReadFromFile",CONTAINER_ERROR_BADARG);
+		return CONTAINER_ERROR_BADARG;
+	}
+	b->Cursor = 0;
+	return fread(b->Data,1,b->Size,infile);
+}
+
+static int WriteToFile(StreamBuffer *b,FILE *outfile)
+{
+	if (b == NULL) {
+		iError.RaiseError("iStreamBuffer.WriteToFile",CONTAINER_ERROR_BADARG);
+		return CONTAINER_ERROR_BADARG;
+	}
+	b->Cursor = 0;
+	return fwrite(b->Data,1,b->Size,outfile);
+}
+
 StreamBufferInterface iStreamBuffer = {
 Create,
 CreateWithAllocator,
@@ -205,11 +225,13 @@ Read,
 Write,
 SetPosition,
 GetPosition,
-	GetData,
+GetData,
 StreamBufferSize,
 Clear,
 Finalize,
 Resize,
+ReadFromFile,
+WriteToFile,
 };
 /* --------------------------------------------------------------------------
                                Circular buffers
@@ -219,7 +241,7 @@ struct _CircularBuffer {
 	size_t ElementSize;
 	size_t head;
 	size_t tail;
-	ContainerMemoryManager *Allocator;
+	ContainerAllocator *Allocator;
 	DestructorFunction DestructorFn;
 	unsigned char *data;
 };
@@ -294,7 +316,7 @@ static int PeekFront(CircularBuffer *b,void *result)
 	return 1;
 }
 
-static CircularBuffer *CreateCBWithAllocator(size_t sizElement,size_t sizeBuffer,const ContainerMemoryManager *allocator)
+static CircularBuffer *CreateCBWithAllocator(size_t sizElement,size_t sizeBuffer,const ContainerAllocator *allocator)
 {
 	CircularBuffer *result;
 	
@@ -310,7 +332,7 @@ static CircularBuffer *CreateCBWithAllocator(size_t sizElement,size_t sizeBuffer
 	memset(result,0,sizeof(CircularBuffer));
 	result->maxCount = sizeBuffer;
 	result->ElementSize = sizElement;
-	result->Allocator = (ContainerMemoryManager *)allocator;
+	result->Allocator = (ContainerAllocator *)allocator;
 	sizElement = sizElement*sizeBuffer; /* Here we should test for overflow */
 	result->data = allocator->malloc(sizElement);
 	if (result->data == NULL) {
@@ -323,7 +345,7 @@ static CircularBuffer *CreateCBWithAllocator(size_t sizElement,size_t sizeBuffer
 
 static CircularBuffer *CreateCB(size_t sizElement,size_t sizeBuffer)
 {
-	return CreateCBWithAllocator(sizElement, sizeBuffer, CurrentMemoryManager);
+	return CreateCBWithAllocator(sizElement, sizeBuffer, CurrentAllocator);
 }
 
 static int CBClear(CircularBuffer *cb)

@@ -1,13 +1,13 @@
 #include "containers.h"
-static ContainerMemoryManager DefaultMemoryManagerObject = { malloc,free,realloc,calloc};
-ContainerMemoryManager *CurrentMemoryManager = &DefaultMemoryManagerObject;
-ContainerMemoryManager *SetCurrentMemoryManager(ContainerMemoryManager *in)
+static ContainerAllocator DefaultAllocatorObject = { malloc,free,realloc,calloc};
+ContainerAllocator *CurrentAllocator = &DefaultAllocatorObject;
+ContainerAllocator *SetCurrentAllocator(ContainerAllocator *in)
 {
-        ContainerMemoryManager *c;
+        ContainerAllocator *c;
         if (in == NULL)
-                return CurrentMemoryManager;
-        c = CurrentMemoryManager;
-        CurrentMemoryManager = in;
+                return CurrentAllocator;
+        c = CurrentAllocator;
+        CurrentAllocator = in;
         return c;
 }
 

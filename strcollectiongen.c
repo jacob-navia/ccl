@@ -138,7 +138,7 @@ static unsigned GetFlags(const ElementType *SC)
     return SC->Flags;
 }
 
-static const ContainerMemoryManager *GetAllocator(const ElementType *AL)
+static const ContainerAllocator *GetAllocator(const ElementType *AL)
 {
     if (AL == NULL) {
         return NULL;
@@ -1255,7 +1255,7 @@ static ElementType *CreateFromFile(const char *fileName)
     ElementType *result;
     CHAR_TYPE *line=NULL;
     int llen=0,r;
-    ContainerMemoryManager *mm = CurrentMemoryManager;
+    ContainerAllocator *mm = CurrentAllocator;
     FILE *f;
 
     if (fileName == NULL) {
@@ -1475,7 +1475,7 @@ static int Strcmp(const void **s1,const void **s2, CompareInfo *info)
  Errors:        If no more memory is available it returns NULL
  after calling the error function.
  ------------------------------------------------------------------------*/
-static ElementType *InitWithAllocator(ElementType *result,size_t startsize,const ContainerMemoryManager *allocator)
+static ElementType *InitWithAllocator(ElementType *result,size_t startsize,const ContainerAllocator *allocator)
 {
     memset(result,0,sizeof(ElementType));
     result->VTable = &iElementType;
@@ -1492,11 +1492,11 @@ static ElementType *InitWithAllocator(ElementType *result,size_t startsize,const
     }
     result->RaiseError = iError.RaiseError;
     result->strcompare = Strcmp;
-    result->Allocator = (ContainerMemoryManager *)allocator;
+    result->Allocator = (ContainerAllocator *)allocator;
     return result;
 
 }
-static ElementType  *CreateWithAllocator(size_t startsize,const ContainerMemoryManager *allocator)
+static ElementType  *CreateWithAllocator(size_t startsize,const ContainerAllocator *allocator)
 {
     ElementType *result,*r1;
 
@@ -1514,12 +1514,12 @@ static ElementType  *CreateWithAllocator(size_t startsize,const ContainerMemoryM
 
 static ElementType *Init(ElementType *result,size_t startsize)
 {
-    return InitWithAllocator(result,startsize,CurrentMemoryManager);
+    return InitWithAllocator(result,startsize,CurrentAllocator);
 }
 
 static ElementType *Create(size_t startsize)
 {
-    return CreateWithAllocator(startsize,CurrentMemoryManager);
+    return CreateWithAllocator(startsize,CurrentAllocator);
 }
 
 static ElementType *InitializeWith(size_t n, CHAR_TYPE **data)

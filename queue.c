@@ -20,7 +20,7 @@ static size_t Sizeof(Queue *q)
 
 static int Finalize(Queue *Q)
 {
-    const ContainerMemoryManager *allocator = iList.GetAllocator(Q->Items);
+    const ContainerAllocator *allocator = iList.GetAllocator(Q->Items);
     iList.Finalize(Q->Items);
     allocator->free(Q);
     return 1;
@@ -43,7 +43,7 @@ static int Enqueue(Queue *Q,void *newval)
 }
 
 
-static Queue *CreateWithAllocator(size_t ElementSize,ContainerMemoryManager *allocator)
+static Queue *CreateWithAllocator(size_t ElementSize,ContainerAllocator *allocator)
 {
     Queue *result = allocator->malloc(sizeof(Queue));
 
@@ -60,7 +60,7 @@ static Queue *CreateWithAllocator(size_t ElementSize,ContainerMemoryManager *all
 
 static Queue *Create(size_t ElementSize)
 {
-	return CreateWithAllocator(ElementSize,CurrentMemoryManager);
+	return CreateWithAllocator(ElementSize,CurrentAllocator);
 }
 static int Front(Queue *Q,void *result)
 {

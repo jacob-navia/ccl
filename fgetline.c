@@ -5,7 +5,7 @@
 #include "ccl_internal.h"
 /* This code was adapted from the public domain version of fgetline by C.B. Falconer */
 
-static int GetDelim(char **LinePointer, int *n, int delimiter, FILE *stream, ContainerMemoryManager *mm )
+static int GetDelim(char **LinePointer, int *n, int delimiter, FILE *stream, ContainerAllocator *mm )
 {
 	char *p,*newp;
 	size_t d;
@@ -71,12 +71,12 @@ NoMem:
 	return len;
 }
 
-int GetLine(char **LinePointer,int *n, FILE *stream,ContainerMemoryManager *mm)
+int GetLine(char **LinePointer,int *n, FILE *stream,ContainerAllocator *mm)
 {
 	return GetDelim(LinePointer,n,'\n',stream,mm);
 }
 
-static int WGetDelim(wchar_t **LinePointer, int *n, int delimiter, FILE *stream, ContainerMemoryManager *mm )
+static int WGetDelim(wchar_t **LinePointer, int *n, int delimiter, FILE *stream, ContainerAllocator *mm )
 {
 	wchar_t *p,*newp;
 	size_t d;
@@ -142,7 +142,7 @@ static int WGetDelim(wchar_t **LinePointer, int *n, int delimiter, FILE *stream,
 	return len;
 }
 
-int WGetLine(wchar_t **LinePointer,int *n, FILE *stream,ContainerMemoryManager *mm)
+int WGetLine(wchar_t **LinePointer,int *n, FILE *stream,ContainerAllocator *mm)
 {
 	return WGetDelim(LinePointer,n,L'\n',stream,mm);
 }

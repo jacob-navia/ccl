@@ -23,7 +23,7 @@ struct tagRedBlackTree {
     RedBlackTreeNode    *root;
     RedBlackTreeNode    *CurrentBlock;
     RedBlackTreeNode    *FreeList;
-    ContainerMemoryManager *Allocator;
+    ContainerAllocator *Allocator;
     DestructorFunction DestructorFn;
 } ;
 
@@ -47,12 +47,12 @@ static Iterator *NewIterator(RedBlackTree *);
 static int deleteIterator(Iterator *);
 static RedBlackTree *Create(size_t ElementSize,size_t KeySize)
 {
-    RedBlackTree *result = CurrentMemoryManager->malloc(sizeof(RedBlackTree));
+    RedBlackTree *result = CurrentAllocator->malloc(sizeof(RedBlackTree));
     if (result) {
         memset(result,0,sizeof(RedBlackTree));
         result->ElementSize = ElementSize;
         result->VTable = &iRedBlackTree;
-        result->Allocator = CurrentMemoryManager;
+        result->Allocator = CurrentAllocator;
     }
     return result;
 }

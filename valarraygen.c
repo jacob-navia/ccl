@@ -13,7 +13,7 @@ struct _ValArray {
     unsigned int Flags;            /* Read-only or other flags */
     size_t capacity;               /* allocated space in the contents vector */
     unsigned timestamp;            /* Incremented at each change */
-    ContainerMemoryManager *Allocator;
+    ContainerAllocator *Allocator;
     SliceSpecs *Slice;
     ElementType *contents;        /* The contents of the collection */
 };
@@ -637,7 +637,7 @@ static int Finalize(ValArray *AL)
 	return result;
 }
 
-static ContainerMemoryManager *GetAllocator(const ValArray *AL)
+static ContainerAllocator *GetAllocator(const ValArray *AL)
 {
 	if (AL == NULL) {
 		return NULL;
@@ -1256,7 +1256,7 @@ static ValArray *Load(FILE *stream)
 
 
 
-static ValArray *CreateWithAllocator(size_t startsize,ContainerMemoryManager *allocator)
+static ValArray *CreateWithAllocator(size_t startsize,ContainerAllocator *allocator)
 {
 	ValArray *result;
 	size_t es;
@@ -1288,7 +1288,7 @@ static ValArray *CreateWithAllocator(size_t startsize,ContainerMemoryManager *al
 
 static ValArray *Create(size_t startsize)
 {
-	return CreateWithAllocator(startsize,CurrentMemoryManager);
+	return CreateWithAllocator(startsize,CurrentAllocator);
 }
 
 static ValArray *InitializeWith(size_t n,ElementType *data)
@@ -1310,7 +1310,7 @@ static ValArray *Init(ValArray *result,size_t startsize)
 	if (startsize == 0)
 		startsize = DEFAULT_START_SIZE;
 	es = startsize * sizeof(ElementType);
-	result->contents = CurrentMemoryManager->malloc(es);
+	result->contents = CurrentAllocator->malloc(es);
 	if (result->contents == NULL) {
 		NoMemory("Init");
 		result = NULL;
@@ -1319,7 +1319,7 @@ static ValArray *Init(ValArray *result,size_t startsize)
 		memset(result->contents,0,es);
 		result->capacity = startsize;
 		result->VTable = &iValArrayInterface;
-		result->Allocator = CurrentMemoryManager;
+		result->Allocator = CurrentAllocator;
 	}
 	return result;
 }
@@ -1489,7 +1489,7 @@ static int DivideByScalar(ValArray *left,ElementType right)
 	return 1;
 }
 
-static int DivideScalarBy(ElementType left,ValArray *right)
+static int DivideScalarBy(ValArray *right, ElementType left)
 {
 	size_t i;
 	
@@ -1667,12 +1667,12 @@ static Mask *FCompare(const ValArray *left,const ValArray *right, Mask *bytearra
 	}
 	
 	if (bytearray == NULL) {
-		bytearray= CurrentMemoryManager->malloc(left_len+sizeof(Mask));
+		bytearray= CurrentAllocator->malloc(left_len+sizeof(Mask));
 		if (bytearray == NULL) {
 			iError.RaiseError("ValArray.Fcompare",CONTAINER_ERROR_NOMEMORY);
 			return NULL;
 		}
-		bytearray->Allocator = CurrentMemoryManager;
+		bytearray->Allocator = CurrentAllocator;
 		bytearray->length = left_len;
 		
 	}

@@ -9,7 +9,7 @@ struct tagHeapObject {
 	char **Heap;
 	size_t ElementSize;
 	void *FreeList;
-	const ContainerMemoryManager *Allocator;
+	const ContainerAllocator *Allocator;
 	size_t MemoryUsed;
 };	
 #ifndef CHUNK_SIZE 
@@ -109,7 +109,7 @@ static void AddToFreeList(ContainerHeap *heap,void *element)
 static void DestroyHeap(ContainerHeap *l)
 {
 	size_t i;
-	const ContainerMemoryManager *m = l->Allocator;
+	const ContainerAllocator *m = l->Allocator;
 	
 	for (i=0;i<l->BlockCount;i++) {
 		m->free(l->Heap[i]);
@@ -135,19 +135,19 @@ static size_t GetHeapSize(ContainerHeap *heap)
 	return result;
 }
 
-static ContainerHeap *InitHeap(void *pHeap,size_t ElementSize,const ContainerMemoryManager *m)
+static ContainerHeap *InitHeap(void *pHeap,size_t ElementSize,const ContainerAllocator *m)
 {
 	ContainerHeap *heap = pHeap;
 	memset(heap,0,sizeof(*heap));
 	heap->VTable = &iHeap;
 	heap->ElementSize = ElementSize;
 	if (m == NULL)
-		m = CurrentMemoryManager;
+		m = CurrentAllocator;
 	heap->Allocator = m;
 	return heap;
 }
 
-static  ContainerHeap *newHeap(size_t ElementSize,const ContainerMemoryManager *m)
+static  ContainerHeap *newHeap(size_t ElementSize,const ContainerAllocator *m)
 {
 	ContainerHeap *result = m->malloc(sizeof(ContainerHeap));
 	if (result == NULL)

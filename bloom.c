@@ -26,7 +26,7 @@ struct tagBloomFilter {
 	size_t MaxNbOfElements;
 	size_t HashFunctions;
 	size_t nbOfBits;
-	ContainerMemoryManager *Allocator;
+	ContainerAllocator *Allocator;
 	unsigned char *bits;
 	unsigned Seeds[1];
 };
@@ -98,14 +98,14 @@ static BloomFilter *Create(size_t nbOfElements,double Probability)
 	}
 	nbOfBits = -round(nbOfElements*log(Probability)/TWICE_LOG_2);
 	k = round(0.7*nbOfBits/nbOfElements);
-	result = CurrentMemoryManager->malloc(sizeof(BloomFilter) + k*sizeof(int));
+	result = CurrentAllocator->malloc(sizeof(BloomFilter) + k*sizeof(int));
 	if (result == NULL) {
 		goto errMem;
 	}
 	memset(result,0,sizeof(*result));
-	result->bits = CurrentMemoryManager->malloc(1+nbOfBits/8);
+	result->bits = CurrentAllocator->malloc(1+nbOfBits/8);
 	if (result->bits == NULL) {
-		CurrentMemoryManager->free(result);
+		CurrentAllocator->free(result);
 errMem:
 		iError.RaiseError("BloomFilter.Create",CONTAINER_ERROR_NOMEMORY);
 		return NULL;
@@ -119,7 +119,7 @@ errMem:
 		result->Seeds[k] = rand();
 
 	}
-	result->Allocator = CurrentMemoryManager;
+	result->Allocator = CurrentAllocator;
 	return result;
 }
 
