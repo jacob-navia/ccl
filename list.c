@@ -1217,7 +1217,7 @@ static size_t Sizeof(const List * l)
     if (l == NULL) {
         return sizeof(List);
     }
-    return sizeof(List) + l->ElementSize * l->count + l->count * sizeof(ListElement);
+    return sizeof(List) + l->ElementSize * l->count + l->count * offsetof(ListElement,Data);
 }
 
 static size_t SizeofIterator(const List * l)
@@ -1966,8 +1966,50 @@ static void *Advance(ListElement **ple)
     *ple = le;
     return result;
 }
-    
-    
+
+static ListElement *Skip(ListElement *le, size_t n)
+{
+    if (le == NULL) return NULL;
+    while (le != NULL && n > 0) {
+        le = le->Next;
+        n--;
+    }
+    return le;
+}
+
+static List *SplitAfter(List *l, ListElement *pt)
+{
+    ListElement *pNext;
+    List *result;    
+    size_t count;
+
+    if (pt == NULL || l == NULL) {
+        iError.NullPtrError("iList.SplitAfter");
+        return NULL;
+    }
+    if (l->Flags&CONTAINER_READONLY) {
+        ErrorReadOnly(l,"SplitAfter");
+        return NULL;
+    }
+    pNext = pt->Next;
+    if (pNext == NULL) return NULL;
+    result = CreateWithAllocator(l->ElementSize, l->Allocator);
+    if (result) {
+        result->First = pNext;
+        count = 0;
+        while (pNext) {
+            count++;
+            if (pNext->Next == NULL) result->Last = pNext;
+            pNext = pNext->Next;
+        }
+        result->count = count;
+    }
+    pt->Next = NULL;
+    l->Last = pt;
+    l->count -= count;
+    l->timestamp++;
+    return result;
+}
 
 ListInterface   iList = {
     Size,
@@ -2032,5 +2074,6 @@ ListInterface   iList = {
     ElementData,
     SetElementData,
     Advance,
-
+    Skip,
+    SplitAfter,
 };
