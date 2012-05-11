@@ -5,6 +5,9 @@
 #define EXTERNAL_NAME WStringList
 #define _INTERNAL_INTERFACE_NAME tagWStringListInterface
 #define iSTRINGLIST iWStringList
+#ifndef LIST_ELEMENT
+#define LIST_ELEMENT wStringListElement
+#endif
 
 #include "stringlistgen.h"
 
@@ -14,3 +17,4 @@
 #undef EXTERNAL_NAME
 #undef _INTERNAL_INTERFACE_NAME
 #undef iSTRINGLIST
+#undef LIST_ELEMENT

@@ -5,7 +5,7 @@
 #define STRLEN strlen
 #define iSTRINGLIST iStringListInterface
 #define INTERFACE iStringList
-#define LIST_ELEMENT StringlistElement
+#define LIST_ELEMENT StringListElement
 #define LIST_TYPE StringList
 #define LIST_TYPEIterator StringListIterator
 static const guid StringListGuid = {0x13327EA7,0x78ED,0x4FD2,

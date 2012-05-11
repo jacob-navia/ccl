@@ -1763,6 +1763,129 @@ static LIST_TYPE *SelectCopy(const LIST_TYPE *src,const Mask *m)
 }
 
 
+static LIST_ELEMENT *FirstElement(LIST_TYPE *l)
+{
+    if (l == NULL) {
+        NullPtrError("FirstElement");
+        return NULL;
+    }
+    if (l->Flags&CONTAINER_READONLY) {
+        ErrorReadOnly(l,"FirstElement");
+        return NULL;
+    }
+    return l->First;
+}
+
+static LIST_ELEMENT *LastElement(LIST_TYPE *l)
+{
+    if (l == NULL) {
+        NullPtrError("FirstElement");
+        return NULL;
+    }
+    if (l->Flags&CONTAINER_READONLY) {
+        ErrorReadOnly(l,"FirstElement");
+        return NULL;
+    }
+    return l->Last;
+}
+
+static LIST_ELEMENT *NextElement(LIST_ELEMENT *le)
+{
+    if (le == NULL) return NULL;
+    return le->Next;
+}
+
+static void *ElementData(LIST_ELEMENT *le)
+{
+    if (le == NULL) return NULL;
+    return le->Data;
+}
+
+static int SetElementData(LIST_TYPE *l,LIST_ELEMENT **pple,const CHARTYPE *data)
+{
+    LIST_ELEMENT *newle,*le,*rvp;
+    size_t len;
+    if (l == NULL || pple == NULL || data == NULL) {
+        return iError.NullPtrError("iList.SetElementData");
+    }
+    if (l->Flags&CONTAINER_READONLY) {
+        return ErrorReadOnly(l,"SetElementData");
+    }
+    le = *pple;
+    rvp = l->First;
+    if (rvp != le) {
+        while (rvp) {
+            if (rvp->Next == le)
+                break;
+            rvp = rvp->Next;
+        }
+    }
+    len = STRLEN(data)+1;
+    if (rvp == NULL) return CONTAINER_ERROR_WRONGELEMENT;
+    newle = l->Allocator->realloc(le,sizeof(*newle)+len);
+    STRCPY(newle->Data,data);
+    if (rvp == l->First) l->First = newle;
+    else rvp->Next = newle;
+    newle->Next = le->Next;
+    l->timestamp++;
+    *pple = newle;
+    return 1;
+}
+
+static void *Advance(LIST_ELEMENT **ple)
+{
+    LIST_ELEMENT *le;
+    void *result;
+
+    if (ple == NULL)
+        return NULL;
+    le = *ple;
+    if (le == NULL) return NULL;
+    result = le->Data;
+    le = le->Next;
+    *ple = le;
+    return result;
+}
+
+static LIST_ELEMENT *Skip(LIST_ELEMENT *le, size_t n)
+{
+    if (le == NULL) return NULL;
+    while (le != NULL && n > 0) {
+        le = le->Next;
+        n--;
+    }
+    return le;
+}
+
+static LIST_TYPE *SplitAfter(LIST_TYPE *l, LIST_ELEMENT *pt)
+{
+    LIST_ELEMENT *pNext;
+    LIST_TYPE *result;    
+    size_t count;
+
+    if (pt == NULL || l == NULL) {
+        iError.NullPtrError("iList.SplitAfter");
+        return NULL;
+    }
+    pNext = pt->Next;
+    if (pNext == NULL) return NULL;
+    result = CreateWithAllocator(l->Allocator);
+    if (result) {
+        result->First = pNext;
+        count = 0;
+        while (pNext) {
+            count++;
+            if (pNext->Next == NULL) result->Last = pNext;
+            pNext = pNext->Next;
+        }
+        result->count = count;
+    }
+    pt->Next = NULL;
+    l->Last = pt;
+    l->count -= count;
+    l->timestamp++;
+    return result;
+}
 iSTRINGLIST INTERFACE = {
     Size,
     GetFlags,
@@ -1816,4 +1939,12 @@ iSTRINGLIST INTERFACE = {
     Front,
     Select,
     SelectCopy,
+    FirstElement,
+    LastElement,
+    NextElement,
+    ElementData,
+    SetElementData,
+    Advance,
+    Skip,
+    SplitAfter,
 };

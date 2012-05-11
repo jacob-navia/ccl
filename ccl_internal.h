@@ -135,10 +135,10 @@ struct ListIterator {
 /*----------------------------------------------------------------------------*/
 /* Definition of the stringlist and stringlist element type                   */
 /*----------------------------------------------------------------------------*/
-typedef struct _StringlistElement {
-    struct _StringlistElement *Next;
+struct _StringListElement {
+    struct _StringListElement *Next;
     char Data[MINIMUM_ARRAY_INDEX];
-} StringlistElement;
+};
 
 struct _StringList {
     iStringListInterface *VTable;      /* Methods table */
@@ -146,8 +146,8 @@ struct _StringList {
     unsigned Flags;
     unsigned timestamp;         /* Changed at each modification */
     size_t ElementSize;         /* Size (in bytes) of each element */
-    StringlistElement *Last;         /* The last item */
-    StringlistElement *First;        /* The contents of the list start here */
+    StringListElement *Last;         /* The last item */
+    StringListElement *First;        /* The contents of the list start here */
     CompareFunction Compare;    /* Element comparison function */
     ErrorFunction RaiseError;   /* Error function */
     ContainerHeap *Heap;
@@ -159,8 +159,8 @@ struct StringListIterator {
     Iterator it;
     StringList *L;
     size_t index;
-    StringlistElement *Current;
-    StringlistElement *Previous;
+    StringListElement *Current;
+    StringListElement *Previous;
     unsigned timestamp;
     char *ElementBuffer;
 };
@@ -168,10 +168,10 @@ struct StringListIterator {
 /*----------------------------------------------------------------------------*/
 /* Definition of the wstringlist and wstringlist element type                 */
 /*----------------------------------------------------------------------------*/
-typedef struct _wStringlistElement {
-    struct _wStringlistElement *Next;
+struct _wStringListElement {
+    struct _wStringListElement *Next;
     wchar_t Data[MINIMUM_ARRAY_INDEX];
-} wStringlistElement;
+};
 
 struct _WStringList {
     iWStringListInterface *VTable;      /* Methods table */
@@ -179,8 +179,8 @@ struct _WStringList {
     unsigned Flags;
     unsigned timestamp;         /* Changed at each modification */
     size_t ElementSize;         /* Size (in bytes) of each element */
-    wStringlistElement *Last;         /* The last item */
-    wStringlistElement *First;        /* The contents of the list start here */
+    wStringListElement *Last;         /* The last item */
+    wStringListElement *First;        /* The contents of the list start here */
     CompareFunction Compare;    /* Element comparison function */
     ErrorFunction RaiseError;   /* Error function */
     ContainerHeap *Heap;
@@ -192,8 +192,8 @@ struct WStringListIterator {
     Iterator it;
     WStringList *L;
     size_t index;
-    wStringlistElement *Current;
-    wStringlistElement *Previous;
+    wStringListElement *Current;
+    wStringListElement *Previous;
     unsigned timestamp;
     wchar_t *ElementBuffer;
 };
