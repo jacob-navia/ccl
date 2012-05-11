@@ -44,7 +44,7 @@ static StreamBuffer *Create(size_t size)
 	return CreateWithAllocator(size,CurrentAllocator);
 }
 
-static StreamBuffer *CreateFromFile(char *FileName)
+static StreamBuffer *CreateFromFile(const char *FileName)
 {
 	FILE *f = fopen(FileName,"rb");
 	StreamBuffer *result = NULL;
