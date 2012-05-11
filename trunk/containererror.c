@@ -22,6 +22,7 @@ struct Error {
 	{CONTAINER_ERROR_NOTIMPLEMENTED,"Function not implemented for this container type"},
 	{CONTAINER_ERROR_BADPOINTER,    "Debug_malloc: BAD POINTER******"},
 	{CONTAINER_ERROR_BUFFEROVERFLOW,"Debug_malloc: BUFFER OVERFLOW******"},
+	{CONTAINER_ERROR_WRONGELEMENT,  "Wrong element passed to a list"},
 	{0,"Unknown error"},
 };
 
