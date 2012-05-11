@@ -66,6 +66,14 @@ typedef struct _INTERNAL_INTERFACE_NAME {
     CHARTYPE *(*Front)(const EXTERNAL_NAME *l);
     int (*Select)(EXTERNAL_NAME *src,const Mask *m);
     EXTERNAL_NAME *(*SelectCopy)(const EXTERNAL_NAME *src, const Mask *m);
+    LIST_ELEMENT *(*FirstElement)(EXTERNAL_NAME *l);
+    LIST_ELEMENT *(*LastElement)(EXTERNAL_NAME *l);
+    LIST_ELEMENT *(*NextElement)(LIST_ELEMENT *le);
+    void *(*ElementData)(LIST_ELEMENT *le);
+    int (*SetElementData)(EXTERNAL_NAME *l, LIST_ELEMENT **pple,const CHARTYPE *data);
+    void *(*Advance)(LIST_ELEMENT **pLIST_ELEMENT);
+    LIST_ELEMENT *(*Skip)(LIST_ELEMENT *l,size_t n);
+    EXTERNAL_NAME *(*SplitAfter)(EXTERNAL_NAME *l, LIST_ELEMENT *pt);
 } INTERFACE;
 
 extern INTERFACE iSTRINGLIST;

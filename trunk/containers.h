@@ -61,6 +61,7 @@ typedef enum { FALSE,TRUE}  bool;
 #define CONTAINER_ERROR_BADPOINTER      -19
 #define CONTAINER_ERROR_BUFFEROVERFLOW  -20
 #define CONTAINER_ERROR_DIVISION_BY_ZERO -21
+#define CONTAINER_ERROR_WRONGELEMENT    -22
 
 typedef void (*ErrorFunction)(const char *,int,...);
 typedef int (*DestructorFunction)(void *);
@@ -277,7 +278,7 @@ typedef struct tagStreamBufferInterface {
     StreamBuffer *(*Create)(size_t startsize);
     StreamBuffer *(*CreateWithAllocator)(size_t startsize, 
                                          const ContainerAllocator *allocator);
-    StreamBuffer *(*CreateFromFile)(char *FileName);
+    StreamBuffer *(*CreateFromFile)(const char *FileName);
     size_t (*Read)(StreamBuffer *b, void *data, size_t siz);
     size_t (*Write)(StreamBuffer *b,void *data, size_t siz);
     int (*SetPosition)(StreamBuffer *b,size_t pos);
@@ -365,7 +366,7 @@ typedef struct tagstrCollection {
     strCollection *(*Create)(size_t startsize);
     strCollection *(*CreateWithAllocator)(size_t startsiz,const ContainerAllocator *mm);
 
-    int (*AddRange)(strCollection *SC,size_t n,const char **newvalues);
+    int (*AddRange)(strCollection *s,size_t n,const char **values);
     char **(*CopyTo)(const strCollection *SC);
 
     int (*Insert)(strCollection *SC,char *);
@@ -450,7 +451,7 @@ typedef struct tagWstrCollection {
     WstrCollection *(*Create)(size_t startsize);
     WstrCollection *(*CreateWithAllocator)(size_t startsize,const ContainerAllocator *mm);
     
-    int (*AddRange)(WstrCollection *SC,size_t n,const wchar_t **newvalues);
+    int (*AddRange)(WstrCollection *s,size_t n,const wchar_t **values);
     wchar_t **(*CopyTo)(const WstrCollection *SC);
     
     int (*Insert)(WstrCollection *SC,wchar_t *);
@@ -553,9 +554,13 @@ typedef struct tagList {
     void *(*ElementData)(ListElement *le);
     int (*SetElementData)(List *l, ListElement *le,void *data);
     void *(*Advance)(ListElement **pListElement);
+    ListElement *(*Skip)(ListElement *l,size_t n);
+    List *(*SplitAfter)(List *l, ListElement *pt);
 } ListInterface;
 
 extern ListInterface iList;
+typedef struct _StringListElement StringListElement;
+typedef struct _wStringListElement wStringListElement;
 #include "stringlist.h"
 #include "wstringlist.h"
 /* -------------------------------------------------------------------
