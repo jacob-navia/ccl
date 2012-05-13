@@ -46,10 +46,7 @@ static int NullPtrError(char *fnName)
 
 /*------------------------------------------------------------------------
  Procedure:     NewLink ID:1
- Purpose:       Allocation of a new list element. If the element
-            size is zero, we have an heterogenous
-            list, and we allocate just a pointer to the data
-            that is maintained by the user.
+ Purpose:       Allocation of a new list element. 
             Note that we allocate the size of a list element
             plus the size of the data in a single
             block. This block should be passed to the FREE
@@ -1434,29 +1431,6 @@ static void    *GetFirst(Iterator * it)
     return L->First->Data;
 }
 
-static Iterator *NewIterator(List * L)
-{
-    struct ListIterator *result;
-
-    if (L == NULL) {
-        NullPtrError("NewIterator");
-        return NULL;
-    }
-    result = L->Allocator->malloc(sizeof(struct ListIterator));
-    if (result == NULL) {
-        L->RaiseError("iList.NewIterator", CONTAINER_ERROR_NOMEMORY);
-        return NULL;
-    }
-    result->it.GetNext = GetNext;
-    result->it.GetPrevious = GetPrevious;
-    result->it.GetFirst = GetFirst;
-    result->it.GetCurrent = GetCurrent;
-    result->L = L;
-    result->timestamp = L->timestamp;
-    result->index = (size_t) - 1;
-    result->Current = NULL;
-    return &result->it;
-}
 static int InitIterator(List * L, void *r)
 {
     struct ListIterator *result = (struct ListIterator *) r;
@@ -1475,6 +1449,23 @@ static int InitIterator(List * L, void *r)
     result->index = (size_t) - 1;
     result->Current = NULL;
     return 1;
+}
+
+static Iterator *NewIterator(List * L)
+{
+    struct ListIterator *result;
+
+    if (L == NULL) {
+        NullPtrError("NewIterator");
+        return NULL;
+    }
+    result = L->Allocator->malloc(sizeof(struct ListIterator));
+    if (result == NULL) {
+        L->RaiseError("iList.NewIterator", CONTAINER_ERROR_NOMEMORY);
+        return NULL;
+    }
+    InitIterator(L,result);
+    return &result->it;
 }
 static int deleteIterator(Iterator * it)
 {
@@ -1646,8 +1637,7 @@ static List    * Create(size_t elementsize)
     return CreateWithAllocator(elementsize, CurrentAllocator);
 }
 
-static List    *
-InitializeWith(size_t elementSize, size_t n, const void *Data)
+static List    *InitializeWith(size_t elementSize, size_t n, const void *Data)
 {
     List           *result = Create(elementSize);
     size_t          i;
@@ -1661,8 +1651,7 @@ InitializeWith(size_t elementSize, size_t n, const void *Data)
     return result;
 }
 
-static List    *
-InitWithAllocator(List * result, size_t elementsize,
+static List    *InitWithAllocator(List * result, size_t elementsize,
           const ContainerAllocator * allocator)
 {
     if (elementsize == 0) {
@@ -1981,7 +1970,7 @@ static List *SplitAfter(List *l, ListElement *pt)
 {
     ListElement *pNext;
     List *result;    
-    size_t count;
+    size_t count=0;
 
     if (pt == NULL || l == NULL) {
         iError.NullPtrError("iList.SplitAfter");
@@ -1996,7 +1985,6 @@ static List *SplitAfter(List *l, ListElement *pt)
     result = CreateWithAllocator(l->ElementSize, l->Allocator);
     if (result) {
         result->First = pNext;
-        count = 0;
         while (pNext) {
             count++;
             if (pNext->Next == NULL) result->Last = pNext;
@@ -2004,6 +1992,7 @@ static List *SplitAfter(List *l, ListElement *pt)
         }
         result->count = count;
     }
+    else return NULL;
     pt->Next = NULL;
     l->Last = pt;
     l->count -= count;
