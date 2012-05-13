@@ -16,7 +16,7 @@ the proposed interface COULD be done.
 #ifndef INT_MAX
 #define INT_MAX (((unsigned)-1) >> 1)
 #endif
-static int IndexOf_nd(LIST_TYPE *AL,CHARTYPE *SearchedElement,void *ExtraArgs,size_t *result);
+static int IndexOf_nd(const LIST_TYPE *AL,const CHARTYPE *SearchedElement,void *ExtraArgs,size_t *result);
 static int RemoveAt_nd(LIST_TYPE *AL,size_t idx);
 static LIST_TYPE *CreateWithAllocator(const ContainerAllocator *allocator);
 static LIST_TYPE *Create(void);
@@ -40,25 +40,7 @@ static int NullPtrError(char *fnName)
     sprintf(buf,"iStringList.%s",fnName);
     return iError.NullPtrError(buf);
 }
-
-/*------------------------------------------------------------------------
- Procedure:     NewLink ID:1
- Purpose:       Allocation of a new list element. If the element
-                size is zero, we have an heterogenous
-                list, and we allocate just a pointer to the data
-                that is maintained by the user.
-                Note that we allocate the size of a list element
-                plus the size of the data in a single
-                block. This block should be passed to the FREE
-                function.
-
- Input:         The list where the new element should be added and a
-                pointer to the data that will be added (can be
-                NULL).
- Output:        A pointer to the new list element (can be NULL)
- Errors:        If there is no memory returns NULL
-------------------------------------------------------------------------*/
-static LIST_ELEMENT *NewLink(LIST_TYPE *li,CHARTYPE *data,const char *fname)
+static LIST_ELEMENT *NewLink(LIST_TYPE *li,const CHARTYPE *data,const char *fname)
 {
     LIST_ELEMENT *result;
     size_t len = STRLEN(data)+1;
@@ -73,9 +55,10 @@ static LIST_ELEMENT *NewLink(LIST_TYPE *li,CHARTYPE *data,const char *fname)
     }
     return result;
 }
+
 static int DefaultStringListCompareFunction(const void *left,const void *right,CompareInfo *ExtraArgs)
 {
-   return strcmp(left,right);
+   return STRCMP(left,right);
 }
 
 /*------------------------------------------------------------------------
@@ -86,7 +69,7 @@ static int DefaultStringListCompareFunction(const void *left,const void *right,C
                 otherwise
  Errors:        The same as the function IndexOf
 ------------------------------------------------------------------------*/
-static int Contains(LIST_TYPE *l,CHARTYPE *data)
+static int Contains(const LIST_TYPE *l,const CHARTYPE *data)
 {
     size_t idx;
     if (l == NULL || data == NULL) {
@@ -159,7 +142,7 @@ static int Clear(LIST_TYPE *l)
  Errors:        The element to be added can't be NULL, and the list
                 must be writable.
 ------------------------------------------------------------------------*/
-static int Add_nd(LIST_TYPE *l,CHARTYPE *elem)
+static int Add_nd(LIST_TYPE *l,const CHARTYPE *elem)
 {
     LIST_ELEMENT *newl;
 
@@ -217,7 +200,7 @@ static unsigned SetFlags(LIST_TYPE *l,unsigned newval)
  Output:        The state of the flag
  Errors:        None
 ------------------------------------------------------------------------*/
-static unsigned GetFlags(LIST_TYPE *l)
+static unsigned GetFlags(const LIST_TYPE *l)
 {
     if (l == NULL) {
         NullPtrError("GetFlags");
@@ -233,7 +216,7 @@ static unsigned GetFlags(LIST_TYPE *l)
  Output:        The number of elements
  Errors:        None
 ------------------------------------------------------------------------*/
-static size_t Size(LIST_TYPE *l)
+static size_t Size(const LIST_TYPE *l)
 {
     if (l == NULL) {
         return (size_t)NullPtrError("Size");
@@ -1047,7 +1030,7 @@ static int AddRange(LIST_TYPE * AL,size_t n, CHARTYPE **data)
 /* Searches a StringList for a given data item
    Returns a positive integer if found, negative if the end is reached
 */
-static int IndexOf_nd(LIST_TYPE *l,CHARTYPE *ElementToFind,void *ExtraArgs,size_t *result)
+static int IndexOf_nd(const LIST_TYPE *l,const CHARTYPE *ElementToFind,void *ExtraArgs,size_t *result)
 {
     LIST_ELEMENT *rvp;
     int r,i=0;

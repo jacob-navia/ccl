@@ -3,6 +3,7 @@
 #define CHARTYPE char
 #define STRCPY strcpy
 #define STRLEN strlen
+#define STRCMP strcmp
 #define iSTRINGLIST iStringListInterface
 #define INTERFACE iStringList
 #define LIST_ELEMENT StringListElement
@@ -13,4 +14,12 @@ static const guid StringListGuid = {0x13327EA7,0x78ED,0x4FD2,
 };
 
 #include "stringlistgen.c"
-
+#undef CHARTYPE
+#undef STRCPY
+#undef STRLEN
+#undef STRCMP
+#undef iSTRINGLIST
+#undef INTERFACE
+#undef LIST_ELEMENT
+#undef LIST_TYPE
+#undef LIST_TYPE_Iterator

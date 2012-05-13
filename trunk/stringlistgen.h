@@ -1,10 +1,10 @@
 typedef struct _INTERNAL_NAME EXTERNAL_NAME;
 typedef struct _INTERNAL_INTERFACE_NAME {
-    size_t (*Size)(EXTERNAL_NAME *L);        /* Returns the number of elements stored */
-    unsigned (*GetFlags)(EXTERNAL_NAME *L);                      /* Gets the flags */
+    size_t (*Size)(const EXTERNAL_NAME *L);        /* Returns the number of elements stored */
+    unsigned (*GetFlags)(const EXTERNAL_NAME *L);  /* Gets the flags */
     unsigned (*SetFlags)(EXTERNAL_NAME *L,unsigned flags);       /* Sets the flags */
     int (*Clear)(EXTERNAL_NAME *L);                         /* Clears all elements */
-    int (*Contains)(EXTERNAL_NAME *L,CHARTYPE *element);       /* Searches an element */
+    int (*Contains)(const EXTERNAL_NAME *L,const CHARTYPE *element);       /* Searches an element */
     int (*Erase)(EXTERNAL_NAME *L,CHARTYPE *);       /* erases the given data if found */
     /* Frees the memory used by the collection and destroys the list */
     int (*Finalize)(EXTERNAL_NAME *L);

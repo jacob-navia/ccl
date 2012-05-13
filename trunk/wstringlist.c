@@ -4,6 +4,7 @@
 #define CHARTYPE wchar_t
 #define STRCPY wcscpy
 #define STRLEN wcslen
+#define STRCMP wcscmp
 #define iSTRINGLIST iWStringListInterface
 #define LIST_ELEMENT wStringListElement
 #define StringListGuid WStringListGuid
@@ -16,4 +17,14 @@ static const guid WStringListGuid = {0xA0543963,0xCBAC,0x4AFB,
 };
 
 #include "stringlistgen.c"
+
+#undef CHARTYPE
+#undef STRCPY
+#undef STRLEN
+#undef STRCMP
+#undef iSTRINGLIST
+#undef INTERFACE
+#undef LIST_ELEMENT
+#undef LIST_TYPE
+#undef LIST_TYPE_Iterator
 
