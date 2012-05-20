@@ -578,7 +578,7 @@ static Dlist *GetRange(Dlist *l,size_t start,size_t end)
  Output:        Returns 1 if the two lists are equal, zero otherwise
  Errors:        None
 ------------------------------------------------------------------------*/
-static bool Equal(const Dlist *l1,const Dlist *l2)
+static int Equal(const Dlist *l1,const Dlist *l2)
 {
     DlistElement *link1,*link2;
     CompareInfo ci;

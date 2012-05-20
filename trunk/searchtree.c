@@ -57,7 +57,7 @@ static CompareFunction SetCompareFunction(BinarySearchTree *ST,CompareFunction f
 static size_t Sizeof(BinarySearchTree *ST);
 static int DefaultCompareFunction(const void *arg1, const void *arg2, CompareInfo *ExtraArgs);
 static BinarySearchTree *Merge(BinarySearchTree *left, BinarySearchTree *right, const void *data);
-static bool Equal(const BinarySearchTree *left, const BinarySearchTree *right);
+static int Equal(const BinarySearchTree *left, const BinarySearchTree *right);
 static Iterator *NewIterator(BinarySearchTree *);
 static int deleteIterator(Iterator *);
 
@@ -792,7 +792,7 @@ static int compareNodes(const BinarySearchTreeNode *left,const BinarySearchTreeN
 	return 1;
 
 }
-static bool Equal(const BinarySearchTree *left, const BinarySearchTree *right)
+static int Equal(const BinarySearchTree *left, const BinarySearchTree *right)
 {
 	CompareInfo ci;
 	if (!compareHeaders(left,right))

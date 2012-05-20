@@ -120,11 +120,11 @@ static int Resize(HashTable *ht,size_t newsize)
     else new_max = newsize;
     new_array = alloc_array(ht, new_max);
     for (hiptr = first(&hi); hiptr; hiptr = next(hiptr)) {
-        size_t i = hiptr->this->hash % new_max;
+        size_t i = hiptr->This->hash % new_max;
         p = (char *)new_array;
         p += i * (ht->ElementSize+sizeof(HashEntry));
-        hiptr->this->next = (HashEntry *)(p+sizeof(HashEntry)+ht->ElementSize);
-        memcpy(p, hiptr->this,sizeof(HashEntry)+ht->ElementSize);
+        hiptr->This->next = (HashEntry *)(p+sizeof(HashEntry)+ht->ElementSize);
+        memcpy(p, hiptr->This,sizeof(HashEntry)+ht->ElementSize);
     }
     ht->array = new_array;
     ht->max = (unsigned)new_max;
@@ -382,7 +382,7 @@ static int Clear(HashTable *ht)
 {
     HashIndex HashIdx,*hi;
     for (hi = first(&HashIdx); hi; hi = next(hi))
-        HashSet(ht, hi->this->key, hi->this->klen, NULL);
+        HashSet(ht, hi->This->key, hi->This->klen, NULL);
     return 1;
 }
 
@@ -497,14 +497,14 @@ static int Search(HashTable *ht,ApplyCallback *comp, void *rec)
 
     hix.ht    = (HashTable *)ht;
     hix.index = 0;
-    hix.this  = NULL;
+    hix.This  = NULL;
     hix.next  = NULL;
 
     hi = next(&hix);
     if (hi) {
         /* Scan the entire table */
         do {
-            rv = (*comp)(rec, hi->this->key, hi->this->klen, hi->this->val);
+            rv = (*comp)(rec, hi->This->key, hi->This->klen, hi->This->val);
         } while (rv && (hi = next(hi)));
 
         if (rv == 0) {
@@ -521,14 +521,14 @@ static int Apply(HashTable *ht,int (*Applyfn)(void *Key,size_t klen,void *data,v
 
     hix.ht    = (HashTable *)ht;
     hix.index = 0;
-    hix.this  = NULL;
+    hix.This  = NULL;
     hix.next  = NULL;
 
     hi = next(&hix);
     if (hi) {
         /* Scan the entire table */
         do {
-            rv = (*Applyfn)((void *)hi->this->key, hi->this->klen,(void *) hi->this->val,arg);
+            rv = (*Applyfn)((void *)hi->This->key, hi->This->klen,(void *) hi->This->val,arg);
         } while (rv && (hi = next(hi)));
 
         if (rv == 0) {
@@ -604,18 +604,18 @@ static int Save(const HashTable *HT,FILE *stream, SaveFunction saveFn,void *arg)
 
     hix.ht    = (HashTable *)HT;
     hix.index = 0;
-    hix.this  = NULL;
+    hix.This  = NULL;
     hix.next  = NULL;
 
     hi = next(&hix);
     if (hi) {
         /* Scan the entire table */
         do {
-            rv = encode_ule128(stream, hi->this->klen);
+            rv = encode_ule128(stream, hi->This->klen);
             if (rv > 0)
-                rv = (int)fwrite(hi->this->key,1,hi->this->klen,stream);
+                rv = (int)fwrite(hi->This->key,1,hi->This->klen,stream);
             if (rv > 0)
-                rv = (int)saveFn(hi->this->val,arg,stream);
+                rv = (int)saveFn(hi->This->val,arg,stream);
         } while (rv > 0 && (hi = next(hi)));
 
         if (rv <= 0) {
@@ -691,14 +691,14 @@ static HashTable *Load(FILE *stream, ReadFunction readFn,void *arg)
 
 static HashIndex * next(HashIndex *hi)
 {
-    hi->this = hi->next;
-    while (!hi->this) {
+    hi->This = hi->next;
+    while (!hi->This) {
         if (hi->index > hi->ht->max)
             return NULL;
 
-        hi->this = hi->ht->array[hi->index++];
+        hi->This = hi->ht->array[hi->index++];
     }
-    hi->next = hi->this->next;
+    hi->next = hi->This->next;
     return hi;
 }
 
@@ -708,7 +708,7 @@ static void *GetNext(Iterator *it)
     HashIndex *hi = next(&d->hi);
     d->Current = hi;
     if (hi) {
-        return (void *)hi->this->val;
+        return (void *)hi->This->val;
     }
     return NULL;
 }
@@ -716,7 +716,7 @@ static void *GetNext(Iterator *it)
 static HashIndex *first(HashIndex *hi)
 {
     hi->index = 0;
-    hi->this = NULL;
+    hi->This = NULL;
     hi->next = NULL;
     return next(hi);
 }
@@ -730,13 +730,13 @@ static void *GetFirst(Iterator *it)
     d->Current = hi;
     if (hi == NULL)
         return NULL;
-    return hi->this->val;
+    return hi->This->val;
 }
 
 static void *GetCurrent(Iterator *it)
 {
     struct HashTableIterator *d = (struct HashTableIterator *)it;
-    return d->Current->this->val;
+    return d->Current->This->val;
 }
 
 static int ReplaceWithIterator(Iterator *it, void *data,int direction)
@@ -761,9 +761,9 @@ static int ReplaceWithIterator(Iterator *it, void *data,int direction)
     current = *li->Current;
     GetNext(it);
     if (data == NULL)
-        result = Remove(li->ht, current.this->key,current.this->klen);
+        result = Remove(li->ht, current.This->key,current.This->klen);
     else {
-        memcpy(current.this->val,data,li->ht->ElementSize);
+        memcpy(current.This->val,data,li->ht->ElementSize);
         result = 1;
     }
     if (result >= 0) {

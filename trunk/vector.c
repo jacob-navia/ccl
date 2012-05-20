@@ -102,7 +102,7 @@ static int grow(Vector *AL)
 	int r = 1;
 
 	newcapacity = AL->capacity + 1+AL->capacity/4;
-	oldcontents = AL->contents;
+	oldcontents = (void **)AL->contents;
 	AL->contents = AL->Allocator->realloc(AL->contents,newcapacity*AL->ElementSize);
 	if (AL->contents == NULL) {
 		NoMemory(AL,"Resize");
@@ -118,7 +118,7 @@ static int grow(Vector *AL)
 
 static int ResizeTo(Vector *AL,size_t newcapacity)
 {
-	void **oldcontents;
+	void *oldcontents;
 
 	if (AL == NULL) {
 		return NullPtrError("ResizeTo");
@@ -146,13 +146,13 @@ static int Resize(Vector *AL, size_t newSize)
 	size_t i;
 	if (AL == NULL) return iError.NullPtrError("iVector.Resize");
 	if (AL->count < newSize) return ResizeTo(AL,newSize);
-	p = AL->contents;
+	p = (char *)AL->contents;
 	if (AL->DestructorFn) {
 		for (i=newSize; i<AL->count; i++) {
 			AL->DestructorFn(p + i*AL->ElementSize);
 		}
 	}
-	p = AL->Allocator->realloc(AL->contents,newSize*AL->ElementSize);
+	p = (char *)AL->Allocator->realloc(AL->contents,newSize*AL->ElementSize);
 	if (p == NULL) {
 		iError.RaiseError("iVector.Resize",CONTAINER_ERROR_NOMEMORY);
 		return CONTAINER_ERROR_NOMEMORY;
@@ -189,7 +189,7 @@ static int Add(Vector *AL,const void *newval)
 		if (r <= 0)
 			return r;
 	}
-	p = AL->contents;
+	p = (char *)AL->contents;
 	p += AL->count*AL->ElementSize;
 	memcpy(p,newval,AL->ElementSize);
 	AL->timestamp++;
@@ -229,14 +229,14 @@ static int AddRange(Vector * AL,size_t n,const void *data)
 	if (newcapacity >= AL->capacity-1) {
 		unsigned char *newcontents;
 		newcapacity += AL->count/4;
-		newcontents = AL->Allocator->realloc(AL->contents,newcapacity*AL->ElementSize);
+		newcontents = (unsigned char *)AL->Allocator->realloc(AL->contents,newcapacity*AL->ElementSize);
 		if (newcontents == NULL) {
 			return NoMemory(AL,"AddRange");
 		}
 		AL->capacity = newcapacity;
 		AL->contents = newcontents;
 	}
-	p = AL->contents;
+	p = (unsigned char *)AL->contents;
 	p += AL->count*AL->ElementSize;
 	memcpy(p,data,n*AL->ElementSize);
 	AL->count += n;
@@ -269,7 +269,7 @@ static Vector *GetRange(const Vector *AL, size_t start,size_t end)
 		NoMemory(AL,"GetRange");
 		return NULL;
 	}
-	p = AL->contents;
+	p = (char *)AL->contents;
 	memcpy(result->contents,p+start*AL->ElementSize,(top)*AL->ElementSize);
 	result->count = end-start;
 	return result;
@@ -297,7 +297,7 @@ static int Clear(Vector *AL)
 
 	if (AL->DestructorFn) {
 		size_t i;
-		unsigned char *p = AL->contents;
+		unsigned char *p = (unsigned char *)AL->contents;
 		for(i=0; i<AL->count;i++) {
 			AL->DestructorFn(p);
 			p += AL->ElementSize;
@@ -360,8 +360,8 @@ static int Equal(const Vector *AL1,const Vector *AL2)
 		if (memcmp(AL1->contents,AL2->contents,AL1->ElementSize*AL1->count) != 0)
 		return 0;
 	}
-	left =  (char *)AL1->contents;
-	right = (char *)AL2->contents;
+	left =  (unsigned char *)AL1->contents;
+	right = (unsigned char *)AL2->contents;
 	for (i=0; i<AL1->count;i++) {
 		if (AL1->CompareFn(left,right,NULL) != 0)
 			return 0;
@@ -432,7 +432,7 @@ static int CopyElement(const Vector *AL,size_t idx, void *outbuf)
 		AL->RaiseError("iVector.CopyElement",CONTAINER_ERROR_INDEX);
 		return CONTAINER_ERROR_INDEX;
 	}
-	p = AL->contents;
+	p = (char *)AL->contents;
 	p += (idx)*AL->ElementSize;
 	memcpy(outbuf,p,AL->ElementSize);
 	return 1;
@@ -632,7 +632,7 @@ static int EraseAt(Vector *AL,size_t idx)
 	if (AL->Flags & CONTAINER_READONLY) {
 		return ErrorReadOnly(AL,"Erase");
 	}
-	p = AL->contents;
+	p = (char *)AL->contents;
 	p += AL->ElementSize * idx;
 	if (AL->Flags & CONTAINER_HAS_OBSERVER)
 		iObserver.Notify(AL,CCL_ERASE_AT,p,NULL);
