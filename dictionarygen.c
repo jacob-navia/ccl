@@ -79,7 +79,7 @@ static const guid DictionaryGuid = {0xa334a9d, 0x897c, 0x4bed,
 };
 
 
-static DICTIONARY *Create(size_t elementsize,size_t hint);
+static DATA_TYPE *Create(size_t elementsize,size_t hint);
 /*------------------------------------------------------------------------
  Procedure:     hash ID:1
  Purpose:       Returns the hash code for a given character string.
@@ -113,7 +113,7 @@ static int doerrorCall(ErrorFunction err,const char *fnName,int code)
     err(buf,code);
     return code;
 }
-static int ReadOnlyError(const DICTIONARY *SC,const char *fnName)
+static int ReadOnlyError(const DATA_TYPE *SC,const char *fnName)
 {
     return doerrorCall(SC->RaiseError,fnName,CONTAINER_ERROR_READONLY);
 }
@@ -122,12 +122,12 @@ static int NullPtrError(const char *fnName)
     return doerrorCall(iError.RaiseError,fnName,CONTAINER_ERROR_BADARG);
 }
 
-static int BadArgError(const DICTIONARY *SC,const char *fnName)
+static int BadArgError(const DATA_TYPE *SC,const char *fnName)
 {
     return doerrorCall(SC->RaiseError,fnName,CONTAINER_ERROR_BADARG);
 }
 
-static int NoMemoryError(const DICTIONARY *SC,const char *fnName)
+static int NoMemoryError(const DATA_TYPE *SC,const char *fnName)
 {
     return doerrorCall(SC->RaiseError,fnName,CONTAINER_ERROR_NOMEMORY);
 }
@@ -210,7 +210,7 @@ static unsigned int hashlen(const char *key,int *klen)
                 error code will be returned. Returns zero if there
                 is no more memory
 ------------------------------------------------------------------------*/
-static void *GetElement(const DICTIONARY *Dict,const CHARTYPE *Key)
+static void *GetElement(const DATA_TYPE *Dict,const CHARTYPE *Key)
 {
     size_t i;
     struct DATALIST *p;
@@ -231,7 +231,7 @@ static void *GetElement(const DICTIONARY *Dict,const CHARTYPE *Key)
     return NULL;
 }
 
-static int CopyElement(const DICTIONARY *Dict,const CHARTYPE *Key,void *outbuf)
+static int CopyElement(const DATA_TYPE *Dict,const CHARTYPE *Key,void *outbuf)
 {
     size_t i;
     struct DATALIST *p;
@@ -254,7 +254,7 @@ static int CopyElement(const DICTIONARY *Dict,const CHARTYPE *Key,void *outbuf)
     return 0;
 }
 
-static int Contains(const DICTIONARY *Dict,const CHARTYPE *Key)
+static int Contains(const DATA_TYPE *Dict,const CHARTYPE *Key)
 {
     if (Dict == NULL)  {
         return NullPtrError("Contains");
@@ -264,7 +264,7 @@ static int Contains(const DICTIONARY *Dict,const CHARTYPE *Key)
     return GetElement(Dict,Key) ? 1 : 0;
 }
 
-static int Equal(const DICTIONARY *d1,const DICTIONARY *d2)
+static int Equal(const DATA_TYPE *d1,const DATA_TYPE *d2)
 {
     struct DATALIST *p1,*p2;
     size_t i;
@@ -303,7 +303,7 @@ static int Equal(const DICTIONARY *d1,const DICTIONARY *d2)
                 error code
  Errors:        The container must be read/write.
 ------------------------------------------------------------------------*/
-static int add_nd(DICTIONARY *Dict,const CHARTYPE *Key,const void *Value,int is_insert)
+static int add_nd(DATA_TYPE *Dict,const CHARTYPE *Key,const void *Value,int is_insert)
 {
     size_t i;
     struct DATALIST *p;
@@ -350,7 +350,7 @@ static int add_nd(DICTIONARY *Dict,const CHARTYPE *Key,const void *Value,int is_
 
     return result;
 }
-static int Add(DICTIONARY *Dict,const CHARTYPE *Key,const void *Value)
+static int Add(DATA_TYPE *Dict,const CHARTYPE *Key,const void *Value)
 {
     int result;
 
@@ -366,7 +366,7 @@ static int Add(DICTIONARY *Dict,const CHARTYPE *Key,const void *Value)
         iObserver.Notify(Dict,CCL_ADD,Value,NULL);
     return result;
 }
-static int Insert(DICTIONARY *Dict,const CHARTYPE *Key,const void *Value)
+static int Insert(DATA_TYPE *Dict,const CHARTYPE *Key,const void *Value)
 {
     int result;
 
@@ -382,7 +382,7 @@ static int Insert(DICTIONARY *Dict,const CHARTYPE *Key,const void *Value)
         iObserver.Notify(Dict,CCL_INSERT,Value,NULL);
     return result;
 }
-static int Replace(DICTIONARY *Dict,const CHARTYPE *Key,const void *Value)
+static int Replace(DATA_TYPE *Dict,const CHARTYPE *Key,const void *Value)
 {
     size_t i;
     struct DATALIST *p;
@@ -425,7 +425,7 @@ static int Replace(DICTIONARY *Dict,const CHARTYPE *Key,const void *Value)
  Output:        The number of entries
  Errors:        None
 ------------------------------------------------------------------------*/
-static size_t Size(const DICTIONARY *Dict)
+static size_t Size(const DATA_TYPE *Dict)
 {
     if (Dict == NULL) {
         NullPtrError("Size");
@@ -441,7 +441,7 @@ static size_t Size(const DICTIONARY *Dict)
  Output:        The flags
  Errors:        None
 ------------------------------------------------------------------------*/
-static unsigned GetFlags(const DICTIONARY *Dict)
+static unsigned GetFlags(const DATA_TYPE *Dict)
 {
     if (Dict == NULL) {
         NullPtrError("GetFlags");
@@ -450,7 +450,7 @@ static unsigned GetFlags(const DICTIONARY *Dict)
     return Dict->Flags;
 }
 
-static size_t Sizeof(const DICTIONARY *dict)
+static size_t Sizeof(const DATA_TYPE *dict)
 {
     if (dict == NULL) {
         return sizeof(Dictionary);
@@ -466,7 +466,7 @@ static size_t Sizeof(const DICTIONARY *dict)
  Output:        Returns the old value of the flags
  Errors:        None
 ------------------------------------------------------------------------*/
-static unsigned SetFlags(DICTIONARY *Dict,unsigned Flags)
+static unsigned SetFlags(DATA_TYPE *Dict,unsigned Flags)
 {
     unsigned oldFlags;
     if (Dict == NULL) {
@@ -490,7 +490,7 @@ static unsigned SetFlags(DICTIONARY *Dict,unsigned Flags)
  Errors:        If Dictionary is a NULL pointer or the function is a
                 NULL pointer returns zero.
 ------------------------------------------------------------------------*/
-static int Apply(DICTIONARY *Dict,int (*apply)(const CHARTYPE *Key,const void *Value, void *ExtraArgs),
+static int Apply(DATA_TYPE *Dict,int (*apply)(const CHARTYPE *Key,const void *Value, void *ExtraArgs),
     void *ExtraArgs)
 {
     size_t i;
@@ -515,7 +515,7 @@ static int Apply(DICTIONARY *Dict,int (*apply)(const CHARTYPE *Key,const void *V
     return 1;
 }
 
-static int InsertIn(DICTIONARY *dst,DICTIONARY *src)
+static int InsertIn(DATA_TYPE *dst,DATA_TYPE *src)
 {
     size_t i;
     unsigned stamp;
@@ -560,7 +560,7 @@ static int InsertIn(DICTIONARY *dst,DICTIONARY *src)
                 returns zero. If the dictionary is read-only the
                 result is also zero.
 ------------------------------------------------------------------------*/
-static int Erase(DICTIONARY *Dict,const CHARTYPE *Key)
+static int Erase(DATA_TYPE *Dict,const CHARTYPE *Key)
 {
     size_t i;
     struct DATALIST **pp;
@@ -600,7 +600,7 @@ static int Erase(DICTIONARY *Dict,const CHARTYPE *Key)
  Output:        1 if succeeds, zero otherwise
  Errors:        The dictionary must be read/write
 ------------------------------------------------------------------------*/
-static int Clear(DICTIONARY *Dict)
+static int Clear(DATA_TYPE *Dict)
 {
 
     if (Dict == NULL) {
@@ -636,7 +636,7 @@ static int Clear(DICTIONARY *Dict)
  Output:        Returns 1 for success, zero otherwise
  Errors:        Same as Clear: dictionary must be read/write
 ------------------------------------------------------------------------*/
-static int Finalize(DICTIONARY *Dict)
+static int Finalize(DATA_TYPE *Dict)
 {
 
     int r = Clear(Dict);
@@ -649,7 +649,7 @@ static int Finalize(DICTIONARY *Dict)
     return 1;
 }
 
-static ErrorFunction SetErrorFunction(DICTIONARY *Dict,ErrorFunction fn)
+static ErrorFunction SetErrorFunction(DATA_TYPE *Dict,ErrorFunction fn)
 {
     ErrorFunction old;
     if (Dict == NULL) { return iError.RaiseError; }
@@ -666,7 +666,7 @@ static ErrorFunction SetErrorFunction(DICTIONARY *Dict,ErrorFunction fn)
  Output:        A string collection with all keys
  Errors:        NULL if no more memory available
 ------------------------------------------------------------------------*/
-static STRCOLLECTION *GetKeys(const DICTIONARY *Dict)
+static STRCOLLECTION *GetKeys(const DATA_TYPE *Dict)
 {
     size_t i;
     struct DATALIST *p;
@@ -694,7 +694,7 @@ static STRCOLLECTION *GetKeys(const DICTIONARY *Dict)
 static void *GetNext(Iterator *it)
 {
     struct ITERATOR *d = (struct ITERATOR *)it;
-    DICTIONARY *Dict;
+    DATA_TYPE *Dict;
     void *retval;
 
     if (it == NULL) {
@@ -777,7 +777,7 @@ static int ReplaceWithIterator(Iterator *it, void *data,int direction)
 }
 
 
-static Iterator *NewIterator(DICTIONARY *Dict)
+static Iterator *NewIterator(DATA_TYPE *Dict)
 {
     struct ITERATOR *result;
 
@@ -800,7 +800,7 @@ static Iterator *NewIterator(DICTIONARY *Dict)
     return &result->it;
 }
 
-static int InitIterator(DICTIONARY *Dict,void *buf)
+static int InitIterator(DATA_TYPE *Dict,void *buf)
 {
     struct ITERATOR *result = buf;
 
@@ -822,7 +822,7 @@ static int InitIterator(DICTIONARY *Dict,void *buf)
 static int deleteIterator(Iterator *it)
 {
     struct ITERATOR *d = (struct ITERATOR *)it;
-    DICTIONARY *Dict;
+    DATA_TYPE *Dict;
     if (d ==NULL) {
         return NullPtrError("deleteIterator");
     }
@@ -831,7 +831,7 @@ static int deleteIterator(Iterator *it)
     return 1;
 }
 
-static Vector *CastToArray(const DICTIONARY *Dict)
+static Vector *CastToArray(const DATA_TYPE *Dict)
 {
     size_t i;
     struct DATALIST *p;
@@ -853,7 +853,7 @@ static Vector *CastToArray(const DICTIONARY *Dict)
     return result;
 }
 
-static int Save(const DICTIONARY *Dict,FILE *stream, SaveFunction saveFn,void *arg)
+static int Save(const DATA_TYPE *Dict,FILE *stream, SaveFunction saveFn,void *arg)
 {
     Vector *al;
     STRCOLLECTION *sc;
@@ -877,9 +877,9 @@ static int Save(const DICTIONARY *Dict,FILE *stream, SaveFunction saveFn,void *a
     iVector.Finalize(al);
     return result;
 }
-static DICTIONARY *Copy(const DICTIONARY *src)
+static DATA_TYPE *Copy(const DATA_TYPE *src)
 {
-    DICTIONARY *result;
+    DATA_TYPE *result;
     size_t i;
     struct DATALIST *rvp;
 
@@ -907,11 +907,11 @@ static DICTIONARY *Copy(const DICTIONARY *src)
     return result;
 }
 
-static DICTIONARY *Load(FILE *stream, ReadFunction readFn, void *arg)
+static DATA_TYPE *Load(FILE *stream, ReadFunction readFn, void *arg)
 {
     STRCOLLECTION *sc;
     Vector *al;
-    DICTIONARY *result;
+    DATA_TYPE *result;
     size_t i;
     guid Guid;
 
@@ -946,7 +946,7 @@ static DICTIONARY *Load(FILE *stream, ReadFunction readFn, void *arg)
     return result;
 }
 
-static size_t GetElementSize(const DICTIONARY *d)
+static size_t GetElementSize(const DATA_TYPE *d)
 {
     if (d == NULL) {
         NullPtrError("GetElementSize");
@@ -955,7 +955,7 @@ static size_t GetElementSize(const DICTIONARY *d)
     return d->ElementSize;
 }
 
-static const ContainerAllocator *GetAllocator(const DICTIONARY *AL)
+static const ContainerAllocator *GetAllocator(const DATA_TYPE *AL)
 {
     if (AL == NULL) {
         return NULL;
@@ -973,7 +973,7 @@ static const ContainerAllocator *GetAllocator(const DICTIONARY *AL)
  Output:        A pointer to a newly allocated table
  Errors:        If no more memory is available returns NULL
  ------------------------------------------------------------------------*/
-static DICTIONARY *InitWithAllocator(DICTIONARY *Dict,size_t elementsize,size_t hint,const ContainerAllocator *allocator)
+static DATA_TYPE *InitWithAllocator(DATA_TYPE *Dict,size_t elementsize,size_t hint,const ContainerAllocator *allocator)
 {
     size_t i,allocSiz;
     static size_t primes[] = { 509, 509, 1021, 2053, 4093, 8191, 16381,
@@ -997,14 +997,14 @@ static DICTIONARY *InitWithAllocator(DICTIONARY *Dict,size_t elementsize,size_t 
     return Dict;
 }
 
-static DICTIONARY *Init(DICTIONARY *dict,size_t elementsize,size_t hint)
+static DATA_TYPE *Init(DATA_TYPE *dict,size_t elementsize,size_t hint)
 {
     return InitWithAllocator(dict, elementsize, hint, CurrentAllocator);
 }
 
-static DICTIONARY *CreateWithAllocator(size_t elementsize,size_t hint,const ContainerAllocator *allocator)
+static DATA_TYPE *CreateWithAllocator(size_t elementsize,size_t hint,const ContainerAllocator *allocator)
 {
-    DICTIONARY *Dict,*result;
+    DATA_TYPE *Dict,*result;
 
     size_t allocSiz = sizeof (Dictionary);
     Dict = allocator->malloc(allocSiz);
@@ -1017,14 +1017,14 @@ static DICTIONARY *CreateWithAllocator(size_t elementsize,size_t hint,const Cont
         allocator->free(Dict);
     return result;
 }
-static DICTIONARY *Create(size_t elementsize,size_t hint)
+static DATA_TYPE *Create(size_t elementsize,size_t hint)
 {
     return CreateWithAllocator(elementsize,hint,CurrentAllocator);
 }
 
-static DICTIONARY *InitializeWith(size_t elementSize,size_t n, const CHARTYPE **Keys,const void *Values)
+static DATA_TYPE *InitializeWith(size_t elementSize,size_t n, const CHARTYPE **Keys,const void *Values)
 {
-    DICTIONARY *result = Create(elementSize,n);
+    DATA_TYPE *result = Create(elementSize,n);
     size_t i;
     const char *pValues = Values;
 
@@ -1039,7 +1039,7 @@ static DICTIONARY *InitializeWith(size_t elementSize,size_t n, const CHARTYPE **
     return result;
 }
 
-static DestructorFunction SetDestructor(DICTIONARY *cb,DestructorFunction fn)
+static DestructorFunction SetDestructor(DATA_TYPE *cb,DestructorFunction fn)
 {
     DestructorFunction oldfn;
     if (cb == NULL)
@@ -1050,7 +1050,7 @@ static DestructorFunction SetDestructor(DICTIONARY *cb,DestructorFunction fn)
     return oldfn;
 }
 
-static HASHFUNCTION SetHashFunction(DICTIONARY *d,HASHFUNCTION newFn)
+static HASHFUNCTION SetHashFunction(DATA_TYPE *d,HASHFUNCTION newFn)
 {
     HASHFUNCTION old;
     if (d == NULL) {
@@ -1063,7 +1063,7 @@ static HASHFUNCTION SetHashFunction(DICTIONARY *d,HASHFUNCTION newFn)
     return old;
 }
 
-static size_t SizeofIterator(const DICTIONARY *b)
+static size_t SizeofIterator(const DATA_TYPE *b)
 {
 	return sizeof(struct ITERATOR);
 }

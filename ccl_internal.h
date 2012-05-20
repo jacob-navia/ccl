@@ -132,6 +132,7 @@ struct ListIterator {
     char ElementBuffer[1];
 };
 
+#if 0
 /*----------------------------------------------------------------------------*/
 /* Definition of the stringlist and stringlist element type                   */
 /*----------------------------------------------------------------------------*/
@@ -197,6 +198,7 @@ struct WStringListIterator {
     unsigned timestamp;
     wchar_t *ElementBuffer;
 };
+#endif
 
 
 /*----------------------------------------------------------------------------*/
@@ -309,7 +311,7 @@ typedef struct _HashEntry {
  */
 typedef struct _HashIndex {
     HashTable     *ht;
-    HashEntry     *this, *next;
+    HashEntry     *This, *next;
     unsigned int   index;
 } HashIndex;
 /*

@@ -915,7 +915,7 @@ static ErrorFunction SetErrorFunction(ElementType *SC,ErrorFunction fn)
     return old;
 }
 
-static bool Sort(ElementType *SC)
+static int Sort(ElementType *SC)
 {
     CompareInfo ci;
 

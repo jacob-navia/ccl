@@ -27,7 +27,7 @@ static const guid ListGuid = {0x672abd64, 0xe231, 0x486b,
     {0xbc, 0x72, 0x9b, 0x3a, 0x88, 0x20, 0x10, 0x35}
 };
 
-static int ErrorReadOnly(const List * L, char *fnName)
+static int ErrorReadOnly(const List * L,const char *fnName)
 {
     char            buf[512];
 
@@ -36,7 +36,7 @@ static int ErrorReadOnly(const List * L, char *fnName)
     return CONTAINER_ERROR_READONLY;
 }
 
-static int NullPtrError(char *fnName)
+static int NullPtrError(const char *fnName)
 {
     char            buf[512];
 
@@ -63,9 +63,9 @@ static ListElement * NewLink(List * li, const void *data, const char *fname)
     ListElement    *result;
 
     if (li->Flags & CONTAINER_LIST_SMALL || li->Heap == NULL) {
-        result = li->Allocator->malloc(sizeof(*result) + li->ElementSize);
+        result = (ListElement *)li->Allocator->malloc(sizeof(*result) + li->ElementSize);
     } else
-        result = iHeap.newObject(li->Heap);
+        result = (ListElement *)iHeap.newObject(li->Heap);
     if (result == NULL) {
         li->RaiseError(fname, CONTAINER_ERROR_NOMEMORY);
     } else {
@@ -244,33 +244,6 @@ static size_t Size(const List * l)
     return l->count;
 }
 
-static List    *SetAllocator(List * l, ContainerAllocator * allocator)
-{
-    if (l == NULL) {
-        NullPtrError("SetAllocator");
-        return NULL;
-    }
-    if (l->count)
-        return NULL;
-    if (allocator != NULL) {
-        List           *newList;
-        if (l->Flags & CONTAINER_READONLY) {
-            ErrorReadOnly(l,"SetAllocator");
-            return NULL;
-        }
-        newList = allocator->malloc(sizeof(List));
-        if (newList == NULL) {
-            l->RaiseError("iList.SetAllocator", CONTAINER_ERROR_NOMEMORY);
-            return NULL;
-        }
-        memcpy(newList, l, sizeof(List));
-        newList->Allocator = allocator;
-        l->Allocator->free(l);
-        return newList;
-    }
-    return NULL;
-}
-
 /*------------------------------------------------------------------------
  Procedure:     SetCompareFunction ID:1
  Purpose:       Defines the function to be used in comparison of
@@ -282,13 +255,13 @@ static List    *SetAllocator(List * l, ContainerAllocator * allocator)
 ------------------------------------------------------------------------*/
 static CompareFunction SetCompareFunction(List * l, CompareFunction fn)
 {
-    CompareFunction oldfn = l->Compare;
-
+    CompareFunction oldfn;
 
     if (l == NULL) {
         NullPtrError("SetCompareFunction");
         return NULL;
     }
+    oldfn = l->Compare;
     if (fn != NULL) {    /* Treat NULL as an enquiry to get the
                           * compare function */
         if (l->Flags & CONTAINER_READONLY) {
@@ -971,7 +944,7 @@ static int Append(List * l1, List * l2)
         return ErrorReadOnly(l1,"Append");
         return CONTAINER_ERROR_READONLY;
     }
-    if (l2->ElementSize != l1->ElementSize) {
+    if (l2->ElementSize != l1->ElementSize || l2->Allocator != l1->Allocator) {
         l1->RaiseError("iList.Append", CONTAINER_ERROR_INCOMPATIBLE);
         return CONTAINER_ERROR_INCOMPATIBLE;
     }
@@ -1043,7 +1016,7 @@ static int AddRange(List * AL, size_t n, const void *data)
         AL->RaiseError("iList.AddRange", CONTAINER_ERROR_BADARG);
         return CONTAINER_ERROR_BADARG;
     }
-    p = data;
+    p = (const unsigned char *)data;
     oldLast = AL->Last;
     while (n > 0) {
         int             r = Add_nd(AL, p);
@@ -1141,7 +1114,7 @@ static int Sort(List * l)
         l->RaiseError("iList.Sort", CONTAINER_ERROR_READONLY);
         return CONTAINER_ERROR_READONLY;
     }
-    tab = l->Allocator->malloc(l->count * sizeof(ListElement *));
+    tab = (ListElement **)l->Allocator->malloc(l->count * sizeof(ListElement *));
     if (tab == NULL) {
         l->RaiseError("iList.Sort", CONTAINER_ERROR_NOMEMORY);
         return CONTAINER_ERROR_NOMEMORY;
@@ -1459,7 +1432,7 @@ static Iterator *NewIterator(List * L)
         NullPtrError("NewIterator");
         return NULL;
     }
-    result = L->Allocator->malloc(sizeof(struct ListIterator));
+    result = (struct ListIterator *)L->Allocator->malloc(sizeof(struct ListIterator));
     if (result == NULL) {
         L->RaiseError("iList.NewIterator", CONTAINER_ERROR_NOMEMORY);
         return NULL;
@@ -1483,7 +1456,7 @@ static int deleteIterator(Iterator * it)
 
 static int DefaultSaveFunction(const void *element, void *arg, FILE * Outfile)
 {
-    const unsigned char *str = element;
+    const unsigned char *str = (const unsigned char *)element;
     size_t          len = *(size_t *) arg;
 
     return len == fwrite(str, 1, len, Outfile);
@@ -1559,7 +1532,7 @@ static List    *Load(FILE * stream, ReadFunction loadFn, void *arg)
         return NULL;
     }
     elemSize = L.ElementSize;
-    buf = calloc(1, L.ElementSize);
+    buf = (char *)calloc(1, L.ElementSize);
     if (buf == NULL) {
         iError.RaiseError("iList.Load", CONTAINER_ERROR_NOMEMORY);
         return NULL;
@@ -1619,7 +1592,7 @@ static List    *CreateWithAllocator(size_t elementsize, const ContainerAllocator
         NullPtrError("Create");
         return NULL;
     }
-    result = allocator->calloc(1, sizeof(List));
+    result = (List *)allocator->calloc(1, sizeof(List));
     if (result == NULL) {
         iError.RaiseError("iList.Create", CONTAINER_ERROR_NOMEMORY);
         return NULL;
@@ -1641,7 +1614,7 @@ static List    *InitializeWith(size_t elementSize, size_t n, const void *Data)
 {
     List           *result = Create(elementSize);
     size_t          i;
-    const char     *pData = Data;
+    const char     *pData = (const char *)Data;
     if (result == NULL)
         return result;
     for (i = 0; i < n; i++) {
@@ -1909,11 +1882,11 @@ static ListElement *FirstElement(List *l)
 static ListElement *LastElement(List *l)
 {
     if (l == NULL) {
-        NullPtrError("FirstElement");
+        NullPtrError("LastElement");
         return NULL;
     }
     if (l->Flags&CONTAINER_READONLY) {
-        ErrorReadOnly(l,"FirstElement");
+        ErrorReadOnly(l,"LastElement");
         return NULL;
     }
     return l->Last;
@@ -2046,7 +2019,6 @@ ListInterface   iList = {
     CreateWithAllocator,
     Init,
     InitWithAllocator,
-    SetAllocator,
     GetAllocator,
     SetDestructor,
     InitializeWith,

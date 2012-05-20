@@ -141,7 +141,7 @@ static size_t GetCount(BitString *b)
 }
 
 
-static int SetElement(BitString *bs,size_t position,bool b)
+static int SetElement(BitString *bs,size_t position,int b)
 {
 	if (bs == NULL)
 		return NullPtrError("SetElement");
@@ -725,7 +725,7 @@ static int Add(BitString *b,int newval)
 	return 1;
 }
 
-static int ReplaceAt(BitString *b,size_t idx,bool newval)
+static int ReplaceAt(BitString *b,size_t idx,int newval)
 {
 	size_t bytepos,bitpos;
 
@@ -759,7 +759,7 @@ static int PopBack(BitString *b){
 	return result;
 }
 
-static int Apply(BitString *b,int (*Applyfn)(bool,void *),void *arg)
+static int Apply(BitString *b,int (*Applyfn)(int,void *),void *arg)
 {
 	size_t i,bytepos,bitpos;
 
@@ -860,7 +860,7 @@ static int Contains(BitString *txt,BitString *pattern,void *Args)
 	return bitBitstr(txt,pattern) ? 1 : 0;
 }
 
-static int IndexOf(BitString *b,bool bit,void *ExtraArgs,size_t *result)
+static int IndexOf(BitString *b,int bit,void *ExtraArgs,size_t *result)
 {
 	size_t bitpos;
 	size_t bytepos,i;
@@ -918,11 +918,11 @@ static int ShiftLeftByOne(unsigned char *p, size_t z,unsigned carry)
 }
 
 
-static size_t InsertAt(BitString *b,size_t idx,bool value)
+static size_t InsertAt(BitString *b,size_t idx,int value)
 {
 	size_t bitpos,newval;
 	unsigned carry;
-	bool oldval;
+	int oldval;
 	size_t bytepos,count,bytesToShift,bytesUsed;
 
 	if (b == NULL)
@@ -954,7 +954,7 @@ static size_t InsertAt(BitString *b,size_t idx,bool value)
 
 }
 
-static size_t Insert(BitString *b,bool bit){
+static size_t Insert(BitString *b,int bit){
 	return InsertAt(b,0,bit);
 }
 
@@ -1020,7 +1020,7 @@ static int EraseAt(BitString *bitStr,size_t idx)
 	return 1;
 }
 
-static int Erase(BitString *bitStr,bool val)
+static int Erase(BitString *bitStr,int val)
 {
 	size_t idx;
 	int i;
@@ -1033,7 +1033,7 @@ static int Erase(BitString *bitStr,bool val)
 	return 1;
 }
 
-static int Memset(BitString *b,size_t start,size_t stop,bool newval)
+static int Memset(BitString *b,size_t start,size_t stop,int newval)
 {
 	BIT_TYPE *contents;
 	size_t startbyte,stopbyte;

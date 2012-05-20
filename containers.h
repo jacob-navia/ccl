@@ -25,14 +25,6 @@
 #define NO_GC
 #define NO_C99
 
-#ifdef NO_C99
-/* No stdbool */
-typedef enum { FALSE,TRUE}  bool;
-#else
-/* Use C99 features */
-#include <stdbool.h>
-#endif
-
 /* General container flags */
 #define CONTAINER_READONLY	1
 #define CONTAINER_HAS_OBSERVER	2
@@ -353,7 +345,7 @@ typedef struct tagstrCollection {
     int (*ReplaceAt)(strCollection *SC,size_t idx,char *newval);
     int (*IndexOf)(const strCollection *SC,const char *SearchedString,size_t *result);   
  /* ---------------------------------------------This is the specific container part */
-    bool (*Sort)(strCollection *SC);
+    int (*Sort)(strCollection *SC);
     struct _Vector *(*CastToArray)(const strCollection *SC);
     size_t (*FindFirst)(const strCollection *SC,const char *text);
     size_t (*FindNext)(const strCollection *SC, const char *text,size_t start);
@@ -438,7 +430,7 @@ typedef struct tagWstrCollection {
     int (*ReplaceAt)(WstrCollection *SC,size_t idx,wchar_t *newval);
     int (*IndexOf)(const WstrCollection *SC,const wchar_t *SearchedString,size_t *result);
     /* ---------------------------------------------This is the specific container part */
-    bool (*Sort)(WstrCollection *SC);
+    int (*Sort)(WstrCollection *SC);
     struct _Vector *(*CastToArray)(const WstrCollection *SC);
     size_t (*FindFirst)(const WstrCollection *SC,const wchar_t *text);
     size_t (*FindNext)(const WstrCollection *SC, const wchar_t *text,size_t start);
@@ -537,7 +529,6 @@ typedef struct tagList {
     List *(*CreateWithAllocator)(size_t elementsize,const ContainerAllocator *mm);
     List *(*Init)(List *aList,size_t element_size);
     List *(*InitWithAllocator)(List *aList,size_t element_size,const ContainerAllocator *mm);
-    List *(*SetAllocator)(List *l, ContainerAllocator  *allocator);
     const ContainerAllocator *(*GetAllocator)(const List *list);
     DestructorFunction (*SetDestructor)(List *v,DestructorFunction fn);
     List *(*InitializeWith)(size_t elementSize,size_t n,const void *data);
@@ -559,8 +550,7 @@ typedef struct tagList {
 } ListInterface;
 
 extern ListInterface iList;
-typedef struct _StringListElement StringListElement;
-typedef struct _wStringListElement wStringListElement;
+
 #include "stringlist.h"
 #include "wstringlist.h"
 /* -------------------------------------------------------------------
@@ -662,7 +652,7 @@ typedef struct tagDlist {
     int (*EraseAll)(Dlist *AL,const void *);
     int (*Finalize)(Dlist *AL);
     int (*Apply)(Dlist *L,int(Applyfn)(void *elem,void *extraArg),void *extraArg);
-    bool (*Equal)(const Dlist *l1,const Dlist *l2); 
+    int (*Equal)(const Dlist *l1,const Dlist *l2); 
     Dlist *(*Copy)(const Dlist *dl);
     ErrorFunction (*SetErrorFunction)(Dlist *L,ErrorFunction);
     size_t (*Sizeof)(const Dlist *dl);
@@ -948,7 +938,7 @@ typedef struct tagBinarySearchTreeInterface {
     int (*Erase)(BinarySearchTree *ST, const void *,void *);
     int (*Finalize)(BinarySearchTree *ST);
     int (*Apply)(BinarySearchTree *ST,int (*Applyfn)(const void *data,void *arg),void *arg);
-    bool (*Equal)(const BinarySearchTree *left, const BinarySearchTree *right);
+    int (*Equal)(const BinarySearchTree *left, const BinarySearchTree *right);
     int (*Add)(BinarySearchTree *ST, const void *Data);
     int (*Insert)(BinarySearchTree * ST, const void *Data, void *ExtraArgs);
     ErrorFunction (*SetErrorFunction)(BinarySearchTree *ST, ErrorFunction fn);
@@ -1050,9 +1040,9 @@ typedef struct tagBitString {
     unsigned (*SetFlags)(BitString *BitStr,unsigned flags);/* Sets flags */
     int (*Clear)(BitString *BitStr);
     int (*Contains)(BitString *BitStr,BitString *str,void *ExtraArgs);
-    int (*Erase)(BitString *BitStr,bool bit);
+    int (*Erase)(BitString *BitStr,int bit);
     int         (*Finalize)(BitString *BitStr);
-    int        (*Apply)(BitString *BitStr,int (*Applyfn)(bool ,void * arg),void *arg);
+    int        (*Apply)(BitString *BitStr,int (*Applyfn)(int ,void * arg),void *arg);
     int       (*Equal)(BitString *bsl,BitString *bsr);
     BitString *(*Copy)(BitString *);
     ErrorFunction *(*SetErrorFunction)(BitString *,ErrorFunction fn);
@@ -1071,16 +1061,16 @@ typedef struct tagBitString {
     int  (*PushBack)(BitString *BitStr,int val);
     int       (*PopBack)(BitString *BitStr);
     /* Inserts a string at the given position */
-    size_t (*InsertAt)(BitString *BitStr,size_t idx,bool bit);
+    size_t (*InsertAt)(BitString *BitStr,size_t idx,int bit);
     int (*EraseAt)(BitString *BitStr,size_t idx);
-    int        (*ReplaceAt)(BitString *BitStr,size_t idx,bool newval);
-    int (*IndexOf)(BitString *BitStr,bool SearchedBit,void *ExtraArgs,size_t *result);
+    int        (*ReplaceAt)(BitString *BitStr,size_t idx,int newval);
+    int (*IndexOf)(BitString *BitStr,int SearchedBit,void *ExtraArgs,size_t *result);
 
     /* Bit string specific functions */
     
     /* Inserts a bit at the position zero. */
-    size_t     (*Insert)(BitString *BitStr,bool bit);
-    int        (*SetElement)(BitString *bs,size_t position,bool b);
+    size_t     (*Insert)(BitString *BitStr,int bit);
+    int        (*SetElement)(BitString *bs,size_t position,int b);
     size_t     (*GetCapacity)(BitString *BitStr);
     int        (*SetCapacity)(BitString *BitStr,size_t newCapacity);
     BitString *(*Or)(BitString *left,BitString *right);
@@ -1102,7 +1092,7 @@ typedef struct tagBitString {
     int        (*BitRightShift)(BitString *bs,size_t shift);
     size_t     (*Print)(BitString *b,size_t bufsiz,unsigned char *out);
     int        (*Append)(BitString *left,BitString *right);
-    int        (*Memset)(BitString *,size_t start,size_t stop,bool newval);
+    int        (*Memset)(BitString *,size_t start,size_t stop,int newval);
     BitString *(*CreateWithAllocator)(size_t startsiz,const ContainerAllocator *mm);
     BitString *(*Create)(size_t bitlen);
     BitString *(*Init)(BitString *BitStr,size_t bitlen);
