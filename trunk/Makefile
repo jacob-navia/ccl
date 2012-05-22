@@ -17,7 +17,7 @@ SRC=	vector.c bloom.c containererror.c dlist.c qsortex.c heap.c \
 	valarrayshort.c valarrayfloat.c valarrayuint.c valarraylonglong.c \
 	valarrayulonglong.c sequential.c iMask.c wstrcollection.c strcollectiongen.c \
 	stringlistgen.c stringlistgen.h stringlist.c stringlist.h wstringlist.h \
-        priorityqueue.c
+        priorityqueue.c intlist.c listgen.c 
 DOCS=
 MAKEFILES=Makefile Makefile.lcc Makefile.msvc
 
@@ -28,7 +28,8 @@ OBJS=vector.o containererror.o dlist.o qsortex.o bitstrings.o generic.o \
     valarraylongdouble.o valarrayshort.o valarrayfloat.o valarrayuint.o \
     valarraylonglong.o valarrayulonglong.o memorymanager.o sequential.o \
     iMask.o deque.o hashtable.o wstrcollection.o stringlist.o wstringlist.o \
-    priorityqueue.o
+    priorityqueue.o intlist.o doublelist.o longlonglist.o
+LIST_GENERIC=listgen.c listgen.h
 
 dotest:	libccl.a test.o
 	gcc -o dotest -g $(CFLAGS) test.c libccl.a -lm
@@ -74,3 +75,6 @@ strcollection.o:       strcollection.c strcollectiongen.c containers.h ccl_inter
 stringlist.o:	stringlist.c stringlistgen.c containers.h ccl_internal.h stringlist.h stringlistgen.h
 wstringlist.o:	wstringlist.c stringlistgen.c stringlistgen.h wstringlist.h containers.h ccl_internal.h
 priorityqueue.o: priorityqueue.c ccl_internal.h containers.h
+intlist.o:	intlist.h intlist.c $(LIST_GENERIC)
+doublelist.o:	doublelist.h doublelist.c $(LIST_GENERIC)
+longlonglist.o:	longlonglist.h longlonglist.c $(LIST_GENERIC)
