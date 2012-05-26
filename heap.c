@@ -49,16 +49,15 @@ static void *newHeapObject(ContainerHeap *l)
 		/* Allocate an array of pointers that will hold the blocks
 		of CHUNK_SIZE list items
 		*/
-		siz = sizeof(ListElement *)*CHUNK_SIZE;
-		l->Heap = l->Allocator->malloc(siz);
+		siz = sizeof(ListElement *);
+		l->Heap = l->Allocator->calloc(CHUNK_SIZE,siz);
 		if (l->Heap == NULL) {
 			return NULL;
 		}
-		l->MemoryUsed += siz;
+		l->MemoryUsed += siz*CHUNK_SIZE;
 		l->BlockCount = CHUNK_SIZE;
 		l->CurrentBlock=0;
 		l->BlockIndex = 0;
-		memset(l->Heap,0,siz);
 		l->BitMap = l->Allocator->malloc(1+CHUNK_SIZE/8);
 	}
 	if (l->FreeList) {
@@ -79,17 +78,20 @@ static void *newHeapObject(ContainerHeap *l)
 			if (result == NULL) {
 				return NULL;
 			}
-			p = l->Allocator->realloc(l->Heap,1+(l->BlockCount*CHUNK_SIZE+CHUNK_SIZE)/8);
-			if (p == NULL) {
-				l->Allocator->free(result);
-				return NULL;
-			}
-			l->MemoryUsed+= siz;
 			l->Heap = (char **)result;
+			l->MemoryUsed += siz;
 			/* Position pointer at the start of the new area */
 			result += l->BlockCount*sizeof(ListElement *);
 			/* Zero the new pointers */
+			siz = CHUNK_SIZE*sizeof(ListElement *);
 			memset(result,0,siz);
+			siz = 1+(l->BlockCount*CHUNK_SIZE+CHUNK_SIZE)/8;
+			p = l->Allocator->realloc(l->BitMap,siz);
+			if (p == NULL) {
+				return NULL;
+			}
+			l->MemoryUsed+= siz;
+			l->BitMap = p;
 			l->BlockCount += CHUNK_SIZE;
 		}
 	}
@@ -103,9 +105,9 @@ static void *newHeapObject(ContainerHeap *l)
 		l->Heap[l->CurrentBlock] = result;
 		l->BlockIndex = 0;
 	}
-	l->BlockIndex++;
 	result = l->Heap[l->CurrentBlock];
 	result += l->ElementSize*l->BlockIndex;
+	l->BlockIndex++;
 	return result;
 }
 
