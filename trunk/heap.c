@@ -6,15 +6,23 @@ struct tagHeapObject {
 	unsigned BlockCount;
 	unsigned CurrentBlock;
 	unsigned BlockIndex;
+	char *BitMap;
 	char **Heap;
 	size_t ElementSize;
 	void *FreeList;
 	const ContainerAllocator *Allocator;
 	size_t MemoryUsed;
-};	
+};
 #ifndef CHUNK_SIZE 
 #define CHUNK_SIZE 100
 #endif
+static int UnsetBit(char *BitMap,size_t idx)
+{
+	size_t byte = idx/8;
+	if ((BitMap[byte] & (1 << (idx%8))) == 0) return -1;
+	BitMap[byte] &= ~(1 << (idx%8));
+	return 1;
+}
 /*------------------------------------------------------------------------
  Procedure:     new_HeapObject ID:1
  Purpose:       Allocation of a new list element. If the element
@@ -51,20 +59,29 @@ static void *newHeapObject(ContainerHeap *l)
 		l->CurrentBlock=0;
 		l->BlockIndex = 0;
 		memset(l->Heap,0,siz);
+		l->BitMap = l->Allocator->malloc(1+CHUNK_SIZE/8);
 	}
 	if (l->FreeList) {
 		ListElement *le = l->FreeList;
 		l->FreeList = le->Next;
+		siz = *(size_t *)(&le->Data);
+		UnsetBit(l->BitMap,siz);
 		return le;
 	}
 	if (l->BlockIndex == CHUNK_SIZE) {
 		/* The current block is full */
 		l->CurrentBlock++;
 		if (l->CurrentBlock == l->BlockCount) {
-			/* The array of block pointers is full. Allocate CHUNK_SIZE blocks more */
+			char *p;
+			/* The array of block pointers is full. Allocate CHUNK_SIZE elements more */
 			siz = (l->BlockCount+CHUNK_SIZE)*sizeof(ListElement *);
 			result = l->Allocator->realloc(l->Heap,siz);
 			if (result == NULL) {
+				return NULL;
+			}
+			p = l->Allocator->realloc(l->Heap,1+(l->BlockCount*CHUNK_SIZE+CHUNK_SIZE)/8);
+			if (p == NULL) {
+				l->Allocator->free(result);
 				return NULL;
 			}
 			l->MemoryUsed+= siz;
@@ -92,11 +109,48 @@ static void *newHeapObject(ContainerHeap *l)
 	return result;
 }
 
-static void AddToFreeList(ContainerHeap *heap,void *element)
+static size_t FindBlock(ContainerHeap *heap,void *elem, size_t *idx)
+{
+	size_t i;
+	intptr_t blockStart,blockEnd,e = (intptr_t)elem;
+
+	for (i=0; i<=heap->BlockIndex;i++) {
+		blockStart = (intptr_t) heap->Heap[i];
+		blockEnd = blockStart + CHUNK_SIZE*sizeof(ListElement *);
+		if (e >= blockStart && e < blockEnd) {
+			if (((e-blockStart) % sizeof(ListElement)) == 0) {
+				*idx = (e-blockStart)/sizeof(ListElement);
+				return i;
+			}
+			else
+				return 1+heap->BlockIndex;
+		}
+	}
+	return i;
+}
+
+static int SetBit(char *BitMap,size_t idx)
+{
+	size_t byte = idx/8;
+	if (BitMap[byte]&(1 << (idx%8)))
+		return -1;
+	BitMap[byte] |= (1 << (idx%8));
+	return 1;
+}
+
+static int AddToFreeList(ContainerHeap *heap,void *element)
 {
 	ListElement *le = (ListElement *)element;
+	size_t blockNr;
+	size_t idx;
 	le->Next = heap->FreeList;
+	blockNr = FindBlock(heap,element,&idx);
+	if (blockNr > heap->BlockIndex) return -1;
+	idx += blockNr * CHUNK_SIZE;
+	SetBit(heap->BitMap,idx);
 	heap->FreeList = le;
+	memcpy(le->Data, & idx, sizeof(size_t));
+	return 1;
 }
 
 /*------------------------------------------------------------------------
@@ -166,6 +220,21 @@ struct HeapIterator {
 
 } ;
 
+static int SkipFree(struct HeapIterator *it)
+{
+	size_t idx = it->BlockNumber * CHUNK_SIZE + it->BlockPosition;
+	size_t stop = it->Heap->CurrentBlock * CHUNK_SIZE + it->Heap->BlockIndex;
+	size_t byte = idx/8;
+	while (it->Heap->BitMap[byte] & (1 << (idx%8))) {
+		idx++;
+		if (idx >= stop) return -1;
+		byte = idx/8;
+	}
+	it->BlockNumber = idx/CHUNK_SIZE;
+	it->BlockPosition = idx - it->BlockNumber * CHUNK_SIZE;
+	return 1;
+}
+
 static void *GetFirst(Iterator *it)
 {
 	struct HeapIterator *hi = (struct HeapIterator *)it;
@@ -185,6 +254,9 @@ static void *GetNext(Iterator *it)
 	struct HeapIterator *hi = (struct HeapIterator *)it;
 	ContainerHeap *heap = hi->Heap;
 	char *result;
+	
+	if (SkipFree(hi) < 0)
+		return NULL;
 	if (hi->BlockNumber == (heap->BlockCount-1)) {
 		/* In the last block we should not got beyond the
 		   last used element, the block can be half full.
