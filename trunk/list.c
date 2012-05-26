@@ -915,6 +915,8 @@ static int RemoveAt(List * l, size_t position)
         removed = rvp;
         last->Next = rvp->Next;
     }
+    if (l->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(l, CCL_ERASE_AT, removed, (void *) position);
     if (l->DestructorFn)
         l->DestructorFn(&removed->Data);
 
@@ -924,8 +926,6 @@ static int RemoveAt(List * l, size_t position)
         l->Allocator->free(removed);
     l->timestamp++;
     --l->count;
-    if (l->Flags & CONTAINER_HAS_OBSERVER)
-        iObserver.Notify(l, CCL_ERASE_AT, removed, (void *) position);
     return 1;
 }
 
@@ -1277,7 +1277,9 @@ static void    *GetNext(Iterator * it)
         L->RaiseError("GetNext", CONTAINER_ERROR_OBJECT_CHANGED);
         return NULL;
     }
+    if (li->Current == NULL) return NULL;
     li->Current = li->Current->Next;
+    if (li->Current == NULL) return NULL;
     li->index++;
     if (L->Flags & CONTAINER_READONLY) {
         memcpy(li->ElementBuffer, li->Current->Data, L->ElementSize);
@@ -1317,6 +1319,7 @@ static void    *GetPrevious(Iterator * it)
         }
     }
     li->Current = rvp;
+    if (rvp == NULL) return NULL;
     if (L->Flags & CONTAINER_READONLY) {
         memcpy(li->ElementBuffer, rvp->Data, L->ElementSize);
         return li->ElementBuffer;
@@ -1956,16 +1959,14 @@ static List *SplitAfter(List *l, ListElement *pt)
     pNext = pt->Next;
     if (pNext == NULL) return NULL;
     result = CreateWithAllocator(l->ElementSize, l->Allocator);
-    if (result) {
-        result->First = pNext;
-        while (pNext) {
-            count++;
-            if (pNext->Next == NULL) result->Last = pNext;
-            pNext = pNext->Next;
-        }
-        result->count = count;
+    if (result == NULL) return NULL;
+    result->First = pNext;
+    while (pNext) {
+        count++;
+        if (pNext->Next == NULL) result->Last = pNext;
+        pNext = pNext->Next;
     }
-    else return NULL;
+    result->count = count;
     pt->Next = NULL;
     l->Last = pt;
     l->count -= count;
