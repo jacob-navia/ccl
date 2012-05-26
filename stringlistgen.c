@@ -28,7 +28,7 @@ static int ErrorReadOnly(LIST_TYPE(DATA_TYPE) *L,char *fnName)
 {
     char buf[512];
     
-    sprintf(buf,"iStringList.%s",fnName);
+    snprintf(buf,sizeof(buf),"iStringList.%s",fnName);
     L->RaiseError(buf,CONTAINER_ERROR_READONLY);
     return CONTAINER_ERROR_READONLY;
 }
@@ -37,7 +37,7 @@ static int NullPtrError(char *fnName)
 {
     char buf[512];
     
-    sprintf(buf,"iStringList.%s",fnName);
+    snprintf(buf,sizeof(buf),"iStringList.%s",fnName);
     return iError.NullPtrError(buf);
 }
 static LIST_ELEMENT(DATA_TYPE) *NewLink(LIST_TYPE(DATA_TYPE) *li,const CHARTYPE *data,const char *fname)
@@ -317,7 +317,7 @@ static LIST_TYPE(DATA_TYPE) *Copy(const LIST_TYPE(DATA_TYPE) *l)
         	result->count++;
         }
         else {
-        	result->Last->Next = newElem;
+            result->Last->Next = newElem;
             result->count++;
         }
         result->Last = newElem;
@@ -508,13 +508,14 @@ static LIST_TYPE(DATA_TYPE) *GetRange(LIST_TYPE(DATA_TYPE) *l,size_t start,size_
         return NULL;
     }
     result = Create();
+    if (result == NULL) return NULL;
     result->VTable = l->VTable;
     if (l->count == 0)
         return result;
     if (end >= l->count)
         end = l->count;
     if (start >= end || start > l->count)
-        return NULL;
+        return result;
     if (start == l->count-1)
         rvp = l->Last;
     else {
@@ -528,8 +529,8 @@ static LIST_TYPE(DATA_TYPE) *GetRange(LIST_TYPE(DATA_TYPE) *l,size_t start,size_
     while (start < end && rvp != NULL) {
         int r = Add_nd(result,rvp->Data);
         if (r < 0) {
-        	Finalize(result);
-        	result = NULL;
+            Finalize(result);
+            result = NULL;
             break;
         }
         rvp = rvp->Next;
@@ -796,11 +797,11 @@ static int Erase(LIST_TYPE(DATA_TYPE) *l, CHARTYPE *elem)
                 }
             }
             else if (position == l->count - 1) {
-                previous->Next = NULL;
+                if (previous) previous->Next = NULL;
                 l->Last = previous;
             }
             else {
-                previous->Next = rvp->Next;
+                if (previous) previous->Next = rvp->Next;
             }
 
             if (l->DestructorFn)
@@ -892,14 +893,14 @@ static int RemoveAt_nd(LIST_TYPE(DATA_TYPE) *l,size_t position)
         removed = rvp;
         last->Next = rvp->Next;
     }
+    if (l->Flags & CONTAINER_HAS_OBSERVER)
+        iObserver.Notify(l,CCL_ERASE_AT,removed,(void *)position);
     if (l->DestructorFn)
         l->DestructorFn(&removed->Data);
     
     l->Allocator->free(removed);
     l->timestamp++;
     --l->count;
-    if (l->Flags & CONTAINER_HAS_OBSERVER)
-        iObserver.Notify(l,CCL_ERASE_AT,removed,(void *)position);
     return 1;
 }
 
@@ -1033,7 +1034,8 @@ static int AddRange(LIST_TYPE(DATA_TYPE) * AL,size_t n, CHARTYPE **data)
 static int IndexOf_nd(const LIST_TYPE(DATA_TYPE) *l,const CHARTYPE *ElementToFind,void *ExtraArgs,size_t *result)
 {
     LIST_ELEMENT(DATA_TYPE) *rvp;
-    int r,i=0;
+    int r;
+    size_t i=0;
     CompareFunction fn;
     CompareInfo ci;
 
@@ -1045,8 +1047,8 @@ static int IndexOf_nd(const LIST_TYPE(DATA_TYPE) *l,const CHARTYPE *ElementToFin
     while (rvp) {
         r = fn(&rvp->Data,ElementToFind,&ci);
         if (r == 0) {
-        	if (result)
-        		*result = i;
+           if (result)
+       	       *result = i;
             return 1;
         }
         rvp = rvp->Next;
@@ -1299,7 +1301,8 @@ static void *GetPrevious(Iterator *it)
         }
     }
     li->Current = rvp;
-    if (L->Flags & CONTAINER_READONLY) {
+    if (rvp == NULL) return NULL;
+    if (rvp && (L->Flags & CONTAINER_READONLY)) {
         L->Allocator->free(li->ElementBuffer);
         li->ElementBuffer = L->Allocator->malloc(1+STRLEN(li->Current->Data));
         STRCPY(li->ElementBuffer,li->Current->Data);
@@ -1455,9 +1458,9 @@ static int DefaultSaveFunction(const void *element,void *arg, FILE *Outfile)
 {
     const unsigned char *str = element;
     size_t len = STRLEN(element);
-    int r = fwrite(&len,1,sizeof(size_t),Outfile);
-    if (r <= 0)
-        return r;
+    size_t r = fwrite(&len,1,sizeof(size_t),Outfile);
+    if (r  != sizeof(size_t))
+        return -1;
     return len == fwrite(str,1,len,Outfile);
 }
 
@@ -1494,7 +1497,7 @@ static int Save(LIST_TYPE(DATA_TYPE) *L,FILE *stream, SaveFunction saveFn,void *
 
 static LIST_TYPE(DATA_TYPE) *Load(FILE *stream, ReadFunction loadFn,void *arg)
 {
-    size_t i,sLen=4096,Len;
+    size_t i,sLen=4096,Len,bw;
     LIST_TYPE(DATA_TYPE) *result=NULL,L;
     CHARTYPE *buf;
     int r;
@@ -1529,8 +1532,8 @@ static LIST_TYPE(DATA_TYPE) *Load(FILE *stream, ReadFunction loadFn,void *arg)
     result->Flags = L.Flags;
     r = 1;
     for (i=0; i < L.count; i++) {
-        r = fread(&Len,1,sizeof(size_t),stream);
-        if (r <= 0)
+        bw = fread(&Len,1,sizeof(size_t),stream);
+        if (bw != sizeof(size_t))
             break;
         if (Len > sLen) {
             CHARTYPE *tmp = realloc(buf,Len);
@@ -1541,8 +1544,8 @@ static LIST_TYPE(DATA_TYPE) *Load(FILE *stream, ReadFunction loadFn,void *arg)
             sLen = Len;
             buf = tmp;
         }
-        r = fread(buf,1,Len,stream);
-        if (r <= 0) {
+        bw = fread(buf,1,Len,stream);
+        if (bw != Len) {
             r = CONTAINER_ERROR_FILE_READ;
             goto err;
         }
@@ -1844,7 +1847,7 @@ static LIST_TYPE(DATA_TYPE) *SplitAfter(LIST_TYPE(DATA_TYPE) *l, LIST_ELEMENT(DA
 {
     LIST_ELEMENT(DATA_TYPE) *pNext;
     LIST_TYPE(DATA_TYPE) *result;    
-    size_t count;
+    size_t count=0;
 
     if (pt == NULL || l == NULL) {
         iError.NullPtrError("iList.SplitAfter");
@@ -1853,16 +1856,14 @@ static LIST_TYPE(DATA_TYPE) *SplitAfter(LIST_TYPE(DATA_TYPE) *l, LIST_ELEMENT(DA
     pNext = pt->Next;
     if (pNext == NULL) return NULL;
     result = CreateWithAllocator(l->Allocator);
-    if (result) {
-        result->First = pNext;
-        count = 0;
-        while (pNext) {
-            count++;
-            if (pNext->Next == NULL) result->Last = pNext;
-            pNext = pNext->Next;
-        }
-        result->count = count;
+    if (result == NULL) return NULL;
+    result->First = pNext;
+    while (pNext) {
+        count++;
+        if (pNext->Next == NULL) result->Last = pNext;
+        pNext = pNext->Next;
     }
+    result->count = count;
     pt->Next = NULL;
     l->Last = pt;
     l->count -= count;

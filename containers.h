@@ -142,7 +142,7 @@ typedef struct tagHeapObject ContainerHeap;
 typedef struct _HeapAllocatorInterface {
     ContainerHeap *(*Create)(size_t ElementSize,const ContainerAllocator *m);
     void *(*newObject)(ContainerHeap *heap);
-    void (*AddToFreeList)(ContainerHeap *heap,void *element);
+    int (*AddToFreeList)(ContainerHeap *heap,void *element);
     void (*Clear)(ContainerHeap *heap);
     void (*Finalize)(ContainerHeap *heap);
     ContainerHeap *(*InitHeap)(void *heap,size_t nbElements,const ContainerAllocator *allocator);
