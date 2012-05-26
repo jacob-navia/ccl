@@ -75,6 +75,6 @@ strcollection.o:       strcollection.c strcollectiongen.c containers.h ccl_inter
 stringlist.o:	stringlist.c stringlistgen.c containers.h ccl_internal.h stringlist.h stringlistgen.h
 wstringlist.o:	wstringlist.c stringlistgen.c stringlistgen.h wstringlist.h containers.h ccl_internal.h
 priorityqueue.o: priorityqueue.c ccl_internal.h containers.h
-intlist.o:	intlist.h intlist.c $(LIST_GENERIC)
-doublelist.o:	doublelist.h doublelist.c $(LIST_GENERIC)
-longlonglist.o:	longlonglist.h longlonglist.c $(LIST_GENERIC)
+intlist.o:	intlist.h intlist.c ccl_internal.h containers.h $(LIST_GENERIC)
+doublelist.o:	doublelist.h doublelist.c ccl_internal.h containers.h $(LIST_GENERIC)
+longlonglist.o:	longlonglist.h longlonglist.c ccl_internal.h containers.h $(LIST_GENERIC)
