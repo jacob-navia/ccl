@@ -127,7 +127,7 @@ struct ListIterator {
     List *L;
     size_t index;
     ListElement *Current;
-	ListElement *Previous;
+    ListElement *Previous;
     unsigned  timestamp;
     char ElementBuffer[1];
 };
