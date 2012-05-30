@@ -14,7 +14,7 @@ struct tagHeapObject {
 	size_t MemoryUsed;
 };
 #ifndef CHUNK_SIZE 
-#define CHUNK_SIZE 100
+#define CHUNK_SIZE 1000
 #endif
 static int UnsetBit(char *BitMap,size_t idx)
 {
@@ -58,7 +58,7 @@ static void *newHeapObject(ContainerHeap *l)
 		l->BlockCount = CHUNK_SIZE;
 		l->CurrentBlock=0;
 		l->BlockIndex = 0;
-		l->BitMap = l->Allocator->malloc(1+CHUNK_SIZE/8);
+		l->BitMap = l->Allocator->calloc(1,1+CHUNK_SIZE/8);
 	}
 	if (l->FreeList) {
 		ListElement *le = l->FreeList;
@@ -222,7 +222,7 @@ struct HeapIterator {
 
 } ;
 
-static int SkipFree(struct HeapIterator *it)
+static int SkipFreeForward(struct HeapIterator *it)
 {
 	size_t idx = it->BlockNumber * CHUNK_SIZE + it->BlockPosition;
 	size_t stop = it->Heap->CurrentBlock * CHUNK_SIZE + it->Heap->BlockIndex;
@@ -230,6 +230,20 @@ static int SkipFree(struct HeapIterator *it)
 	while (it->Heap->BitMap[byte] & (1 << (idx%8))) {
 		idx++;
 		if (idx >= stop) return -1;
+		byte = idx/8;
+	}
+	it->BlockNumber = idx/CHUNK_SIZE;
+	it->BlockPosition = idx - it->BlockNumber * CHUNK_SIZE;
+	return 1;
+}
+
+static int SkipFreeBackwards(struct HeapIterator *it)
+{
+	size_t idx = it->BlockNumber * CHUNK_SIZE + it->BlockPosition;
+	size_t byte = idx/8;
+	while (it->Heap->BitMap[byte] & (1 << (idx%8))) {
+		if (idx == 0) return -1;
+		idx--;
 		byte = idx/8;
 	}
 	it->BlockNumber = idx/CHUNK_SIZE;
@@ -257,7 +271,7 @@ static void *GetNext(Iterator *it)
 	ContainerHeap *heap = hi->Heap;
 	char *result;
 	
-	if (SkipFree(hi) < 0)
+	if (SkipFreeForward(hi) < 0)
 		return NULL;
 	if (hi->BlockNumber == (heap->BlockCount-1)) {
 		/* In the last block we should not got beyond the
@@ -290,6 +304,9 @@ static void *GetPrevious(Iterator *it)
 	struct HeapIterator *hi = (struct HeapIterator *)it;
 	ContainerHeap *heap = hi->Heap;
 	char *result;
+
+	if (SkipFreeBackwards(hi) < 0)
+		return NULL;
 	if (hi->BlockPosition == 0) {
 		/* Go to the last element of the previous block		*/
 		if (hi->BlockNumber == 0)
