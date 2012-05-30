@@ -11,14 +11,13 @@
 #define CHUNK_SIZE 256
 #endif
 
-#if CHAR_BIT==8
 static unsigned char mask[] = {
 	255,127,63,31,15,7,3,1};
 static unsigned char maskI[]= {
 	255,1,3,7,15,31,63,127};
 static unsigned char BitIndexMask[] = {
 	1,2,4,8,16,32,64,128};
-#elif CHAR_BIT==16
+#if 0 // CHAR_BIT is 16
 static unsigned char mask[] = {
 	65535,32767,16383,8191,4095,2047,1023,511,255,127,63,31,15,7,3,1};
 static unsigned char maskI[]= {
@@ -27,8 +26,6 @@ static unsigned char BitIndexMask[] = {
 	1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768};
 static unsigned char InvertedBitIndexMask[] ={
 	~1,~2,~4,~8,~16,~32,~64,~128,~256,~512,~1024,~2048,~4096,~8192,~16384,~32768};
-#else
-#error "Unimplemented CHAR_BIT bigger than 16"
 #endif
 
 #define BYTES_FROM_BITS(bitcount) (1+(bitcount)/CHAR_BIT)
