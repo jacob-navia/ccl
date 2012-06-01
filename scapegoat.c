@@ -138,7 +138,7 @@ static void Delete(TreeMap *bt, struct Node *p)
     }
 	if (bt->DestructorFn)
 		bt->DestructorFn(p);
-    iHeap.AddToFreeList(bt->Heap,p);
+    iHeap.FreeObject(bt->Heap,p);
     bt->timestamp++;
 }
 
@@ -494,7 +494,7 @@ static int Add(TreeMap *tree, void *Data,void *ExtraArgs)
 
     cInfo.ExtraArgs = ExtraArgs;
     cInfo.ContainerLeft = tree;
-    p = iHeap.newObject(tree->Heap);
+    p = iHeap.NewObject(tree->Heap);
     if (p) {
     	memcpy(p->data ,Data,tree->ElementSize);
     }
@@ -516,7 +516,7 @@ static int AddRange(TreeMap *tree,size_t n, void *Data,void *ExtraArgs)
     cInfo.ExtraArgs = ExtraArgs;
     cInfo.ContainerLeft = tree;
 	while (n > 0) {
-		p = iHeap.newObject(tree->Heap);
+		p = iHeap.NewObject(tree->Heap);
 		if (p) {
 			memcpy(p->data ,Data,tree->ElementSize);
 		}
@@ -541,7 +541,7 @@ static int Insert(TreeMap *tree, const void *Data, void *ExtraArgs)
     cInfo.ExtraArgs = ExtraArgs;
     cInfo.ContainerLeft = tree;
     tree->aux = &cInfo;
-    p = iHeap.newObject(tree->Heap);
+    p = iHeap.NewObject(tree->Heap);
     tree->aux = NULL;
     if (p == NULL)
     	return 0;

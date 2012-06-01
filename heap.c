@@ -1,12 +1,12 @@
 #include "containers.h"
 #include "ccl_internal.h"
 
+#define INVALID_POINTER_VALUE (void *)(~0)
 struct tagHeapObject {
 	HeapInterface *VTable;
 	unsigned BlockCount;
 	unsigned CurrentBlock;
 	unsigned BlockIndex;
-	char *BitMap;
 	char **Heap;
 	size_t ElementSize;
 	void *FreeList;
@@ -16,13 +16,6 @@ struct tagHeapObject {
 #ifndef CHUNK_SIZE 
 #define CHUNK_SIZE 1000
 #endif
-static int UnsetBit(char *BitMap,size_t idx)
-{
-	size_t byte = idx/8;
-	if ((BitMap[byte] & (1 << (idx%8))) == 0) return -1;
-	BitMap[byte] &= ~(1 << (idx%8));
-	return 1;
-}
 /*------------------------------------------------------------------------
  Procedure:     new_HeapObject ID:1
  Purpose:       Allocation of a new list element. If the element
@@ -58,20 +51,16 @@ static void *newHeapObject(ContainerHeap *l)
 		l->BlockCount = CHUNK_SIZE;
 		l->CurrentBlock=0;
 		l->BlockIndex = 0;
-		l->BitMap = l->Allocator->calloc(1,1+CHUNK_SIZE/8);
 	}
 	if (l->FreeList) {
 		ListElement *le = l->FreeList;
-		l->FreeList = le->Next;
-		siz = *(size_t *)(&le->Data);
-		UnsetBit(l->BitMap,siz);
+		memcpy(&l->FreeList, le->Data,sizeof(ListElement *));
 		return le;
 	}
-	if (l->BlockIndex == CHUNK_SIZE) {
+	if (l->BlockIndex >= CHUNK_SIZE) {
 		/* The current block is full */
 		l->CurrentBlock++;
 		if (l->CurrentBlock == l->BlockCount) {
-			char *p;
 			/* The array of block pointers is full. Allocate CHUNK_SIZE elements more */
 			siz = (l->BlockCount+CHUNK_SIZE)*sizeof(ListElement *);
 			result = l->Allocator->realloc(l->Heap,siz);
@@ -85,32 +74,24 @@ static void *newHeapObject(ContainerHeap *l)
 			/* Zero the new pointers */
 			siz = CHUNK_SIZE*sizeof(ListElement *);
 			memset(result,0,siz);
-			siz = 1+(l->BlockCount*CHUNK_SIZE+CHUNK_SIZE)/8;
-			p = l->Allocator->realloc(l->BitMap,siz);
-			if (p == NULL) {
-				return NULL;
-			}
-			l->MemoryUsed+= siz;
-			l->BitMap = p;
 			l->BlockCount += CHUNK_SIZE;
 		}
 	}
 	if (l->Heap[l->CurrentBlock] == NULL) {
-		siz = CHUNK_SIZE*(sizeof(void *)+l->ElementSize);
-		result = l->Allocator->malloc(siz);
+		result = l->Allocator->calloc(CHUNK_SIZE,sizeof(void *)+l->ElementSize);
 		if (result == NULL) {
 			return NULL;
 		}
-		memset(result,0,siz);
 		l->Heap[l->CurrentBlock] = result;
 		l->BlockIndex = 0;
 	}
 	result = l->Heap[l->CurrentBlock];
-	result += l->ElementSize*l->BlockIndex;
+	result += l->ElementSize * l->BlockIndex;
 	l->BlockIndex++;
 	return result;
 }
 
+#ifdef DEBUG_HEAP_FREELIST
 static size_t FindBlock(ContainerHeap *heap,void *elem, size_t *idx)
 {
 	size_t i;
@@ -130,29 +111,35 @@ static size_t FindBlock(ContainerHeap *heap,void *elem, size_t *idx)
 	}
 	return i;
 }
+#endif
 
-static int SetBit(char *BitMap,size_t idx)
+static int FreeObject(ContainerHeap *heap,void *element)
 {
-	size_t byte = idx/8;
-	if (BitMap[byte]&(1 << (idx%8)))
-		return -1;
-	BitMap[byte] |= (1 << (idx%8));
+	ListElement *le = element;
+
+	le->Next = INVALID_POINTER_VALUE;
+#ifdef DEBUG_HEAP_FREELIST
+	{ size_t idx,blockNr;
+		blockNr = FindBlock(heap,element,&idx);
+		if (blockNr > heap->CurrentBlock) return -1;
+	}
+#endif
+	memcpy(le->Data, &heap->FreeList,sizeof(ListElement *));
+	heap->FreeList = le;
 	return 1;
 }
 
-static int AddToFreeList(ContainerHeap *heap,void *element)
+static void Clear(ContainerHeap * heap)
 {
-	ListElement *le = (ListElement *)element;
-	size_t blockNr;
-	size_t idx;
-	le->Next = heap->FreeList;
-	blockNr = FindBlock(heap,element,&idx);
-	if (blockNr > heap->BlockIndex) return -1;
-	idx += blockNr * CHUNK_SIZE;
-	SetBit(heap->BitMap,idx);
-	heap->FreeList = le;
-	memcpy(le->Data, & idx, sizeof(size_t));
-	return 1;
+	size_t i;
+
+	for (i=0; i<heap->BlockCount;i++) heap->Allocator->free(heap->Heap[i]);
+	heap->Allocator->free(heap->Heap);
+	heap->BlockCount = 0;
+	heap->CurrentBlock = 0;
+	heap->BlockIndex = 0;
+	heap->Heap = NULL;
+	heap->MemoryUsed = 0;
 }
 
 /*------------------------------------------------------------------------
@@ -164,19 +151,8 @@ static int AddToFreeList(ContainerHeap *heap,void *element)
  ------------------------------------------------------------------------*/
 static void DestroyHeap(ContainerHeap *l)
 {
-	size_t i;
-	const ContainerAllocator *m = l->Allocator;
-	
-	for (i=0;i<l->BlockCount;i++) {
-		m->free(l->Heap[i]);
-	}
-	m->free(l->Heap);
-	m->free(l);
-}
-
-static void Clear(ContainerHeap *heap)
-{
-	heap->FreeList = NULL;
+	Clear(l);
+	l->Allocator->free(l);
 }
 
 static size_t GetHeapSize(ContainerHeap *heap)
@@ -196,6 +172,8 @@ static ContainerHeap *InitHeap(void *pHeap,size_t ElementSize,const ContainerAll
 	ContainerHeap *heap = pHeap;
 	memset(heap,0,sizeof(*heap));
 	heap->VTable = &iHeap;
+	if (ElementSize < sizeof(ListElement *))
+		ElementSize = sizeof(ListElement *);
 	heap->ElementSize = ElementSize;
 	if (m == NULL)
 		m = CurrentAllocator;
@@ -208,8 +186,7 @@ static  ContainerHeap *newHeap(size_t ElementSize,const ContainerAllocator *m)
 	ContainerHeap *result = m->malloc(sizeof(ContainerHeap));
 	if (result == NULL)
 		return NULL;
-	InitHeap(result,ElementSize,m);
-	return result;
+	return InitHeap(result,ElementSize,m);
 }
 
 struct HeapIterator {
@@ -225,29 +202,66 @@ struct HeapIterator {
 static int SkipFreeForward(struct HeapIterator *it)
 {
 	size_t idx = it->BlockNumber * CHUNK_SIZE + it->BlockPosition;
-	size_t stop = it->Heap->CurrentBlock * CHUNK_SIZE + it->Heap->BlockIndex;
-	size_t byte = idx/8;
-	while (it->Heap->BitMap[byte] & (1 << (idx%8))) {
+	size_t start = idx;
+	ListElement *le;
+	char *p;
+
+	p = it->Heap->Heap[it->BlockNumber];
+	p += it->BlockPosition*it->Heap->ElementSize;
+	le = (ListElement *)p;
+
+	while (le->Next == INVALID_POINTER_VALUE) {
 		idx++;
-		if (idx >= stop) return -1;
-		byte = idx/8;
+		it->BlockPosition++;
+		if (it->BlockPosition >= CHUNK_SIZE) {
+			it->BlockNumber++;
+			if (it->BlockNumber >= it->Heap->BlockCount)
+				return -1;
+			p = it->Heap->Heap[it->BlockNumber];
+			it->BlockPosition = 0;
+		}
+		else {
+			/* Do not go beyond the last position in the last block */
+			if (it->BlockNumber == it->Heap->BlockCount &&
+			    it->BlockPosition >= it->Heap->BlockIndex)
+				return -1;
+			p = it->Heap->Heap[it->BlockNumber];
+			p += (it->BlockPosition)*it->Heap->ElementSize;
+		}
+		le = (ListElement *)p;
 	}
-	it->BlockNumber = idx/CHUNK_SIZE;
-	it->BlockPosition = idx - it->BlockNumber * CHUNK_SIZE;
+	if (idx == start) return 0;
 	return 1;
 }
 
 static int SkipFreeBackwards(struct HeapIterator *it)
 {
-	size_t idx = it->BlockNumber * CHUNK_SIZE + it->BlockPosition;
-	size_t byte = idx/8;
-	while (it->Heap->BitMap[byte] & (1 << (idx%8))) {
-		if (idx == 0) return -1;
+	size_t idx = it->Heap->CurrentBlock * CHUNK_SIZE + it->Heap->BlockIndex;
+	size_t start = idx;
+	ListElement *le;
+	char *p;
+
+	p = it->Heap->Heap[it->BlockNumber];
+	p += it->BlockPosition*it->Heap->ElementSize;
+	le = (ListElement *)p;
+
+	while (le->Next == INVALID_POINTER_VALUE) {
 		idx--;
-		byte = idx/8;
+		if (it->Heap->BlockIndex > 0) {
+			p -= it->Heap->ElementSize;
+			it->BlockPosition--;
+		}
+		else {
+			if (it->BlockNumber == 0)
+				return -1;
+			it->BlockNumber--;
+			it->BlockPosition = CHUNK_SIZE-1;
+			p = it->Heap->Heap[it->BlockNumber];
+			p += (CHUNK_SIZE-1)*it->Heap->ElementSize;
+		}
+		le = (ListElement *)p;
 	}
-	it->BlockNumber = idx/CHUNK_SIZE;
-	it->BlockPosition = idx - it->BlockNumber * CHUNK_SIZE;
+	if (idx == start) return 0;
 	return 1;
 }
 
@@ -256,11 +270,16 @@ static void *GetFirst(Iterator *it)
 	struct HeapIterator *hi = (struct HeapIterator *)it;
 	ContainerHeap *heap = hi->Heap;
 	char *result;
+	int r;
 
 	hi->BlockNumber = hi->BlockPosition = 0;
 	if (heap->BlockCount == 0)
 		return NULL;
-	result = heap->Heap[0];
+	r = SkipFreeForward(hi);
+	if (r < 0) return NULL;
+	result = heap->Heap[hi->BlockNumber];
+	result += (hi->BlockPosition*heap->ElementSize);
+	if (r == 0) hi->BlockPosition++;
 	return result;
 }
 
@@ -271,18 +290,12 @@ static void *GetNext(Iterator *it)
 	ContainerHeap *heap = hi->Heap;
 	char *result;
 	
-	if (SkipFreeForward(hi) < 0)
-		return NULL;
-	if (hi->BlockNumber == (heap->BlockCount-1)) {
+	if (hi->BlockNumber == (heap->CurrentBlock)) {
 		/* In the last block we should not got beyond the
 		   last used element, the block can be half full.
 		*/
 		if (hi->BlockPosition >= heap->BlockIndex)
 			return NULL;
-		result = heap->Heap[hi->BlockNumber];
-		result += (hi->BlockPosition*heap->ElementSize);
-		hi->BlockPosition++;
-		return result;
 	}
 	/*
 		We are in a block that is full. Check that the position
@@ -293,6 +306,8 @@ static void *GetNext(Iterator *it)
 		hi->BlockPosition = 0;
 		return GetNext(it);
 	}
+	if (SkipFreeForward(hi) < 0)
+		return NULL;
 	result = heap->Heap[hi->BlockNumber];
 	result += (hi->BlockPosition*heap->ElementSize);
 	hi->BlockPosition++;
@@ -304,9 +319,8 @@ static void *GetPrevious(Iterator *it)
 	struct HeapIterator *hi = (struct HeapIterator *)it;
 	ContainerHeap *heap = hi->Heap;
 	char *result;
+	int r;
 
-	if (SkipFreeBackwards(hi) < 0)
-		return NULL;
 	if (hi->BlockPosition == 0) {
 		/* Go to the last element of the previous block		*/
 		if (hi->BlockNumber == 0)
@@ -317,7 +331,9 @@ static void *GetPrevious(Iterator *it)
 		result += (hi->BlockPosition*heap->ElementSize);
 		return result;
 	}
-	hi->BlockPosition--;
+	if (SkipFreeBackwards(hi) < 0) 
+		return NULL;
+	if (r == 0) hi->BlockPosition--;
 	result = heap->Heap[hi->BlockNumber];
 	result += (hi->BlockPosition*heap->ElementSize);
 	return result;
@@ -360,10 +376,9 @@ static Iterator *NewIterator(ContainerHeap *heap)
 		iError.RaiseError("iHeap.NewIterator",CONTAINER_ERROR_BADARG);
 		return NULL;
 	}
-	result = heap->Allocator->malloc(sizeof(struct HeapIterator));
+	result = heap->Allocator->calloc(1,sizeof(struct HeapIterator));
 	if (result == NULL)
 		return NULL;
-	memset(result,0,sizeof(*result));
 	result->Heap = heap;
 	result->timestamp = heap->CurrentBlock+heap->BlockIndex;
 	result->it.GetFirst = GetFirst;
@@ -384,7 +399,7 @@ static int deleteIterator(Iterator *it)
 HeapInterface iHeap = {
 	newHeap,
 	newHeapObject,
-	AddToFreeList,
+	FreeObject,
 	Clear,
 	DestroyHeap,
 	InitHeap,

@@ -546,7 +546,7 @@ static PQueueElement * NewElement(PQueue *h)
 {
     PQueueElement *e;
 
-    e = iHeap.newObject(h->Heap);
+    e = iHeap.NewObject(h->Heap);
     if (e == NULL) 
         return NULL;
 
