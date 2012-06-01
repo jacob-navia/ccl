@@ -36,7 +36,7 @@ static DlistElement *new_dlink(Dlist *l,const void *data,const char *fname)
     if (l->Heap == NULL) {
     	result = l->Allocator->malloc(sizeof(*result)+l->ElementSize);
     }
-    else result = iHeap.newObject(l->Heap);
+    else result = iHeap.NewObject(l->Heap);
     if (result == NULL) {
     	l->RaiseError(fname,CONTAINER_ERROR_NOMEMORY);
     }
@@ -906,7 +906,7 @@ static int EraseAt(Dlist *l,size_t position)
     if (rvp)
     	removed = rvp->Data;
     if (l->Heap && rvp) {
-    	iHeap.AddToFreeList(l->Heap,rvp);
+    	iHeap.FreeObject(l->Heap,rvp);
     }
     else if  (rvp) l->Allocator->free(rvp);
     l->timestamp++;
@@ -1033,7 +1033,7 @@ static int EraseInternal(Dlist *l,const void *elem,int all)
                 l->DestructorFn(&rvp->Data);
 
             if (l->Heap)
-                iHeap.AddToFreeList(l->Heap,rvp);
+                iHeap.FreeObject(l->Heap,rvp);
             else {
                 l->Allocator->free(rvp);
             }
@@ -1714,7 +1714,7 @@ static int Select(Dlist *src,const Mask *m)
         removed = dst;
         dst = dst->Next;
         if (src->Heap) {
-                iHeap.AddToFreeList(src->Heap, removed);
+                iHeap.FreeObject(src->Heap, removed);
         } else
                 src->Allocator->free(removed);
         i++;
@@ -1743,7 +1743,7 @@ static int Select(Dlist *src,const Mask *m)
             if (src->DestructorFn) src->DestructorFn(s->Data);
             removed = s;
             s = s->Next;
-            if (src->Heap) iHeap.AddToFreeList(src->Heap,removed);
+            if (src->Heap) iHeap.FreeObject(src->Heap,removed);
             else src->Allocator->free(removed);
         }
     }

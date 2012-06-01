@@ -141,8 +141,8 @@ typedef struct tagErrorInfo {
 typedef struct tagHeapObject ContainerHeap;
 typedef struct _HeapAllocatorInterface {
     ContainerHeap *(*Create)(size_t ElementSize,const ContainerAllocator *m);
-    void *(*newObject)(ContainerHeap *heap);
-    int (*AddToFreeList)(ContainerHeap *heap,void *element);
+    void *(*NewObject)(ContainerHeap *heap);
+    int (*FreeObject)(ContainerHeap *heap,void *element);
     void (*Clear)(ContainerHeap *heap);
     void (*Finalize)(ContainerHeap *heap);
     ContainerHeap *(*InitHeap)(void *heap,size_t nbElements,const ContainerAllocator *allocator);
@@ -524,6 +524,7 @@ typedef struct tagList {
     CompareFunction (*SetCompareFunction)(List *l,CompareFunction fn);
     CompareFunction Compare;
     int (*UseHeap)(List *L, const ContainerAllocator *m);
+    ContainerHeap *(*GetHeap)(const List *l);
     int (*AddRange)(List *L, size_t n,const void *data);
     List *(*Create)(size_t element_size);
     List *(*CreateWithAllocator)(size_t elementsize,const ContainerAllocator *mm);

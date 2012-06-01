@@ -808,7 +808,7 @@ static int Erase(LIST_TYPE(DATA_TYPE) *l, CHARTYPE *elem)
                 l->DestructorFn(&rvp->Data);
 
             if (l->Heap)
-                iHeap.AddToFreeList(l->Heap,rvp);
+                iHeap.FreeObject(l->Heap,rvp);
             else {
                 l->Allocator->free(rvp);
             }
@@ -1679,7 +1679,7 @@ static int Select(LIST_TYPE(DATA_TYPE) *src,const Mask *m)
         removed = dst;
         dst = dst->Next;
         if (src->Heap) {
-                iHeap.AddToFreeList(src->Heap, removed);
+                iHeap.FreeObject(src->Heap, removed);
         } else
                 src->Allocator->free(removed);
         i++;
@@ -1705,7 +1705,7 @@ static int Select(LIST_TYPE(DATA_TYPE) *src,const Mask *m)
             if (src->DestructorFn) src->DestructorFn(s->Data);
             removed = s;
             s = s->Next;
-            if (src->Heap) iHeap.AddToFreeList(src->Heap,removed);
+            if (src->Heap) iHeap.FreeObject(src->Heap,removed);
             else src->Allocator->free(removed);
         }
     }

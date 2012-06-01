@@ -65,7 +65,7 @@ static ListElement * NewLink(List * li, const void *data, const char *fname)
     if (li->Flags & CONTAINER_LIST_SMALL || li->Heap == NULL) {
         result = (ListElement *)li->Allocator->malloc(sizeof(*result) + li->ElementSize);
     } else
-        result = (ListElement *)iHeap.newObject(li->Heap);
+        result = (ListElement *)iHeap.NewObject(li->Heap);
     if (result == NULL) {
         li->RaiseError(fname, CONTAINER_ERROR_NOMEMORY);
     } else {
@@ -648,7 +648,7 @@ static int PopFront(List * l, void *result)
     if (result)
         memcpy(result, &le->Data, l->ElementSize);
     if (l->Heap) {
-        iHeap.AddToFreeList(l->Heap, le);
+        iHeap.FreeObject(l->Heap, le);
     } else
         l->Allocator->free(le);
     l->timestamp++;
@@ -807,7 +807,7 @@ static int EraseInternal(List * l, const void *elem, int all)
                 l->DestructorFn(&rvp->Data);
 
             if (l->Heap)
-                iHeap.AddToFreeList(l->Heap, rvp);
+                iHeap.FreeObject(l->Heap, rvp);
             else {
                 l->Allocator->free(rvp);
             }
@@ -865,7 +865,7 @@ static int EraseRange(List * l, size_t start, size_t end)
             l->DestructorFn(&rvp->Data);
 
         if (l->Heap)
-            iHeap.AddToFreeList(l->Heap, rvp);
+            iHeap.FreeObject(l->Heap, rvp);
         else {
             l->Allocator->free(rvp);
         }
@@ -921,7 +921,7 @@ static int RemoveAt(List * l, size_t position)
         l->DestructorFn(&removed->Data);
 
     if (l->Heap) {
-        iHeap.AddToFreeList(l->Heap, removed);
+        iHeap.FreeObject(l->Heap, removed);
     } else
         l->Allocator->free(removed);
     l->timestamp++;
@@ -1027,7 +1027,7 @@ static int AddRange(List * AL, size_t n, const void *data)
                 while (removed) {
                     ListElement    *tmp = removed->Next;
                     if (AL->Heap)
-                        iHeap.AddToFreeList(AL->Heap, removed);
+                        iHeap.FreeObject(AL->Heap, removed);
                     else
                         AL->Allocator->free(removed);
                     removed = tmp;
@@ -1208,6 +1208,15 @@ static int UseHeap(List * L, const ContainerAllocator * m)
         m = CurrentAllocator;
     L->Heap = iHeap.Create(L->ElementSize + sizeof(ListElement), m);
     return 1;
+}
+
+static ContainerHeap *GetHeap(const List *l)
+{
+    if (l == NULL) {
+        NullPtrError("GetHeap");
+        return NULL;
+    }
+    return l->Heap;
 }
 
 /*
@@ -1802,7 +1811,7 @@ static int Select(List *src,const Mask *m)
         removed = dst;
         dst = dst->Next;
         if (src->Heap) {
-                iHeap.AddToFreeList(src->Heap, removed);
+                iHeap.FreeObject(src->Heap, removed);
         } else
                 src->Allocator->free(removed);
         i++;
@@ -1828,7 +1837,7 @@ static int Select(List *src,const Mask *m)
             if (src->DestructorFn) src->DestructorFn(s->Data);
             removed = s;
             s = s->Next;
-            if (src->Heap) iHeap.AddToFreeList(src->Heap,removed);
+            if (src->Heap) iHeap.FreeObject(src->Heap,removed);
             else src->Allocator->free(removed);
         }
     }
@@ -2015,6 +2024,7 @@ ListInterface   iList = {
     SetCompareFunction,
     DefaultListCompareFunction,
     UseHeap,
+    GetHeap,
     AddRange,
     Create,
     CreateWithAllocator,
