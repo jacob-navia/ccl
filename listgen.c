@@ -172,7 +172,6 @@ static size_t GetElementSize(const LIST_TYPE * l)
 
 static int Finalize(LIST_TYPE *l)
 {
-    l->Allocator->free(l->VTable);
     iList.Finalize((List *)l);
     return 1;
 }
@@ -190,6 +189,139 @@ static LIST_TYPE *SelectCopy(const LIST_TYPE *l,const Mask *m)
     return SetVTable(result);
 }
 
+/*---------------------------------------------------------------------------*/
+/* qsort() - perform a quicksort on an array                                 */
+/*---------------------------------------------------------------------------*/
+#define CUTOFF 8
+
+static void shortsort(LIST_ELEMENT **lo, LIST_ELEMENT **hi);
+#define swap(a,b) { LIST_ELEMENT *tmp = *a; *a = *b; *b = tmp; }
+
+#ifndef COMPARE_EXPRESSION
+#error foo
+#define COMPARE_EXPRESSION(l,lo) comp(l, lo)
+//COMPAR(A, B) (B > A ? -1 : B != A)
+#endif
+
+static void QSORT(LIST_ELEMENT **base, size_t num)
+{
+  LIST_ELEMENT **lo, **hi, **mid;
+  LIST_ELEMENT **loguy, **higuy;
+  size_t size;
+  LIST_ELEMENT **lostk[30], **histk[30];
+  int stkptr;
+
+  if (num < 2) return;
+  stkptr = 0;
+
+  lo = base;
+  hi = base + (num - 1);
+
+recurse:
+  size = (hi - lo) + 1;
+
+  if (size <= CUTOFF) {
+    shortsort(lo, hi);
+  }
+  else {
+    mid = lo + (size / 2);
+    swap(mid, lo);
+
+    loguy = lo;
+    higuy = hi + 1;
+
+    for (;;) {
+      do { loguy++; } while (loguy <= hi && COMPARE_EXPRESSION(loguy,lo) <= 0);
+      do { higuy--; } while (higuy > lo && COMPARE_EXPRESSION(higuy,lo) >= 0);
+      if (higuy < loguy) break;
+      swap(loguy, higuy);
+    }
+
+    swap(lo, higuy);
+
+    if (higuy - 1 - lo >= hi - loguy) {
+      if (lo + 1 < higuy) {
+        lostk[stkptr] = lo;
+        histk[stkptr] = (higuy - 1);
+        ++stkptr;
+      }
+
+      if (loguy < hi) {
+        lo = loguy;
+        goto recurse;
+      }
+    }
+    else {
+      if (loguy < hi) {
+        lostk[stkptr] = loguy;
+        histk[stkptr] = hi;
+        ++stkptr;
+      }
+
+      if (lo + 1 < higuy) {
+        hi = higuy - 1;
+        goto recurse;
+      }
+    }
+  }
+
+  --stkptr;
+  if (stkptr >= 0) {
+    lo = lostk[stkptr];
+    hi = histk[stkptr];
+    goto recurse;
+  }
+}
+
+static void shortsort(LIST_ELEMENT **lo, LIST_ELEMENT **hi)
+{
+  LIST_ELEMENT **p, **max;
+
+  while (hi > lo) 
+  {
+    max = lo;
+    for (p = (lo+1); p <= hi; p++) if (COMPARE_EXPRESSION(p,max) > 0) max = p;
+    swap(max, hi);
+    hi--;
+  }
+}
+
+static int Sort(LIST_TYPE * l)
+{
+    LIST_ELEMENT   **tab;
+    size_t          i;
+    LIST_ELEMENT    *rvp;
+
+    if (l == NULL)
+        return iError.NullPtrError("Sort");
+
+    if (l->count < 2)
+        return 1;
+    if (l->Flags & CONTAINER_READONLY) {
+        l->RaiseError("iList.Sort", CONTAINER_ERROR_READONLY);
+        return CONTAINER_ERROR_READONLY;
+    }
+    tab = l->Allocator->malloc(l->count * sizeof(LIST_ELEMENT *));
+    if (tab == NULL) {
+        l->RaiseError("iList.Sort", CONTAINER_ERROR_NOMEMORY);
+        return CONTAINER_ERROR_NOMEMORY;
+    }
+    rvp = l->First;
+    for (i = 0; i < l->count; i++) {
+        tab[i] = rvp;
+        rvp = rvp->Next;
+    }
+    QSORT(tab, l->count );
+    for (i = 0; i < l->count - 1; i++) {
+        tab[i]->Next = tab[i + 1];
+    }
+    tab[l->count - 1]->Next = NULL;
+    l->Last = tab[l->count - 1];
+    l->First = tab[0];
+    l->Allocator->free(tab);
+    return 1;
+
+}
 static LIST_TYPE *SetVTable(LIST_TYPE *result)
 {
     static int Initialized;
@@ -226,7 +358,6 @@ static LIST_TYPE *SetVTable(LIST_TYPE *result)
     intface->Size = (size_t (*)(const LIST_TYPE *))iList.Size;
     intface->deleteIterator = (int (*)(Iterator *))iList.deleteIterator;
     intface->SplitAfter = (LIST_TYPE *(*)(LIST_TYPE *, LIST_ELEMENT *))iList.SplitAfter;
-    intface->Sort = (int (*)(LIST_TYPE *))iList.Sort;
     return result;
 }
 
@@ -346,7 +477,7 @@ INTERFACE(DATA_TYPE)   INTERFACE_NAME(DATA_TYPE) = {
     NULL,        // InsertIn,
     CopyElement,
     NULL,        // EraseRange,
-    NULL,        // Sort,
+    Sort,
     NULL,        // Reverse,
     NULL,        // GetRange,
     NULL,        // Append,
