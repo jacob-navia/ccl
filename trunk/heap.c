@@ -85,6 +85,7 @@ static void *newHeapObject(ContainerHeap *l)
         }
         l->Heap[l->CurrentBlock] = result;
         l->BlockIndex = 0;
+	l->MemoryUsed += CHUNK_SIZE * l->ElementSize;
     }
     result = l->Heap[l->CurrentBlock];
     result += l->ElementSize * l->BlockIndex;
@@ -176,8 +177,8 @@ static ContainerHeap *InitHeap(void *pHeap,size_t ElementSize,const ContainerAll
     ContainerHeap *heap = pHeap;
     memset(heap,0,sizeof(*heap));
     heap->VTable = &iHeap;
-    if (ElementSize < sizeof(ListElement *))
-        ElementSize = sizeof(ListElement *);
+    if (ElementSize < 2*sizeof(ListElement *))
+        ElementSize = 2*sizeof(ListElement *);
     heap->ElementSize = ElementSize;
     if (m == NULL)
         m = CurrentAllocator;
