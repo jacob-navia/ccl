@@ -1,8 +1,10 @@
 # Wedit Makefile for project ansicStl
 SRCDIR=.
-CFLAGS=-I. -O -A  -p6 -ansic  -g2
-CC=lcc.exe
-LINKER=lcclnk.exe
+#CFLAGS=-I. -O -A  -p6 -ansic  -g2
+# Change below lcc64 to have a 64 bit version
+CC=lcc64.exe
+CFLAGS= -I. -O -ansic -g2
+LINKER=lcclnk64.exe
 HEADERS=containers.h ccl_internal.h valarray.h valarraygen.h
 OBJS=\
 	buffer.obj \
@@ -11,8 +13,8 @@ OBJS=\
 	bloom.obj \
 	containererror.obj \
 	deque.obj \
-	doublelist.obj \
 	dictionary.obj \
+	doublelist.obj \
 	dlist.obj \
 	fgetline.obj \
 	generic.obj \
@@ -43,21 +45,18 @@ OBJS=\
 	valarrayshort.obj \
 	observer.obj \
 	memorymanager.obj \
-	priorityqueue.obj \
 	sequential.obj \
 	wstrcollection.obj \
 
-LIST_GENERIC=listgen.c listgen.h
-
 EXE=dotest.exe
 
-LIBS=ccl.lib
+LIBS=ccl64.lib
 
-$(EXE):	$(OBJS) Makefile test.obj ccl.lib
+$(EXE):	$(OBJS) Makefile test.obj ccl64.lib
 	$(LINKER) -subsystem console -o $(EXE) test.obj $(LIBS)
 
-ccl.lib: $(OBJS) 
-	lcclib /out:ccl.lib $(OBJS)
+ccl64.lib: $(OBJS) 
+	lcclib /out:ccl64.lib $(OBJS)
 
 # Build arraylist.c
 arraylist.obj: $(HEADERS) $(SRCDIR)\arraylist.c $(HEADERS)
@@ -186,12 +185,20 @@ iMask.obj:	iMask.c $(HEADERS)
 wstrcollection.obj:	wstrcollection.c strcollectiongen.c containers.h ccl_internal.h
 	$(CC) $(CFLAGS) wstrcollection.c
 
+intlist.obj: intlist.c intlist.h ccl_internal.h containers.h $(LIST_GENERIC)
+	$(CC) $(CFLAGS) intlist.c
+
+doublelist.obj: doublelist.c doublelist.h ccl_internal.h containers.h $(LIST_GENERIC)
+	$(CC) $(CFLAGS) doublelist.c
+
+longlonglist.obj: longlonglist.c longlonglist.h ccl_internal.h containers.h $(LIST_GENERIC)
+	$(CC) $(CFLAGS) longlonglist.c
+
 test.obj: $(TEST_C) $(SRCDIR)\test.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\test.c
-intlist.obj: intlist.c intlist.h ccl_internal.h containers.h $(LIST_GENERIC)
 
 link:
 	$(LINKER)  -subsystem console -o $(SRCDIR)\lcc\ansicstl.exe $(OBJS) $(LIBS)
 
 clean:
-	del $(OBJS) dotest.exe ccl.lib
+	del $(OBJS) dotest.exe ccl64.lib
