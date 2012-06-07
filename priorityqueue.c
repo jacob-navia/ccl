@@ -353,7 +353,7 @@ static void * ReplaceKeyData(PQueue *h, PQueueElement *x, intptr_t key, void *da
     return odata;
 }
 
-intptr_t Replace(PQueue *h, PQueueElement *x, intptr_t key)
+static intptr_t Replace(PQueue *h, PQueueElement *x, intptr_t key)
 {
     intptr_t ret;
 
