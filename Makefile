@@ -28,8 +28,10 @@ OBJS=vector.o containererror.o dlist.o qsortex.o bitstrings.o generic.o \
     valarraylongdouble.o valarrayshort.o valarrayfloat.o valarrayuint.o \
     valarraylonglong.o valarrayulonglong.o memorymanager.o sequential.o \
     iMask.o deque.o hashtable.o wstrcollection.o stringlist.o wstringlist.o \
-    priorityqueue.o intlist.o doublelist.o longlonglist.o
+    priorityqueue.o intlist.o doublelist.o longlonglist.o intdlist.o \
+    doubledlist.o longlongdlist.o
 LIST_GENERIC=listgen.c listgen.h
+DLIST_GENERIC=dlistgen.c dlistgen.h
 
 dotest:	libccl.a test.o
 	gcc -o dotest -g $(CFLAGS) test.c libccl.a -lm
@@ -78,3 +80,7 @@ priorityqueue.o: priorityqueue.c ccl_internal.h containers.h
 intlist.o:	intlist.h intlist.c ccl_internal.h containers.h $(LIST_GENERIC)
 doublelist.o:	doublelist.h doublelist.c ccl_internal.h containers.h $(LIST_GENERIC)
 longlonglist.o:	longlonglist.h longlonglist.c ccl_internal.h containers.h $(LIST_GENERIC)
+intdlist.o:      intdlist.h intdlist.c ccl_internal.h containers.h $(LIST_GENERIC)
+doubledlist.o:   doubledlist.h doubledlist.c ccl_internal.h containers.h $(DLIST_GENERIC)
+longlongdlist.o: longlongdlist.h longlongdlist.c ccl_internal.h containers.h $(DLIST_GENERIC)
+
