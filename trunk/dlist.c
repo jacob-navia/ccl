@@ -54,7 +54,7 @@ static int DefaultDlistCompareFunction(const void *left,const void *right,Compar
         return memcmp(left,right,siz);
 }
 
-static Dlist *Init(Dlist *result,size_t elementsize)
+static Dlist *InitWithAllocator(Dlist *result,size_t elementsize,const  ContainerAllocator *allocator)
 {
     if (elementsize == 0) {
     	iError.NullPtrError("iDlist.Create");
@@ -65,8 +65,13 @@ static Dlist *Init(Dlist *result,size_t elementsize)
     result->VTable = &iDlist;
     result->Compare = DefaultDlistCompareFunction;
     result->RaiseError = iError.RaiseError;
-    result->Allocator = CurrentAllocator;
+    result->Allocator = allocator;
     return result;
+}
+
+static Dlist *Init(Dlist *result,size_t elementsize)
+{
+    return InitWithAllocator(result,elementsize,CurrentAllocator);
 }
 
 /*------------------------------------------------------------------------
@@ -95,10 +100,9 @@ static Dlist *CreateWithAllocator(size_t elementsize,const ContainerAllocator *a
         iError.RaiseError("iDlist.Create",CONTAINER_ERROR_NOMEMORY);
     	return NULL;
     }
-    r = Init(result,elementsize);
+    r = InitWithAllocator(result,elementsize,allocator);
     if (r == NULL)
     	allocator->free(result);
-    else r->Allocator = (ContainerAllocator *)allocator;
     return r;
 }
 
@@ -455,7 +459,7 @@ static int Finalize(Dlist *l)
  Output:        A pointer to the data
  Errors:        NULL if error in the positgion index
 ------------------------------------------------------------------------*/
-static void * GetElement(const Dlist *l,int position)
+static void * GetElement(const Dlist *l,size_t position)
 {
     DlistElement *rvp;
 
@@ -464,7 +468,7 @@ static void * GetElement(const Dlist *l,int position)
     	iError.NullPtrError("iDlist.GetElement");
     	return 0;
     }
-    if (position >= (signed)l->count || position < 0) {
+    if (position >= (signed)l->count) {
     	l->RaiseError("GetElement",CONTAINER_ERROR_INDEX);
     	return NULL;
     }
@@ -1853,6 +1857,120 @@ static void *Advance(DlistElement **ple)
 	return AdvanceInternal(ple,0);
 }
 
+static DlistElement *Skip(DlistElement *le, size_t n)
+{
+    if (le == NULL) return NULL;
+    while (le != NULL && n > 0) {
+        le = le->Next;
+        n--;
+    }
+    return le;
+}
+
+
+static int RotateLeft(Dlist * l, size_t n)
+{
+    DlistElement    *rvp, *oldStart, *last = NULL;
+    if (l == NULL)
+        return iError.NullPtrError("iDlist.RotateLeft");
+    if (l->Flags & CONTAINER_READONLY) {
+        iError.RaiseError("iDlist.RotateLeft",CONTAINER_ERROR_READONLY);
+        return CONTAINER_ERROR_READONLY;
+    }
+    if (l->count < 2 || n == 0)
+        return 0;
+    n %= l->count;
+    if (n == 0)
+        return 0;
+    rvp = l->First;
+    oldStart = rvp;
+    while (n > 0) {
+        last = rvp;
+        rvp = rvp->Next;
+        n--;
+    }
+    l->First = rvp;
+    l->Last->Next = oldStart;
+    oldStart->Previous = l->Last;
+    l->Last = rvp->Previous;
+    l->Last->Next = NULL;
+    rvp->Previous = NULL;
+    return 1;
+}
+
+static int RotateRight(Dlist * l, size_t n)
+{
+    DlistElement    *rvp, *oldStart, *last = NULL;
+    if (l == NULL)
+        return iError.NullPtrError("iDlist.RotateRight");
+    if (l->Flags & CONTAINER_READONLY) {
+        iError.RaiseError("iDlist.RotateLeft",CONTAINER_ERROR_READONLY);
+        return CONTAINER_ERROR_READONLY;
+    }
+    if (l->count < 2 || n == 0)
+        return 0;
+    n %= l->count;
+    if (n == 0)
+        return 0;
+    rvp = l->First;
+    oldStart = rvp;
+    n = l->count - n;
+    while (n > 0) {
+        last = rvp;
+        rvp = rvp->Next;
+        n--;
+    }
+    l->First = rvp;
+    l->Last->Next = oldStart;
+    oldStart->Previous = l->Last;
+    l->Last = rvp->Previous;
+    l->Last->Next = NULL;
+    rvp->Previous = NULL;
+    return 1;
+}
+
+static Dlist *SplitAfter(Dlist *l, DlistElement *pt)
+{
+    DlistElement *pNext;
+    Dlist *result;
+    size_t count=0;
+
+    if (pt == NULL || l == NULL) {
+        iError.NullPtrError("iList.SplitAfter");
+        return NULL;
+    }
+    if (l->Flags&CONTAINER_READONLY) {
+        iError.RaiseError("iDlist.SplitAfter",CONTAINER_ERROR_READONLY);
+        return NULL;
+    }
+    pNext = pt->Next;
+    if (pNext == NULL) return NULL;
+    result = CreateWithAllocator(l->ElementSize, l->Allocator);
+    if (result == NULL) return NULL;
+    result->First = pNext;
+    while (pNext) {
+        count++;
+        if (pNext->Next == NULL) result->Last = pNext;
+        pNext = pNext->Next;
+    }
+    result->count = count;
+    pt->Next = NULL;
+    l->Last = pt;
+    l->count -= count;
+    l->timestamp++;
+    return result;
+}
+
+static int SetElementData(Dlist *l, DlistElement *le,void *data)
+{
+    if (l == NULL || le == NULL || data == NULL) {
+        return iError.NullPtrError("iList.SetElementData");
+    }
+    memcpy(le->Data,data,l->ElementSize);
+    l->timestamp++;
+    return 1;
+}
+
 DlistInterface iDlist = {
     Size,
     GetFlags,
@@ -1897,6 +2015,7 @@ DlistInterface iDlist = {
     Create,
     CreateWithAllocator,
     Init,
+    InitWithAllocator,
     CopyElement,
     InsertIn,
     SetDestructor,
@@ -1905,6 +2024,8 @@ DlistInterface iDlist = {
     Back,
     Front,
     RemoveRange,
+    RotateLeft,
+    RotateRight,
     Select,
     SelectCopy,
     FirstElement,
@@ -1912,7 +2033,10 @@ DlistInterface iDlist = {
     NextElement,
     PreviousElement,
     ElementData,
+    SetElementData,
     Advance,
+    Skip,
     MoveBack,
+    SplitAfter,
 };
 

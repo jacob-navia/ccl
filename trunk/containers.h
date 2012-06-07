@@ -667,7 +667,7 @@ typedef struct tagDlist {
 
     /* -----------------------------------------Sequential container part */
     int (*Add)(Dlist *dl,const void *newval);
-    void *(*GetElement)(const Dlist *AL,int idx);
+    void *(*GetElement)(const Dlist *AL,size_t idx);
     int (*PushFront)(Dlist *AL,const void *str); 
     int (*PopFront)(Dlist *AL,void *result);
     int (*InsertAt)(Dlist *AL,size_t idx,const void *newval);
@@ -689,6 +689,7 @@ typedef struct tagDlist {
     Dlist *(*Create)(size_t elementsize);
     Dlist *(*CreateWithAllocator)(size_t,const ContainerAllocator *);
     Dlist *(*Init)(Dlist *dlist,size_t elementsize);
+    Dlist *(*InitWithAllocator)(Dlist *L,size_t element_size,const ContainerAllocator *mm);
     int (*CopyElement)(const Dlist *l,size_t idx,void *outbuf);
     int (*InsertIn)(Dlist *l, size_t idx,Dlist *newData);
     DestructorFunction (*SetDestructor)(Dlist *v,DestructorFunction fn);
@@ -697,6 +698,8 @@ typedef struct tagDlist {
     void *(*Back)(const Dlist *l);
     void *(*Front)(const Dlist *l);
     int (*RemoveRange)(Dlist *l,size_t start, size_t end);
+    int (*RotateLeft)(Dlist *l, size_t n);
+    int (*RotateRight)(Dlist *l,size_t n);
     int (*Select)(Dlist *src,const Mask *m);
     Dlist *(*SelectCopy)(const Dlist *src,const Mask *m);
     DlistElement *(*FirstElement)(Dlist *l);
@@ -704,8 +707,11 @@ typedef struct tagDlist {
     DlistElement *(*NextElement)(DlistElement *le);
     DlistElement *(*PreviousElement)(DlistElement *le);
     void *(*ElementData)(DlistElement *le);
+    int (*SetElementData)(Dlist *l, DlistElement *le,void *data);
     void *(*Advance)(DlistElement **pDlistElement);
+    DlistElement *(*Skip)(DlistElement *l,size_t n);
     void *(*MoveBack)(DlistElement **pDlistElement);
+    Dlist *(*SplitAfter)(Dlist *l, DlistElement *pt);
 } DlistInterface;
 
 extern DlistInterface iDlist;
