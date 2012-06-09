@@ -9,7 +9,7 @@ OBJS=\
 	vector.obj \
 	bitstrings.obj \
 	bloom.obj \
-	containererror.obj \
+	error.obj \
 	deque.obj \
 	doublelist.obj \
 	dictionary.obj \
@@ -71,8 +71,8 @@ bitstrings.obj: $(HEADERS) $(SRCDIR)\bitstrings.c $(HEADERS)
 bloom.obj: $(HEADERS) $(SRCDIR)\bloom.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\bloom.c
 
-containererror.obj: $(HEADERS) $(SRCDIR)\containererror.c $(HEADERS)
-	$(CC) -c $(CFLAGS) $(SRCDIR)\containererror.c
+error.obj: $(HEADERS) $(SRCDIR)\error.c $(HEADERS)
+	$(CC) -c $(CFLAGS) $(SRCDIR)\error.c
 
 # Build deque.c
 deque.obj: $(HEADERS) $(SRCDIR)\deque.c $(HEADERS)

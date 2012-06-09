@@ -8,7 +8,7 @@ CFLAGS=-O2 -Wno-pointer-sign -DUNIX -Wall -D__MAC_OSX
 CC=gcc
 # Debug CFLAGS setting
 #CFLAGS=-Wno-pointer-sign -DUNIX -Wall -g
-SRC=	vector.c bloom.c containererror.c dlist.c qsortex.c heap.c \
+SRC=	vector.c bloom.c error.c dlist.c qsortex.c heap.c \
 	deque.c hashtable.c malloc_debug.c containers.h ccl_internal.h \
 	stdint.h pool.c pooldebug.c redblacktree.c scapegoat.c smallpool.c ccl_internal.h \
 	bitstrings.c dictionarygen.c list.c memorymanager.c strcollection.c searchtree.c \
@@ -21,7 +21,7 @@ SRC=	vector.c bloom.c containererror.c dlist.c qsortex.c heap.c \
 DOCS=
 MAKEFILES=Makefile Makefile.lcc Makefile.msvc
 
-OBJS=vector.o containererror.o dlist.o qsortex.o bitstrings.o generic.o \
+OBJS=vector.o error.o dlist.o qsortex.o bitstrings.o generic.o \
     dictionary.o wdictionary.o list.o strcollection.o searchtree.o heap.o malloc_debug.o \
     bloom.o fgetline.o pool.o pooldebug.o redblacktree.o scapegoat.o queue.o \
     buffer.o observer.o valarraydouble.o valarrayint.o valarraysize_t.o \
@@ -57,7 +57,7 @@ vector.o:	containers.h ccl_internal.h vector.c
 buffer.o:	containers.h ccl_internal.h buffer.c
 vector.o:	containers.h ccl_internal.h vector.c
 bloom.o:	containers.h ccl_internal.h bloom.c
-containererror.o:	containers.h ccl_internal.h containererror.c
+error.o:	containers.h ccl_internal.h error.c
 dlist.o:		dlist.c containers.h ccl_internal.h
 deque.o:	deque.c containers.h ccl_internal.h
 hashtable.o:	hashtable.c	containers.h ccl_internal.h

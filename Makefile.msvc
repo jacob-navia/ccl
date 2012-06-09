@@ -7,7 +7,7 @@ OBJS=\
 	vector.obj \
 	bitstrings.obj \
 	bloom.obj \
-	containererror.obj \
+	error.obj \
 	deque.obj \
 	dictionary.obj \
 	dlist.obj \
@@ -128,7 +128,7 @@ BLOOM_C=\
 bloom.obj: $(BLOOM_C) $(SRCDIR)\bloom.c
 	$(CC) -c $(CFLAGS) $(SRCDIR)\bloom.c
 
-# Build containererror.c
+# Build error.c
 CONTAINERERROR_C=\
 	$(SRCDIR)\containers.h\
 	C:\lcc\include\string.h\
@@ -141,8 +141,8 @@ CONTAINERERROR_C=\
 	C:\lcc\include\limits.h\
 	C:\lcc\include\stdio.h\
 
-containererror.obj: $(CONTAINERERROR_C) $(SRCDIR)\containererror.c
-	$(CC) -c $(CFLAGS) $(SRCDIR)\containererror.c
+error.obj: $(CONTAINERERROR_C) $(SRCDIR)\error.c
+	$(CC) -c $(CFLAGS) $(SRCDIR)\error.c
 
 # Build deque.c
 DEQUE_C=\
