@@ -1,0 +1,7 @@
+BUILDING the software
+---------------------
+1: Documentation is in the file ccl.pdf.
+2: Type "make" for building the files under Unix
+3: type "make -f Makefile.lcc" for building under windows 32 bit with the lcc compiler
+4: Type "make -f Makefile.lcc64" for building under windows 64 bit with the lcc64 compiler
+5: Type "make -f Makefile.msvc" for building under windows with the Microsoft MSVC compiler
