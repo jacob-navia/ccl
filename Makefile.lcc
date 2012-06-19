@@ -41,6 +41,7 @@ OBJS=\
 	valarraylonglong.obj \
 	valarrayulonglong.obj \
 	valarrayshort.obj \
+	vectorsize_t.obj \
 	observer.obj \
 	memorymanager.obj \
 	priorityqueue.obj \
@@ -189,6 +190,9 @@ wstrcollection.obj:	wstrcollection.c strcollectiongen.c containers.h ccl_interna
 test.obj: $(TEST_C) $(SRCDIR)\test.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\test.c
 intlist.obj: intlist.c intlist.h ccl_internal.h containers.h $(LIST_GENERIC)
+
+vectorsize_t.obj:	vectorsize_t.c vectorgen.h vectorgen.c containers.h ccl_internals.h
+	$(CC) $(CFLAGS) $(SRCDIR)\vectorsize_t.c
 
 link:
 	$(LINKER)  -subsystem console -o $(SRCDIR)\lcc\ansicstl.exe $(OBJS) $(LIBS)
