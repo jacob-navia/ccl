@@ -13,7 +13,7 @@ SRC=	vector.c bloom.c error.c dlist.c qsortex.c heap.c \
 	stdint.h pool.c pooldebug.c redblacktree.c scapegoat.c smallpool.c ccl_internal.h \
 	bitstrings.c dictionarygen.c list.c memorymanager.c strcollection.c searchtree.c \
 	containers.h ccl_internal.h redblacktree.c fgetline.c generic.c queue.c buffer.c observer.c \
-	valarraydouble.c valarraysize_t.c valarrayint.c valarraylongdouble.c valarraygen.c \
+	valarraydouble.c vectorsize_t.c valarrayint.c valarraylongdouble.c valarraygen.c \
 	valarrayshort.c valarrayfloat.c valarrayuint.c valarraylonglong.c \
 	valarrayulonglong.c sequential.c iMask.c wstrcollection.c strcollectiongen.c \
 	stringlistgen.c stringlistgen.h stringlist.c stringlist.h wstringlist.h \
@@ -24,7 +24,7 @@ MAKEFILES=Makefile Makefile.lcc Makefile.msvc
 OBJS=vector.o error.o dlist.o qsortex.o bitstrings.o generic.o \
     dictionary.o wdictionary.o list.o strcollection.o searchtree.o heap.o malloc_debug.o \
     bloom.o fgetline.o pool.o pooldebug.o redblacktree.o scapegoat.o queue.o \
-    buffer.o observer.o valarraydouble.o valarrayint.o valarraysize_t.o \
+    buffer.o observer.o valarraydouble.o valarrayint.o vectorsize_t.o \
     valarraylongdouble.o valarrayshort.o valarrayfloat.o valarrayuint.o \
     valarraylonglong.o valarrayulonglong.o memorymanager.o sequential.o \
     iMask.o deque.o hashtable.o wstrcollection.o stringlist.o wstringlist.o \
@@ -46,7 +46,7 @@ valarraylongdouble.o:   valarraygen.c valarraylongdouble.c containers.h ccl_inte
 valarraydouble.o:       valarraygen.c valarraydouble.c containers.h ccl_internal.h valarraygen.h valarray.h
 valarrayint.o:          valarraygen.c valarrayint.c containers.h ccl_internal.h valarraygen.h valarray.h
 valarrayshort.o:	valarraygen.c valarrayshort.c containers.h ccl_internal.h valarraygen.h valarray.h
-valarraysize_t.o:       valarraygen.c valarraysize_t.c containers.h ccl_internal.h valarraygen.h valarray.h
+vectorsize_t.o:       vectorgen.c vectorsize_t.c containers.h ccl_internal.h vectorgen.h 
 valarrayfloat.o:	valarraygen.c valarrayfloat.c containers.h ccl_internal.h valarraygen.h valarray.h
 valarrayuint.o:		valarraygen.c valarrayuint.c containers.h ccl_internal.h valarraygen.h valarray.h
 valarraylonglong.o:	valarraygen.c valarraylonglong.c containers.h ccl_internal.h valarraygen.h valarray.h
