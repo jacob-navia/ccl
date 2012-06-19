@@ -1707,7 +1707,7 @@ static void *Front(const Vector *v)
 	return v->contents;
 }
 
-static size_t SizeofIterator(Vector *v)
+static size_t SizeofIterator(const Vector *v)
 {
 	return sizeof(struct VectorIterator)+v->ElementSize;
 }

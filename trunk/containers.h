@@ -739,7 +739,7 @@ typedef struct tagVector {
     Iterator *(*NewIterator)(Vector *AL);
     int (*InitIterator)(Vector *V,void *buf);
     int (*deleteIterator)(Iterator *);
-    size_t (*SizeofIterator)(Vector *);
+    size_t (*SizeofIterator)(const Vector *);
     int (*Save)(const Vector *AL,FILE *stream, SaveFunction saveFn,void *arg);
     Vector *(*Load)(FILE *stream, ReadFunction readFn,void *arg);
     size_t (*GetElementSize)(const Vector *AL);
@@ -840,6 +840,7 @@ typedef struct tagDictionary {
     DestructorFunction (*SetDestructor)(Dictionary *v,DestructorFunction fn);
     Dictionary *(*InitializeWith)(size_t elementSize,size_t n, const char **Keys,const void *Values);
     HashFunction (*SetHashFunction)(Dictionary *d,HashFunction newFn);
+    double (*GetLoadFactor)(Dictionary *d);
 } DictionaryInterface;
 
 extern DictionaryInterface iDictionary;
@@ -888,6 +889,7 @@ typedef struct tagWDictionary {
     DestructorFunction (*SetDestructor)(WDictionary *v,DestructorFunction fn);
     WDictionary *(*InitializeWith)(size_t elementSize,size_t n, const wchar_t **Keys,const void *Values);
     WHashFunction (*SetHashFunction)(WDictionary *d,WHashFunction newFn);
+    double (*GetLoadFactor)(WDictionary *d);
 } WDictionaryInterface;
 extern WDictionaryInterface iWDictionary;
 
