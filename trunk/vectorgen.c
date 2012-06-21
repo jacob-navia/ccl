@@ -7,10 +7,6 @@
 
 static VECTOR_TYPE *SetVTable(VECTOR_TYPE *result);
 
-#ifndef ERROR_RETURN
-static DATA_TYPE ERROR_RETURN = {0};
-#endif
-
 static int NullPtrError(const char *fnName)
 {
 	char buf[512];
@@ -51,13 +47,6 @@ static void **CopyTo(const VECTOR_TYPE *AL)
 static int IndexOf(const VECTOR_TYPE *AL,const DATA_TYPE data,void *ExtraArgs,size_t *result)
 {
 	return iVector.IndexOf((Vector *)AL,&data,ExtraArgs,result);
-}
-
-static DATA_TYPE GetElement(const VECTOR_TYPE *AL,size_t idx)
-{
-	DATA_TYPE *p = iVector.GetElement((Vector *)AL,idx);
-	if (p) return *p;
-	return ERROR_RETURN;
 }
 
 static int InsertAt(VECTOR_TYPE *AL,size_t idx,DATA_TYPE newval)
@@ -202,6 +191,10 @@ static VECTOR_TYPE *SetVTable(VECTOR_TYPE *result)
 	intface->RotateRight = (int (*)(VECTOR_TYPE *V,size_t n))iVector.RotateRight;
 	intface->CompareEqual = (Mask *(*)(const VECTOR_TYPE *,const VECTOR_TYPE *,Mask *))iVector.CompareEqual;
 	intface->CompareEqualScalar = (Mask *(*)(const VECTOR_TYPE *, const void *,Mask *))iVector.CompareEqualScalar;
+	intface->GetElement = (DATA_TYPE *(*)(const VECTOR_TYPE *,size_t))iVector.GetElement;
+	intface->Back = (DATA_TYPE *(*)(const VECTOR_TYPE *))iVector.Back;
+	intface->Front = (DATA_TYPE *(*)(const VECTOR_TYPE *))iVector.Front;
+
 	return result;
 }
 
@@ -239,19 +232,6 @@ static size_t GetElementSize(const VECTOR_TYPE *AL)
 	return sizeof(DATA_TYPE);
 }
 
-static DATA_TYPE Back(const VECTOR_TYPE *v)
-{
-	DATA_TYPE *r = iVector.Back((Vector *)v);
-	if (r == NULL) return ERROR_RETURN;
-	return *r;
-}
-static DATA_TYPE Front(const VECTOR_TYPE *v)
-{
-	DATA_TYPE *r = iVector.Front((Vector *)v);
-	if (r == NULL) return ERROR_RETURN;
-	return *r;
-}
-
 static size_t SizeofIterator(const VECTOR_TYPE * l)
 {
     return sizeof(struct ITERATOR(DATA_TYPE));
@@ -280,7 +260,7 @@ INTERFACE(DATA_TYPE)   INTERFACE_NAME(DATA_TYPE) = {
 	GetElementSize,
 /* Sequential container fields */
 	Add, 
-	GetElement,
+	NULL,       // GetElement,
 	PushBack,
 	PopBack,
 	InsertAt,
@@ -313,8 +293,8 @@ INTERFACE(DATA_TYPE)   INTERFACE_NAME(DATA_TYPE) = {
 	NULL,        // Resize,
 	InitializeWith,
 	NULL,        // GetData,
-	Back,
-	Front,
+	NULL,        // Back,
+	NULL,        // Front,
 	NULL,       // RemoveRange,
 	NULL,       // RotateLeft,
 	NULL,       // RotateRight,

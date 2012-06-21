@@ -83,7 +83,7 @@ struct INTERFACE_STRUCT_INTERNAL_NAME(DATA_TYPE) {
     /* Sequential container specific fields */
 
     int (*Add)(VECTOR_TYPE *AL,const DATA_TYPE newval);
-    DATA_TYPE (*GetElement)(const VECTOR_TYPE *AL,size_t idx);
+    DATA_TYPE *(*GetElement)(const VECTOR_TYPE *AL,size_t idx);
     int (*PushBack)(VECTOR_TYPE *AL,const DATA_TYPE str);
     int (*PopBack)(VECTOR_TYPE *AL,DATA_TYPE result);
     int (*InsertAt)(VECTOR_TYPE *AL,size_t idx,DATA_TYPE newval);
@@ -119,8 +119,8 @@ struct INTERFACE_STRUCT_INTERNAL_NAME(DATA_TYPE) {
     int (*Resize)(VECTOR_TYPE *AL,size_t newSize);
     VECTOR_TYPE *(*InitializeWith)(size_t n,const DATA_TYPE *Data);
     DATA_TYPE *(*GetData)(const VECTOR_TYPE *AL);
-    DATA_TYPE (*Back)(const VECTOR_TYPE *AL);
-    DATA_TYPE (*Front)(const VECTOR_TYPE *AL);
+    DATA_TYPE *(*Back)(const VECTOR_TYPE *AL);
+    DATA_TYPE *(*Front)(const VECTOR_TYPE *AL);
     int (*RemoveRange)(VECTOR_TYPE *SC,size_t start,size_t end);
     int (*RotateLeft)(VECTOR_TYPE *V,size_t n);
     int (*RotateRight)(VECTOR_TYPE *V,size_t n);

@@ -14,8 +14,8 @@
 
 /* Forward declarations */
 static LIST_TYPE *SetVTable(LIST_TYPE *result);
-static LIST_TYPE * Create(size_t elementsize);
-static LIST_TYPE *CreateWithAllocator(size_t elementsize, const ContainerAllocator * allocator);
+static LIST_TYPE * Create(void);
+static LIST_TYPE *CreateWithAllocator(const ContainerAllocator * allocator);
 #define CONTAINER_LIST_SMALL    2
 #define CHUNK_SIZE    1000
 
@@ -42,35 +42,6 @@ static int Contains(const LIST_TYPE * l, const DATA_TYPE data)
 static int Add(LIST_TYPE * l, const DATA_TYPE elem)
 {
     return iList.Add((List *)l,&elem);
-}
-
-/*------------------------------------------------------------------------
- Procedure:     GetElement ID:1
- Purpose:       Returns the data associated with a given position
- Input:         The list and the position
- Output:        A pointer to the data
- Errors:        NULL if error in the positgion index
-------------------------------------------------------------------------*/
-static DATA_TYPE GetElement(const LIST_TYPE * l, size_t position)
-{
-    DATA_TYPE *pdata = iList.GetElement((List *)l,position);
-
-    if (pdata == NULL) return ERROR_RETURN;
-    return *pdata;
-}
-
-static DATA_TYPE Back(const LIST_TYPE * l)
-{
-    DATA_TYPE *p = (DATA_TYPE *)iList.Back((List *)l);
-    if (p == NULL) return ERROR_RETURN;
-    return *p;
-}
-
-static DATA_TYPE Front(const LIST_TYPE * l)
-{
-    DATA_TYPE *p = (DATA_TYPE *)iList.Front((List *)l);
-    if (p == NULL) return ERROR_RETURN;
-    return *p;
 }
 
 static int CopyElement(const LIST_TYPE * l, size_t position, DATA_TYPE *outBuffer)
@@ -231,8 +202,9 @@ recurse:
     higuy = hi + 1;
 
     for (;;) {
-      do { loguy++; } while (loguy <= hi && COMPARE_EXPRESSION(loguy,lo) <= 0);
-      do { higuy--; } while (higuy > lo && COMPARE_EXPRESSION(higuy,lo) >= 0);
+      // Changed <= to < and >= to > according to the advise of "pete" of comp.lang.c.
+      do { loguy++; } while (loguy <= hi && COMPARE_EXPRESSION(loguy,lo) < 0);
+      do { higuy--; } while (higuy > lo && COMPARE_EXPRESSION(higuy,lo) > 0);
       if (higuy < loguy) break;
       swap(loguy, higuy);
     }
@@ -332,6 +304,7 @@ static LIST_TYPE *SetVTable(LIST_TYPE *result)
     Initialized = 1;
     intface->FirstElement = (LIST_ELEMENT *(*)(LIST_TYPE *))iList.FirstElement;
     intface->LastElement = (LIST_ELEMENT *(*)(LIST_TYPE *))iList.LastElement;
+    intface->GetElement = (DATA_TYPE *(*)(const LIST_TYPE *,size_t))iList.GetElement;
     intface->Clear = (int (*)(LIST_TYPE *))iList.Clear;
     intface->EraseAt = (int (*)(LIST_TYPE *,size_t))iList.EraseAt;
     intface->RemoveRange = (int (*)(LIST_TYPE *,size_t,size_t))iList.RemoveRange;
@@ -350,7 +323,6 @@ static LIST_TYPE *SetVTable(LIST_TYPE *result)
     intface->AddRange = (int (*)(LIST_TYPE *, size_t, const DATA_TYPE *))iList.AddRange;
     intface->SetErrorFunction = (ErrorFunction (*)(LIST_TYPE *, ErrorFunction))iList.SetErrorFunction;
     intface->SetFlags = (unsigned (*)(LIST_TYPE * l, unsigned newval))iList.SetFlags;
-    intface->RemoveRange = (int (*)(LIST_TYPE *, size_t, size_t))iList.RemoveRange;
     intface->UseHeap = (int (*)(LIST_TYPE *, const ContainerAllocator *))iList.UseHeap;
     intface->RotateLeft = (int (*)(LIST_TYPE *, size_t))iList.RotateLeft;
     intface->RotateRight = (int (*)(LIST_TYPE *, size_t))iList.RotateRight;
@@ -358,6 +330,8 @@ static LIST_TYPE *SetVTable(LIST_TYPE *result)
     intface->Size = (size_t (*)(const LIST_TYPE *))iList.Size;
     intface->deleteIterator = (int (*)(Iterator *))iList.deleteIterator;
     intface->SplitAfter = (LIST_TYPE *(*)(LIST_TYPE *, LIST_ELEMENT *))iList.SplitAfter;
+    intface->Back = (DATA_TYPE *(*)(const LIST_TYPE *))iList.Back;
+    intface->Front = (DATA_TYPE *(*)(const LIST_TYPE *))iList.Front;
     return result;
 }
 
@@ -372,34 +346,33 @@ static LIST_TYPE *SetVTable(LIST_TYPE *result)
                 routine is called. If there is no memory result is
                 NULL.
  ------------------------------------------------------------------------*/
-static LIST_TYPE *CreateWithAllocator(size_t elementsize, const ContainerAllocator * allocator)
+static LIST_TYPE *CreateWithAllocator(const ContainerAllocator * allocator)
 {
     LIST_TYPE *result =  (LIST_TYPE *)iList.CreateWithAllocator(sizeof(DATA_TYPE), allocator);
     return SetVTable(result);
 }
 
-static LIST_TYPE * Create(size_t elementsize)
+static LIST_TYPE * Create(void)
 {
     LIST_TYPE *result =  (LIST_TYPE *)iList.CreateWithAllocator(sizeof(DATA_TYPE), CurrentAllocator);
     return SetVTable(result);
 }
 
-static LIST_TYPE *InitializeWith(size_t elementSize, size_t n, const void *Data)
+static LIST_TYPE *InitializeWith(size_t n, const void *Data)
 {
     LIST_TYPE *result = (LIST_TYPE *)iList.InitializeWith(sizeof(DATA_TYPE),n,Data);
     return SetVTable(result);
 }
 
-static LIST_TYPE *InitWithAllocator(LIST_TYPE * result, size_t elementsize,
-          const ContainerAllocator * allocator)
+static LIST_TYPE *InitWithAllocator(LIST_TYPE * result, const ContainerAllocator * allocator)
 {
     iList.InitWithAllocator((List *)result,sizeof(DATA_TYPE),allocator);
     return SetVTable(result);
 }
 
-static LIST_TYPE * Init(LIST_TYPE * result, size_t elementsize)
+static LIST_TYPE * Init(LIST_TYPE * result)
 {
-    return InitWithAllocator(result, elementsize, CurrentAllocator);
+    return InitWithAllocator(result, CurrentAllocator);
 }
 
 static const ContainerAllocator *GetAllocator(const LIST_TYPE * l)
@@ -415,10 +388,10 @@ static LIST_ELEMENT *NextElement(LIST_ELEMENT *le)
     return le->Next;
 }
 
-static DATA_TYPE ElementData(LIST_ELEMENT *le)
+static DATA_TYPE *ElementData(LIST_ELEMENT *le)
 {
-    if (le == NULL) return ERROR_RETURN;
-    return le->Data;
+    if (le == NULL) return NULL;
+    return &le->Data;
 }
 
 static int SetElementData(LIST_TYPE *l,LIST_ELEMENT *le,DATA_TYPE data)
@@ -426,18 +399,18 @@ static int SetElementData(LIST_TYPE *l,LIST_ELEMENT *le,DATA_TYPE data)
     return iList.SetElementData((List *)l,(ListElement *)le,&data);
 }
 
-static DATA_TYPE Advance(LIST_ELEMENT **ple)
+static DATA_TYPE *Advance(LIST_ELEMENT **ple)
 {
     LIST_ELEMENT *le;
-    DATA_TYPE result;
+    DATA_TYPE *result;
 
     if (ple == NULL) {
         iError.NullPtrError("Advance");
-        return ERROR_RETURN;
+        return NULL;
     }
     le = *ple;
-    if (le == NULL) return ERROR_RETURN;
-    result = le->Data;
+    if (le == NULL) return NULL;
+    result = &le->Data;
     le = le->Next;
     *ple = le;
     return result;
@@ -466,7 +439,7 @@ INTERFACE(DATA_TYPE)   INTERFACE_NAME(DATA_TYPE) = {
     GetElementSize,
     /* end of generic part */
     Add,
-    GetElement,
+    NULL,         // GetElement,
     PushFront,
     PopFront,
     InsertAt,
@@ -492,8 +465,8 @@ INTERFACE(DATA_TYPE)   INTERFACE_NAME(DATA_TYPE) = {
     GetAllocator,
     NULL,          // SetDestructor
     InitializeWith,
-    Back,
-    Front,
+    NULL,          // Back,
+    NULL,          // Front,
     NULL,          // RemoveRange,
     NULL,          // RotateLeft,
     NULL,          // RotateRight,

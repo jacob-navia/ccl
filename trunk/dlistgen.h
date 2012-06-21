@@ -94,7 +94,7 @@ struct INTERFACE_STRUCT_INTERNAL_NAME(DATA_TYPE) {
 
     /* -----------------------------------------Sequential container part */
     int (*Add)(LIST_TYPE *dl,const DATA_TYPE newval);
-    DATA_TYPE (*GetElement)(const LIST_TYPE *AL,size_t idx);
+    DATA_TYPE *(*GetElement)(const LIST_TYPE *AL,size_t idx);
     int (*PushFront)(LIST_TYPE *AL,const DATA_TYPE str);
     int (*PopFront)(LIST_TYPE *AL,DATA_TYPE *result);
     int (*InsertAt)(LIST_TYPE *AL,size_t idx,const DATA_TYPE newval);
@@ -122,8 +122,8 @@ struct INTERFACE_STRUCT_INTERNAL_NAME(DATA_TYPE) {
     DestructorFunction (*SetDestructor)(LIST_TYPE *v,DestructorFunction fn);
     LIST_TYPE *(*InitializeWith)(size_t elementSize, size_t n,const DATA_TYPE *data);
     const ContainerAllocator *(*GetAllocator)(const LIST_TYPE *l);
-    DATA_TYPE (*Back)(const LIST_TYPE *l);
-    DATA_TYPE (*Front)(const LIST_TYPE *l);
+    DATA_TYPE *(*Back)(const LIST_TYPE *l);
+    DATA_TYPE *(*Front)(const LIST_TYPE *l);
     int (*RemoveRange)(LIST_TYPE *l,size_t start, size_t end);
     int (*RotateLeft)(LIST_TYPE *l, size_t n);
     int (*RotateRight)(LIST_TYPE *l,size_t n);
@@ -133,9 +133,9 @@ struct INTERFACE_STRUCT_INTERNAL_NAME(DATA_TYPE) {
     LIST_ELEMENT *(*LastElement)(LIST_TYPE *l);
     LIST_ELEMENT *(*NextElement)(LIST_ELEMENT *le);
     LIST_ELEMENT *(*PreviousElement)(LIST_ELEMENT *le);
-    DATA_TYPE (*ElementData)(LIST_ELEMENT *le);
+    DATA_TYPE *(*ElementData)(LIST_ELEMENT *le);
     int (*SetElementData)(LIST_TYPE *l, LIST_ELEMENT *le,DATA_TYPE data);
-    DATA_TYPE (*Advance)(LIST_ELEMENT **pLIST_ELEMENT);
+    DATA_TYPE *(*Advance)(LIST_ELEMENT **pLIST_ELEMENT);
     LIST_ELEMENT *(*Skip)(LIST_ELEMENT *l,size_t n);
     void *(*MoveBack)(LIST_ELEMENT **pLIST_ELEMENT);
     LIST_TYPE *(*SplitAfter)(LIST_TYPE *l, LIST_ELEMENT *pt);
