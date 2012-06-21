@@ -43,19 +43,18 @@ static void *newHeapObject(ContainerHeap *l)
         /* Allocate an array of pointers that will hold the blocks
         of CHUNK_SIZE list items
         */
-        siz = sizeof(ListElement *);
-        l->Heap = l->Allocator->calloc(CHUNK_SIZE,siz);
+        l->Heap = l->Allocator->calloc(CHUNK_SIZE,sizeof(ListElement *));
         if (l->Heap == NULL) {
             return NULL;
         }
-        l->MemoryUsed += siz*CHUNK_SIZE;
+        l->MemoryUsed += sizeof(ListElement *)*CHUNK_SIZE;
         l->BlockCount = CHUNK_SIZE;
         l->CurrentBlock=0;
         l->BlockIndex = 0;
     }
     if (l->FreeList) {
         ListElement *le = l->FreeList;
-        memcpy(&l->FreeList, le->Data,sizeof(ListElement *));
+        l->FreeList = le->Next;
         return le;
     }
     if (l->BlockIndex >= CHUNK_SIZE) {
@@ -69,7 +68,7 @@ static void *newHeapObject(ContainerHeap *l)
                 return NULL;
             }
             l->Heap = (char **)result;
-            l->MemoryUsed += siz;
+            l->MemoryUsed += CHUNK_SIZE*sizeof(ListElement *);
             /* Position pointer at the start of the new area */
             result += l->BlockCount*sizeof(ListElement *);
             /* Zero the new pointers */
@@ -85,7 +84,7 @@ static void *newHeapObject(ContainerHeap *l)
         }
         l->Heap[l->CurrentBlock] = result;
         l->BlockIndex = 0;
-	l->MemoryUsed += CHUNK_SIZE * l->ElementSize;
+	l->MemoryUsed += CHUNK_SIZE * (sizeof(void *) + l->ElementSize);
     }
     result = l->Heap[l->CurrentBlock];
     result += l->ElementSize * l->BlockIndex;
