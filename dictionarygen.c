@@ -1068,6 +1068,11 @@ static size_t SizeofIterator(const DATA_TYPE *b)
 	return sizeof(struct ITERATOR);
 }
 
+static double GetLoadFactor(DATA_TYPE *d)
+{
+    return ((double)d->count)/d->size;
+}
+
 INTERFACE EXTERNAL_NAME  = {
     Size,
     GetFlags,
@@ -1088,7 +1093,6 @@ INTERFACE EXTERNAL_NAME  = {
     Save,
     Load,
     GetElementSize,
-
     Add,
     GetElement,
     Replace,
@@ -1105,4 +1109,5 @@ INTERFACE EXTERNAL_NAME  = {
     SetDestructor,
     InitializeWith,
     SetHashFunction,
+    GetLoadFactor,
 };
