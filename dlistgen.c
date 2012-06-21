@@ -38,35 +38,6 @@ static int Add(LIST_TYPE * l, const DATA_TYPE elem)
     return iDlist.Add((Dlist *)l,&elem);
 }
 
-/*------------------------------------------------------------------------
- Procedure:     GetElement ID:1
- Purpose:       Returns the data associated with a given position
- Input:         The list and the position
- Output:        A pointer to the data
- Errors:        NULL if error in the positgion index
-------------------------------------------------------------------------*/
-static DATA_TYPE GetElement(const LIST_TYPE * l, size_t position)
-{
-    DATA_TYPE *pdata = iDlist.GetElement((Dlist *)l,position);
-
-    if (pdata == NULL) return ERROR_RETURN;
-    return *pdata;
-}
-
-static DATA_TYPE Back(const LIST_TYPE * l)
-{
-    DATA_TYPE *p = (DATA_TYPE *)iDlist.Back((Dlist *)l);
-    if (p == NULL) return ERROR_RETURN;
-    return *p;
-}
-
-static DATA_TYPE Front(const LIST_TYPE * l)
-{
-    DATA_TYPE *p = (DATA_TYPE *)iDlist.Front((Dlist *)l);
-    if (p == NULL) return ERROR_RETURN;
-    return *p;
-}
-
 static int CopyElement(const LIST_TYPE * l, size_t position, DATA_TYPE *outBuffer)
 {
     return iDlist.CopyElement((Dlist *)l,position,outBuffer);
@@ -234,8 +205,8 @@ recurse:
     higuy = hi + 1;
 
     for (;;) {
-      do { loguy++; } while (loguy <= hi && COMPARE_EXPRESSION(loguy,lo) <= 0);
-      do { higuy--; } while (higuy > lo && COMPARE_EXPRESSION(higuy,lo) >= 0);
+      do { loguy++; } while (loguy <= hi && COMPARE_EXPRESSION(loguy,lo) < 0);
+      do { higuy--; } while (higuy > lo && COMPARE_EXPRESSION(higuy,lo) > 0);
       if (higuy < loguy) break;
       swap(loguy, higuy);
     }
@@ -335,6 +306,7 @@ static LIST_TYPE *SetVTable(LIST_TYPE *result)
     Initialized = 1;
     intface->FirstElement = (LIST_ELEMENT *(*)(LIST_TYPE *))iDlist.FirstElement;
     intface->LastElement = (LIST_ELEMENT *(*)(LIST_TYPE *))iDlist.LastElement;
+    intface->GetElement = (DATA_TYPE *(*)(const LIST_TYPE *,size_t))iDlist.GetElement;
     intface->Clear = (int (*)(LIST_TYPE *))iDlist.Clear;
     intface->EraseAt = (int (*)(LIST_TYPE *,size_t))iDlist.EraseAt;
     intface->Select = (int (*)(LIST_TYPE *,const Mask *))iDlist.Select;
@@ -362,6 +334,10 @@ static LIST_TYPE *SetVTable(LIST_TYPE *result)
     intface->deleteIterator = (int (*)(Iterator *))iDlist.deleteIterator;
     intface->SplitAfter = (LIST_TYPE *(*)(LIST_TYPE *, LIST_ELEMENT *))iDlist.SplitAfter;
     intface->Splice = (LIST_TYPE *(*)(LIST_TYPE *list, void *ppos, LIST_TYPE *toInsert, int dir ))iDlist.Splice;
+    intface->Back = (DATA_TYPE *(*)(const LIST_TYPE *))iDlist.Back;
+    intface->Front = (DATA_TYPE *(*)(const LIST_TYPE *))iDlist.Front;
+    intface->ElementData = (DATA_TYPE *(*)(LIST_ELEMENT *))iDlist.ElementData;
+    intface->Advance = (DATA_TYPE *(*)(LIST_ELEMENT **))iDlist.Advance;
     return result;
 }
 
@@ -419,32 +395,9 @@ static LIST_ELEMENT *NextElement(LIST_ELEMENT *le)
     return le->Next;
 }
 
-static DATA_TYPE ElementData(LIST_ELEMENT *le)
-{
-    if (le == NULL) return ERROR_RETURN;
-    return le->Data;
-}
-
 static int SetElementData(LIST_TYPE *l,LIST_ELEMENT *le,DATA_TYPE data)
 {
     return iDlist.SetElementData((Dlist *)l,(DlistElement *)le,&data);
-}
-
-static DATA_TYPE Advance(LIST_ELEMENT **ple)
-{
-    LIST_ELEMENT *le;
-    DATA_TYPE result;
-
-    if (ple == NULL) {
-        iError.NullPtrError("Advance");
-        return ERROR_RETURN;
-    }
-    le = *ple;
-    if (le == NULL) return ERROR_RETURN;
-    result = le->Data;
-    le = le->Next;
-    *ple = le;
-    return result;
 }
 
 INTERFACE(DATA_TYPE)   INTERFACE_NAME(DATA_TYPE) = {
@@ -470,7 +423,7 @@ INTERFACE(DATA_TYPE)   INTERFACE_NAME(DATA_TYPE) = {
     GetElementSize,
     /* end of generic part */
     Add,
-    GetElement,
+    NULL,         // GetElement,
     PushFront,
     PopFront,
     InsertAt,
@@ -497,8 +450,8 @@ INTERFACE(DATA_TYPE)   INTERFACE_NAME(DATA_TYPE) = {
     NULL,          // SetDestructor,
     InitializeWith,
     GetAllocator,
-    Back,
-    Front,
+    NULL,          // Back,
+    NULL,          // Front,
     NULL,          // RemoveRange,
     NULL,          // RotateLeft,
     NULL,          // RotateRight,
@@ -508,9 +461,9 @@ INTERFACE(DATA_TYPE)   INTERFACE_NAME(DATA_TYPE) = {
     NULL,          // LastElement,
     NextElement,
     NULL,          // PreviousElement,
-    ElementData,
+    NULL,          // ElementData,
     SetElementData,
-    Advance,
+    NULL,           // Advance,
     NULL,           // Skip,
     NULL,           // MoveBack,
     NULL,           // SplitAfter,
