@@ -429,7 +429,13 @@ static int CopyElement(const Vector *AL,size_t idx, void *outbuf)
 		return CONTAINER_ERROR_BADARG;
 	}
 	if (idx >= AL->count) {
-		AL->RaiseError("iVector.CopyElement",CONTAINER_ERROR_INDEX);
+		void *p=AL->RaiseError("iVector.CopyElement",CONTAINER_ERROR_INDEX);
+		if (p) {
+			// User overrides the error furnishing a pointer to some 
+			// data. This allows implementing infinite arrays
+			memcpy(outbuf,p,AL->ElementSize);
+			return 1;
+		}
 		return CONTAINER_ERROR_INDEX;
 	}
 	p = (char *)AL->contents;

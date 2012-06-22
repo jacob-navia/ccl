@@ -55,14 +55,14 @@
 #define CONTAINER_ERROR_DIVISION_BY_ZERO -21
 #define CONTAINER_ERROR_WRONGELEMENT    -22
 
-typedef void (*ErrorFunction)(const char *,int,...);
+typedef void *(*ErrorFunction)(const char *,int,...);
 typedef int (*DestructorFunction)(void *);
 typedef size_t (*HashFunction)(const char *); /* For the dictionary container */
 typedef size_t (*WHashFunction)(const wchar_t *); /* For the dictionary container */
 
 typedef struct tagError {
     ErrorFunction RaiseError;
-    void (*EmptyErrorFunction)(const char *fname,int errcode,...);
+    void *(*EmptyErrorFunction)(const char *fname,int errcode,...);
     char *(*StrError)(int errcode);
     ErrorFunction (*SetErrorFunction)(ErrorFunction);
     int (*NullPtrError)(const char *fname);
