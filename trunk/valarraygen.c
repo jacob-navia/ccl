@@ -2059,9 +2059,9 @@ static ElementType Min(const ValArray *src)
 	return result;
 }
 
-static void RaiseError(const char *msg,int code,...)
+static void *RaiseError(const char *msg,int code,...)
 {
-	iError.RaiseError(msg,code);
+	return iError.RaiseError(msg,code);
 }
 
 static int Fprintf(const ValArray *src,FILE *out,const char *fmt)
