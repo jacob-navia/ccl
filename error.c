@@ -36,11 +36,12 @@ static char *StrError(int errcode)
 	}
 	return e->Message;
 }
-static void ContainerRaiseError(const char *fnname,int errcode,...)
+static void *ContainerRaiseError(const char *fnname,int errcode,...)
 {
 	fprintf(stderr,"Container library: Error '%s' in function %s\n",StrError(errcode),fnname);
+	return NULL;
 }
-static void EmptyErrorFunction(const char *fnname,int errcode,...) { }
+static void *EmptyErrorFunction(const char *fnname,int errcode,...) { return NULL; }
 
 static ErrorFunction SetError(ErrorFunction n)
 {
