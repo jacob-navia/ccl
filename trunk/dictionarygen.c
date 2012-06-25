@@ -644,6 +644,8 @@ static int Finalize(DATA_TYPE *Dict)
         return r;
     if (Dict->Flags & CONTAINER_HAS_OBSERVER)
         iObserver.Notify(Dict,CCL_FINALIZE,NULL,NULL);
+    if (Dict->VTable != &EXTERNAL_NAME)
+        Dict->Allocator->free(Dict->VTable);
     Dict->Allocator->free(Dict->buckets);
     Dict->Allocator->free(Dict);
     return 1;
@@ -690,6 +692,11 @@ static STRCOLLECTION *GetKeys(const DATA_TYPE *Dict)
 /* ------------------------------------------------------------------------------ */
 /*                                Iterators                                       */
 /* ------------------------------------------------------------------------------ */
+static size_t GetPosition(Iterator *it)
+{
+    struct ITERATOR *d = (struct ITERATOR *)it;
+    return d->index;
+}
 
 static void *GetNext(Iterator *it)
 {
@@ -776,6 +783,10 @@ static int ReplaceWithIterator(Iterator *it, void *data,int direction)
     return result;
 }
 
+static void *Seek(Iterator *it, size_t idx)
+{
+    return NULL;
+}
 
 static Iterator *NewIterator(DATA_TYPE *Dict)
 {
@@ -796,6 +807,8 @@ static Iterator *NewIterator(DATA_TYPE *Dict)
     result->it.GetFirst = GetFirst;
     result->Dict = Dict;
     result->it.Replace = ReplaceWithIterator;
+    result->it.GetPosition = GetPosition;
+    result->it.Seek = Seek;
     result->timestamp = Dict->timestamp;
     return &result->it;
 }
