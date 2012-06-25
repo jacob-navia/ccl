@@ -165,7 +165,7 @@ typedef struct tagPoolAllocatorInterface {
     void  *(*Alloc)(Pool *pool,size_t size);
     void  *(*Calloc)(Pool *pool,size_t n,size_t size);
     void   (*Clear)(Pool *);
-    void   (*Destroy)(Pool *);
+    void   (*Finalize)(Pool *);
 } PoolAllocatorInterface;
 
 extern PoolAllocatorInterface iPool;
