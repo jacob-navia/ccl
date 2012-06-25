@@ -115,6 +115,7 @@ typedef struct _Iterator {
     void *(*GetCurrent)(struct _Iterator *);
     void *(*GetLast)(struct _Iterator *);
     void *(*Seek)(struct _Iterator *,size_t);
+    size_t (*GetPosition)(struct _Iterator *);
     int   (*Replace)(struct _Iterator *,void *data,int direction);
 } Iterator;
 
