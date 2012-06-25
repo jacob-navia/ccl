@@ -350,6 +350,8 @@ static int Finalize(LIST_TYPE(DATA_TYPE) *l)
         return t;
     if (Flags & CONTAINER_HAS_OBSERVER)
         iObserver.Notify(l,CCL_FINALIZE,NULL,NULL);
+    if (l->VTable != &iSTRINGLIST(DATA_TYPE))
+        l->Allocator->free(l->VTable);
     l->Allocator->free(l);
     return 1;
 }
@@ -1270,6 +1272,12 @@ static void *GetNext(Iterator *it)
     result = li->Current->Data;
     return result;
 }
+static size_t GetPosition(Iterator *it)
+{
+    struct ListIterator *li = (struct ListIterator *) it;
+    return li->index;
+}
+
 
 static void *GetPrevious(Iterator *it)
 {
@@ -1415,6 +1423,8 @@ static Iterator *NewIterator(LIST_TYPE(DATA_TYPE) *L)
     result->it.GetPrevious = GetPrevious;
     result->it.GetFirst = GetFirst;
     result->it.GetCurrent = GetCurrent;
+    result->it.GetPosition = GetPosition;
+    result->it.Seek = Seek;
     result->L = L;
     result->timestamp = L->timestamp;
     result->index = (size_t)-1;
