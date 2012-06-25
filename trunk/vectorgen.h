@@ -125,7 +125,7 @@ struct INTERFACE_STRUCT_INTERNAL_NAME(DATA_TYPE) {
     int (*RotateLeft)(VECTOR_TYPE *V,size_t n);
     int (*RotateRight)(VECTOR_TYPE *V,size_t n);
     Mask *(*CompareEqual)(const VECTOR_TYPE *left,const VECTOR_TYPE *right,Mask *m);
-    Mask *(*CompareEqualScalar)(const VECTOR_TYPE *left, const void *right,Mask *m);
+    Mask *(*CompareEqualScalar)(const VECTOR_TYPE *left, const DATA_TYPE right,Mask *m);
     int (*Reserve)(VECTOR_TYPE *src,size_t newCapacity);
 };
 #endif

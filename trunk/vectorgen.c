@@ -190,7 +190,6 @@ static VECTOR_TYPE *SetVTable(VECTOR_TYPE *result)
 	intface->RotateLeft = (int (*)(VECTOR_TYPE *V,size_t n))iVector.RotateLeft;
 	intface->RotateRight = (int (*)(VECTOR_TYPE *V,size_t n))iVector.RotateRight;
 	intface->CompareEqual = (Mask *(*)(const VECTOR_TYPE *,const VECTOR_TYPE *,Mask *))iVector.CompareEqual;
-	intface->CompareEqualScalar = (Mask *(*)(const VECTOR_TYPE *, const void *,Mask *))iVector.CompareEqualScalar;
 	intface->GetElement = (DATA_TYPE *(*)(const VECTOR_TYPE *,size_t))iVector.GetElement;
 	intface->Back = (DATA_TYPE *(*)(const VECTOR_TYPE *))iVector.Back;
 	intface->Front = (DATA_TYPE *(*)(const VECTOR_TYPE *))iVector.Front;
@@ -235,6 +234,11 @@ static size_t GetElementSize(const VECTOR_TYPE *AL)
 static size_t SizeofIterator(const VECTOR_TYPE * l)
 {
     return sizeof(struct ITERATOR(DATA_TYPE));
+}
+
+static Mask *CompareEqualScalar(const VECTOR_TYPE *left,const DATA_TYPE right,Mask *bytearray)
+{
+    return iVector.CompareEqualScalar((Vector *)left,&right,bytearray);
 }
 
 INTERFACE(DATA_TYPE)   INTERFACE_NAME(DATA_TYPE) = {
@@ -299,6 +303,6 @@ INTERFACE(DATA_TYPE)   INTERFACE_NAME(DATA_TYPE) = {
 	NULL,       // RotateLeft,
 	NULL,       // RotateRight,
 	NULL,       // CompareEqual,
-	NULL,       // CompareEqualScalar,
+	CompareEqualScalar,
 	NULL,       // Reserve
 };
