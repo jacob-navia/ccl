@@ -422,6 +422,8 @@ static int Finalize(ElementType *SC)
         SC->Allocator->free(SC->contents[i]);
     }
     SC->Allocator->free(SC->contents);
+    if (SC->VTable != &INTERFACE_OBJECT)
+        SC->Allocator->free(SC->VTable);
     SC->Allocator->free(SC);
     return 1;
 }
@@ -961,6 +963,12 @@ struct strCollectionIterator {
     CHAR_TYPE *current;
 };
 
+static size_t GetPosition(Iterator *it)
+{
+    struct VectorIterator *ali = (struct VectorIterator *)it;
+    return ali->index;
+}
+
 static void *GetNext(Iterator *it)
 {
     struct strCollectionIterator *sci = (struct strCollectionIterator *)it;
@@ -1106,6 +1114,7 @@ static Iterator *NewIterator(ElementType *SC)
     result->it.GetCurrent = GetCurrent;
     result->it.Seek = Seek;
     result->it.Replace = ReplaceWithIterator;
+    result->it.GetPosition = GetPosition;
     result->SC = SC;
     result->timestamp = SC->timestamp;
     result->current = NULL;
