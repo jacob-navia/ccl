@@ -429,7 +429,7 @@ static int CopyElement(const Vector *AL,size_t idx, void *outbuf)
 		return CONTAINER_ERROR_BADARG;
 	}
 	if (idx >= AL->count) {
-		void *p=AL->RaiseError("iVector.CopyElement",CONTAINER_ERROR_INDEX);
+		void *p=AL->RaiseError("iVector.CopyElement",CONTAINER_ERROR_INDEX,AL,idx);
 		if (p) {
 			// User overrides the error furnishing a pointer to some 
 			// data. This allows implementing infinite arrays
@@ -515,8 +515,7 @@ static void *GetElement(const Vector *AL,size_t idx)
 		return NULL;
 	}
 	if (idx >=AL->count ) {
-		AL->RaiseError("iVector.GetElement",CONTAINER_ERROR_INDEX);
-		return NULL;
+		return  AL->RaiseError("iVector.GetElement",CONTAINER_ERROR_INDEX,AL,idx);
 	}
 	p = AL->contents;
 	p += idx*AL->ElementSize;
@@ -554,8 +553,12 @@ static int InsertAt(Vector *AL,size_t idx,void *newval)
 		return ErrorReadOnly(AL,"InsertAt");
 	}
 	if (idx > AL->count) {
-		AL->RaiseError("iVector.InsertAt",CONTAINER_ERROR_INDEX);
-		return CONTAINER_ERROR_INDEX;
+		p = AL->RaiseError("iVector.InsertAt",CONTAINER_ERROR_INDEX,AL,idx);
+		if (p) {
+			int r = ResizeTo(AL,idx+1);
+			if (r < 0) return r;
+		}
+		else return CONTAINER_ERROR_INDEX;
 	}
 	if (AL->count >= (AL->capacity-1)) {
 		int r = grow(AL);
@@ -597,7 +600,7 @@ static int InsertIn(Vector *AL, size_t idx, Vector *newData)
 	if (AL->Flags & CONTAINER_READONLY)
 		return ErrorReadOnly(AL,"InsertIn");
 	if (idx > AL->count) {
-		AL->RaiseError("iVector.InsertIn",CONTAINER_ERROR_INDEX);
+		AL->RaiseError("iVector.InsertIn",CONTAINER_ERROR_INDEX,AL,idx);
 		return CONTAINER_ERROR_INDEX;
 	}
 	if (AL->ElementSize != newData->ElementSize) {
@@ -632,7 +635,7 @@ static int EraseAt(Vector *AL,size_t idx)
 		return NullPtrError("EraseAt");
 	}
 	if (idx >= AL->count) {
-		AL->RaiseError("iVector.Erase",CONTAINER_ERROR_INDEX);
+		AL->RaiseError("iVector.Erase",CONTAINER_ERROR_INDEX,AL,idx);
 		return CONTAINER_ERROR_INDEX;
 	}
 	if (AL->Flags & CONTAINER_READONLY) {
@@ -808,6 +811,8 @@ static int Finalize(Vector *AL)
 		return result;
 	if (Flags & CONTAINER_HAS_OBSERVER)
 		iObserver.Notify(AL,CCL_FINALIZE,NULL,NULL);
+	if (AL->VTable != &iVector)
+		AL->Allocator->free(AL->VTable);
 	AL->Allocator->free(AL->contents);
 	AL->Allocator->free(AL);
 	return result;
@@ -948,7 +953,7 @@ static int ReplaceAt(Vector *AL,size_t idx,void *newval)
 		return CONTAINER_ERROR_READONLY;
 	}
 	if (idx >= AL->count) {
-		AL->RaiseError("iVector.ReplaceAt",CONTAINER_ERROR_INDEX);
+		AL->RaiseError("iVector.ReplaceAt",CONTAINER_ERROR_INDEX,AL,idx);
 		return CONTAINER_ERROR_INDEX;
 	}
 	p = AL->contents;
@@ -1159,6 +1164,12 @@ static void *GetNext(Iterator *it)
 	return p;
 }
 
+static size_t GetPosition(Iterator *it)
+{
+	struct VectorIterator *ali = (struct VectorIterator *)it;
+	return ali->index;
+}
+
 static void *Seek(Iterator *it,size_t idx)
 {
         struct VectorIterator *ali = (struct VectorIterator *)it;
@@ -1329,6 +1340,7 @@ static Iterator *NewIterator(Vector *AL)
 	result->it.GetCurrent = GetCurrent;
 	result->it.GetLast = GetLast;
 	result->it.Seek = Seek;
+	result->it.GetPosition = GetPosition;
 	result->it.Replace = ReplaceWithIterator;
 	result->AL = AL;
 	result->Current = NULL;
