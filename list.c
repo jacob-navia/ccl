@@ -345,6 +345,8 @@ static int Finalize(List * l)
         return t;
     if (Flags & CONTAINER_HAS_OBSERVER)
         iObserver.Notify(l, CCL_FINALIZE, NULL, NULL);
+    if (l->VTable != &iList)
+        l->Allocator->free(l->VTable);
     l->Allocator->free(l);
     return 1;
 }
@@ -1298,6 +1300,11 @@ static void    *GetNext(Iterator * it)
     return result;
 }
 
+static size_t GetPosition(Iterator *it)
+{
+    struct ListIterator *li = (struct ListIterator *) it;
+    return li->index;
+}
 static void    *GetPrevious(Iterator * it)
 {
     struct ListIterator *li = (struct ListIterator *) it;
@@ -1428,6 +1435,7 @@ static int InitIterator(List * L, void *r)
     result->it.GetFirst = GetFirst;
     result->it.GetCurrent = GetCurrent;
     result->it.Seek = Seek;
+    result->it.GetPosition = GetPosition;
     result->it.Replace = ReplaceWithIterator;
     result->L = L;
     result->timestamp = L->timestamp;

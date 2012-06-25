@@ -318,6 +318,12 @@ static void *GetNext(Iterator *it)
     return result;
 }
 
+static size_t GetPosition(Iterator *it)
+{
+    struct HeapIterator *hi = (struct HeapIterator *)it;
+    return hi->BlockNumber*CHUNK_SIZE + hi->BlockPosition;
+}
+
 static void *GetPrevious(Iterator *it)
 {
     struct HeapIterator *hi = (struct HeapIterator *)it;
@@ -388,6 +394,7 @@ static Iterator *NewIterator(ContainerHeap *heap)
     result->it.GetPrevious = GetPrevious;
     result->it.GetCurrent = GetCurrent;
     result->it.GetLast = GetLast;
+    result->it.GetPosition = GetPosition;
     return &result->it;
 }
 

@@ -141,12 +141,6 @@ static size_t GetElementSize(const LIST_TYPE * l)
     return sizeof(DATA_TYPE);
 }
 
-static int Finalize(LIST_TYPE *l)
-{
-    iList.Finalize((List *)l);
-    return 1;
-}
-
 static LIST_TYPE  *Copy(const LIST_TYPE * l)
 {
     LIST_TYPE *result = (LIST_TYPE *)iList.Copy((List *)l);
@@ -332,6 +326,7 @@ static LIST_TYPE *SetVTable(LIST_TYPE *result)
     intface->SplitAfter = (LIST_TYPE *(*)(LIST_TYPE *, LIST_ELEMENT *))iList.SplitAfter;
     intface->Back = (DATA_TYPE *(*)(const LIST_TYPE *))iList.Back;
     intface->Front = (DATA_TYPE *(*)(const LIST_TYPE *))iList.Front;
+    intface->Finalize = (int (*)(LIST_TYPE *))iList.Finalize;
     return result;
 }
 
@@ -424,7 +419,7 @@ INTERFACE(DATA_TYPE)   INTERFACE_NAME(DATA_TYPE) = {
     Contains,
     Erase,
     EraseAll,
-    Finalize,
+    NULL,         // Finalize,
     NULL,         // Apply
     NULL,         // Equal
     Copy,
