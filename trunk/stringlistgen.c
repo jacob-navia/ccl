@@ -372,7 +372,7 @@ static CHARTYPE *GetElement(LIST_TYPE(DATA_TYPE) *l,size_t position)
         return NULL;
     }
     if (position >= l->count) {
-        l->RaiseError("GetElement",CONTAINER_ERROR_INDEX);
+        l->RaiseError("GetElement",CONTAINER_ERROR_INDEX,l,position);
         return NULL;
     }
     if (l->Flags & CONTAINER_READONLY) {
@@ -437,7 +437,7 @@ static int CopyElement(LIST_TYPE(DATA_TYPE) *l,size_t position,CHARTYPE *outBuff
         return CONTAINER_ERROR_BADARG;
     }
     if (position >= l->count) {
-        l->RaiseError("iStringList.CopyElement",CONTAINER_ERROR_INDEX);
+        l->RaiseError("iStringList.CopyElement",CONTAINER_ERROR_INDEX,l,position);
         return CONTAINER_ERROR_INDEX;
     }
     rvp = l->First;
@@ -462,7 +462,7 @@ static int ReplaceAt(LIST_TYPE(DATA_TYPE) *l,size_t position,CHARTYPE *data)
         return CONTAINER_ERROR_BADARG;
     }
     if (position >= l->count ) {
-        l->RaiseError("iStringList.ReplaceAt",CONTAINER_ERROR_INDEX);
+        l->RaiseError("iStringList.ReplaceAt",CONTAINER_ERROR_INDEX,l,position);
         return CONTAINER_ERROR_INDEX;
     }
     if (l->Flags & CONTAINER_READONLY) {
@@ -677,7 +677,7 @@ static int InsertIn(LIST_TYPE(DATA_TYPE) *l, size_t idx,LIST_TYPE(DATA_TYPE) *ne
         return ErrorReadOnly(l,"InsertIn");
     }
     if (idx > l->count) {
-        l->RaiseError("iStringList.InsertIn",CONTAINER_ERROR_INDEX);
+        l->RaiseError("iStringList.InsertIn",CONTAINER_ERROR_INDEX,l,idx);
         return CONTAINER_ERROR_INDEX;
     }
     if (newData->count == 0)
@@ -722,7 +722,7 @@ static int InsertAt(LIST_TYPE(DATA_TYPE) *l,size_t pos,CHARTYPE *pdata)
         return CONTAINER_ERROR_BADARG;
     }
     if (pos > l->count) {
-        l->RaiseError("iStringList.InsertAt",CONTAINER_ERROR_INDEX);
+        l->RaiseError("iStringList.InsertAt",CONTAINER_ERROR_INDEX,l,pos);
         return CONTAINER_ERROR_INDEX;
     }
     if (l->Flags & CONTAINER_READONLY) {
@@ -912,7 +912,7 @@ static int RemoveAt(LIST_TYPE(DATA_TYPE) *l,size_t position)
         return NullPtrError("RemoveAt");
     }
     if (position >= l->count) {
-        l->RaiseError("iStringListRemoveAt",CONTAINER_ERROR_INDEX);
+        l->RaiseError("iStringListRemoveAt",CONTAINER_ERROR_INDEX,l,position);
         return CONTAINER_ERROR_INDEX;
     }
     if (l->Flags & CONTAINER_READONLY) {

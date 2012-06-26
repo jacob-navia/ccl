@@ -147,7 +147,7 @@ static int SetElement(BitString *bs,size_t position,int b)
 		return ReadOnlyError("SetElement");
 
 	if (position >= bs->count) {
-		iError.RaiseError("SetElement",CONTAINER_ERROR_INDEX);
+		iError.RaiseError("SetElement",CONTAINER_ERROR_INDEX,bs,position);
 		return CONTAINER_ERROR_INDEX;
 	}
 	if (b) {
@@ -727,7 +727,7 @@ static int ReplaceAt(BitString *b,size_t idx,int newval)
 	size_t bytepos,bitpos;
 
 	if (idx >= b->count) {
-		iError.RaiseError("ReplaceAt",CONTAINER_ERROR_INDEX);
+		iError.RaiseError("ReplaceAt",CONTAINER_ERROR_INDEX,b,idx);
 		return 0;
 
 	}
@@ -744,6 +744,7 @@ static int PopBack(BitString *b){
 	int result;
 
 	if (b->count == 0) {
+		iError.RaiseError("PopBack",CONTAINER_ERROR_INDEX,b,1);
 		return CONTAINER_ERROR_INDEX;
 	}
 	idx = b->count-1;
@@ -1039,7 +1040,7 @@ static int Memset(BitString *b,size_t start,size_t stop,int newval)
 		return NullPtrError("Set");
 	contents = b->contents;
 	if (start >= b->count) {
-		iError.RaiseError("iBitstring.Set",CONTAINER_ERROR_INDEX);
+		iError.RaiseError("iBitstring.Set",CONTAINER_ERROR_INDEX,b,start);
 		return CONTAINER_ERROR_INDEX;
 	}
 	if (stop > b->count)

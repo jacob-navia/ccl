@@ -62,7 +62,7 @@ static int doerrorCall(ErrorFunction err,const char *fnName,int code)
 {
     char buf[256];
 
-    snprintf(buf,sizeof(buf),"iDictionary.%s",fnName);
+    snprintf(buf,sizeof(buf),"strCollection.%s",fnName);
     err(buf,code);
     return code;
 }
@@ -77,9 +77,13 @@ static int BadArgError(const ElementType *SC,const char *fnName)
 }
 
 
-static int IndexError(const ElementType *SC,const char *fnName)
+static int IndexError(const ElementType *SC,size_t idx,const char *fnName)
 {
-    return doerrorCall(SC->RaiseError,fnName,CONTAINER_ERROR_INDEX);
+    char buf[256];
+
+    snprintf(buf,sizeof(buf),"strCollection.%s",fnName);
+    SC->RaiseError(buf,CONTAINER_ERROR_INDEX,SC,idx);
+    return CONTAINER_ERROR_INDEX;
 }
 
 static int NoMemoryError(const ElementType *SC,const char *fnName)
@@ -439,7 +443,7 @@ static CHAR_TYPE *GetElement(const ElementType *SC,size_t idx)
         return NULL;
     }
     if (idx >=SC->count) {
-        IndexError(SC,"GetElement");
+        IndexError(SC,idx,"GetElement");
         return NULL;
     }
     return SC->contents[idx];
@@ -490,7 +494,7 @@ static int InsertAt(ElementType *SC,size_t idx,const CHAR_TYPE *newval)
         return ReadOnlyError(SC,"InsertAt");
     }
     if (idx >= SC->count) {
-        return IndexError(SC,"InsertAt");
+        return IndexError(SC,idx,"InsertAt");
     }
     if ((SC->count+1) >= SC->capacity) {
         int r = Resize(SC);
@@ -530,7 +534,7 @@ static int InsertIn(ElementType *source, size_t idx, ElementType *newData)
     if (source->Flags & CONTAINER_READONLY)
         return ReadOnlyError(source,"InsertIn");
     if (idx > source->count) {
-        return IndexError(source,"InsertIn");
+        return IndexError(source,idx,"InsertIn");
     }
     newCount = source->count + newData->count;
     if (newData->count == 0)
@@ -580,7 +584,7 @@ static int RemoveAt(ElementType *SC,size_t idx)
         return NullPtrError("RemoveAt");
     }
     if (idx >= SC->count )
-        return IndexError(SC,"RemoveAt");
+        return IndexError(SC,idx,"RemoveAt");
     if (SC->Flags & CONTAINER_READONLY)
         return ReadOnlyError(SC,"RemoveAt");
     /* Test for remove of an empty collection */
@@ -609,7 +613,7 @@ static int RemoveRange(ElementType *SC,size_t start, size_t end)
         end = SC->count;
     if (start == end) return 0;
     if (start >= SC->count)
-        return IndexError(SC,"RemoveRange");
+        return IndexError(SC,start,"RemoveRange");
     if (SC->DestructorFn) {
         for (i=start; i<end; i++) {
             SC->DestructorFn(SC->contents[i]);
@@ -839,7 +843,7 @@ static int ReplaceAt(ElementType *SC,size_t idx,CHAR_TYPE *newval)
         return ReadOnlyError(SC,"ReplaceAt");
     }
     if (idx >= SC->count) {
-        return IndexError(SC,"ReplaceAt");
+        return IndexError(SC,idx,"ReplaceAt");
     }
     SC->Allocator->free(SC->contents[idx]);
     r = DuplicateString(SC,newval,(char *)"ReplaceAt");
