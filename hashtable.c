@@ -389,7 +389,7 @@ static int Clear(HashTable *ht)
 static int Finalize(HashTable *ht)
 {
     Clear(ht);
-    iPool.Destroy(ht->pool);
+    iPool.Finalize(ht->pool);
     return 1;
 }
 

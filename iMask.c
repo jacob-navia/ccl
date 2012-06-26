@@ -34,7 +34,7 @@ static Mask *Create(size_t n)
 static int Set(Mask *m,size_t idx,int val)
 {
     if (idx >= m->length) {
-        iError.RaiseError("iMask.Set",CONTAINER_ERROR_INDEX);
+        iError.RaiseError("iMask.Set",CONTAINER_ERROR_INDEX,m,idx);
         return CONTAINER_ERROR_INDEX;
     }
     m->data[idx]=(char)val;

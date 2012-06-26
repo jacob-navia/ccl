@@ -367,7 +367,7 @@ static void    *GetElement(const List * l, size_t position)
         return NULL;
     }
     if (position >= l->count) {
-        l->RaiseError("GetElement", CONTAINER_ERROR_INDEX);
+        l->RaiseError("GetElement", CONTAINER_ERROR_INDEX,l,position);
         return NULL;
     }
     if (l->Flags & CONTAINER_READONLY) {
@@ -433,7 +433,7 @@ static int CopyElement(const List * l, size_t position, void *outBuffer)
         return CONTAINER_ERROR_BADARG;
     }
     if (position >= l->count) {
-        l->RaiseError("iList.CopyElement", CONTAINER_ERROR_INDEX);
+        l->RaiseError("iList.CopyElement", CONTAINER_ERROR_INDEX,l,position);
         return CONTAINER_ERROR_INDEX;
     }
     rvp = l->First;
@@ -458,7 +458,7 @@ static int ReplaceAt(List * l, size_t position, const void *data)
         return CONTAINER_ERROR_BADARG;
     }
     if (position >= l->count) {
-        l->RaiseError("iList.ReplaceAt", CONTAINER_ERROR_INDEX);
+        l->RaiseError("iList.ReplaceAt", CONTAINER_ERROR_INDEX,l,position);
         return CONTAINER_ERROR_INDEX;
     }
     if (l->Flags & CONTAINER_READONLY) {
@@ -677,7 +677,7 @@ static int InsertIn(List * l, size_t idx, List * newData)
         return ErrorReadOnly(l, "InsertIn");
     }
     if (idx > l->count) {
-        l->RaiseError("iList.InsertIn", CONTAINER_ERROR_INDEX);
+        l->RaiseError("iList.InsertIn", CONTAINER_ERROR_INDEX,l,idx);
         return CONTAINER_ERROR_INDEX;
     }
     if (l->ElementSize != newData->ElementSize) {
@@ -725,7 +725,7 @@ static int InsertAt(List * l, size_t pos, const void *pdata)
         return CONTAINER_ERROR_BADARG;
     }
     if (pos > l->count) {
-        l->RaiseError("iList.InsertAt", CONTAINER_ERROR_INDEX);
+        l->RaiseError("iList.InsertAt", CONTAINER_ERROR_INDEX,l,pos);
         return CONTAINER_ERROR_INDEX;
     }
     if (l->Flags & CONTAINER_READONLY) {
@@ -887,7 +887,7 @@ static int RemoveAt(List * l, size_t position)
         return NullPtrError("RemoveAt");
     }
     if (position >= l->count) {
-        l->RaiseError("iListRemoveAt", CONTAINER_ERROR_INDEX);
+        l->RaiseError("iListRemoveAt", CONTAINER_ERROR_INDEX,l,position);
         return CONTAINER_ERROR_INDEX;
     }
     if (l->Flags & CONTAINER_READONLY) {

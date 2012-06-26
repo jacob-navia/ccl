@@ -469,7 +469,7 @@ static void * GetElement(const Dlist *l,size_t position)
     	return 0;
     }
     if (position >= (signed)l->count) {
-    	l->RaiseError("GetElement",CONTAINER_ERROR_INDEX);
+    	l->RaiseError("GetElement",CONTAINER_ERROR_INDEX,l,position);
     	return NULL;
     }
     if (l->Flags & CONTAINER_READONLY) {
@@ -497,7 +497,7 @@ static int ReplaceAt(Dlist *l,size_t position,const void *data)
     }
     /* Error checking */
     if (position >= l->count) {
-    	l->RaiseError("iDlist.ReplaceAt",CONTAINER_ERROR_INDEX);
+    	l->RaiseError("iDlist.ReplaceAt",CONTAINER_ERROR_INDEX,l,position);
     	return CONTAINER_ERROR_INDEX;
     }
     if (l->Flags &CONTAINER_READONLY) {
@@ -773,7 +773,7 @@ static int InsertAt(Dlist *l,size_t pos,const void *pdata)
     	return CONTAINER_ERROR_BADARG;
     }
     if (pos > l->count) {
-    	l->RaiseError("iDlist.InsertAt",CONTAINER_ERROR_INDEX);
+    	l->RaiseError("iDlist.InsertAt",CONTAINER_ERROR_INDEX,l,pos);
     	return CONTAINER_ERROR_INDEX;
     }
     if (l->Flags & CONTAINER_READONLY) {
@@ -829,7 +829,7 @@ static int InsertIn(Dlist *l, size_t idx,Dlist *newData)
     	return CONTAINER_ERROR_READONLY;
     }
     if (idx > l->count) {
-    	l->RaiseError("iDlist.InsertIn",CONTAINER_ERROR_INDEX);
+    	l->RaiseError("iDlist.InsertIn",CONTAINER_ERROR_INDEX,l,idx);
     	return CONTAINER_ERROR_INDEX;
     }
     if (l->ElementSize != newData->ElementSize) {
@@ -876,7 +876,7 @@ static int EraseAt(Dlist *l,size_t position)
     if (l == NULL) return iError.NullPtrError("iDlist.InsertIn");
     
     if (position >= l->count) {
-    	l->RaiseError("iDlist.EraseAt",CONTAINER_ERROR_INDEX);
+    	l->RaiseError("iDlist.EraseAt",CONTAINER_ERROR_INDEX,l,position);
     	return CONTAINER_ERROR_INDEX;
     }
     if (l->Flags & CONTAINER_READONLY) {
@@ -1098,7 +1098,7 @@ static int CopyElement(const Dlist *l,size_t position,void *outBuffer)
     	return CONTAINER_ERROR_BADARG;
     }
     if (position >= l->count) {
-    	l->RaiseError("iDlist.CopyElement",CONTAINER_ERROR_INDEX);
+    	l->RaiseError("iDlist.CopyElement",CONTAINER_ERROR_INDEX,l,position);
     	return CONTAINER_ERROR_INDEX;
     }
     if (position < l->count/2) {
