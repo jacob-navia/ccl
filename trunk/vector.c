@@ -1658,7 +1658,7 @@ static Vector * SelectCopy(Vector *src,Mask *m)
         return NULL;
     }
     if (m->length != src->count) {
-        ErrorIncompatible(src,"SelectCopy");
+        iError.RaiseError("SelectCopy",CONTAINER_ERROR_BADMASK,src,m);
         return NULL;
     }
     siz = src->ElementSize;
@@ -1917,8 +1917,8 @@ static int Select(Vector *src,const Mask *m)
 	if (src == NULL || m == NULL)
 		return NullPtrError("Select");
 	if (m->length != src->count) {
-		iError.RaiseError("iVector.Select",CONTAINER_ERROR_INCOMPATIBLE);
-		return CONTAINER_ERROR_INCOMPATIBLE;
+		iError.RaiseError("iVector.Select",CONTAINER_ERROR_BADMASK,src,m);
+		return CONTAINER_ERROR_BADMASK;
 	}
 	q = p = src->contents;
 	for (i=0; i<m->length;i++) {

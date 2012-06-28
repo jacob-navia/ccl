@@ -23,6 +23,7 @@ struct Error {
 	{CONTAINER_ERROR_BADPOINTER,    "Debug_malloc: BAD POINTER******"},
 	{CONTAINER_ERROR_BUFFEROVERFLOW,"Debug_malloc: BUFFER OVERFLOW******"},
 	{CONTAINER_ERROR_WRONGELEMENT,  "Wrong element passed to a list"},
+	{CONTAINER_ERROR_BADMASK,       "Incorrect mask length"},
 	{0,"Unknown error"},
 };
 

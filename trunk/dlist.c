@@ -1705,8 +1705,8 @@ static int Select(Dlist *src,const Mask *m)
         return CONTAINER_ERROR_READONLY;
     }
     if (m->length != src->count) {
-        iError.RaiseError("Select",CONTAINER_ERROR_INCOMPATIBLE);
-        return CONTAINER_ERROR_INCOMPATIBLE;
+        iError.RaiseError("Select",CONTAINER_ERROR_BADMASK,src,m);
+        return CONTAINER_ERROR_BADMASK;
     }
     if (src->count == 0) return 0;
     i=0;
@@ -1769,7 +1769,7 @@ static Dlist *SelectCopy(const Dlist *src,const Mask *m)
         return NULL;
     }
     if (m->length != src->count) {
-        iError.RaiseError("iDlist.SelectCopy",CONTAINER_ERROR_INCOMPATIBLE);
+        iError.RaiseError("iDlist.SelectCopy",CONTAINER_ERROR_BADMASK,src,m);
         return NULL;
     }
     result = Create(src->ElementSize);

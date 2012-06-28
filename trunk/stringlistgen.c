@@ -1676,8 +1676,8 @@ static int Select(LIST_TYPE(DATA_TYPE) *src,const Mask *m)
     if (src->Flags & CONTAINER_READONLY)
         return ErrorReadOnly(src,"Select");
     if (m->length != src->count) {
-        iError.RaiseError("Select",CONTAINER_ERROR_INCOMPATIBLE);
-        return CONTAINER_ERROR_INCOMPATIBLE;
+        iError.RaiseError("Select",CONTAINER_ERROR_BADMASK,src,m);
+        return CONTAINER_ERROR_BADMASK;
     }
     if (src->count == 0) return 0;
     i=0;
@@ -1739,7 +1739,7 @@ static LIST_TYPE(DATA_TYPE) *SelectCopy(const LIST_TYPE(DATA_TYPE) *src,const Ma
         return NULL;
     }
     if (m->length != src->count) {
-        iError.RaiseError("SelectCopy",CONTAINER_ERROR_INCOMPATIBLE);
+        iError.RaiseError("SelectCopy",CONTAINER_ERROR_INCOMPATIBLE,src,m);
         return NULL;
     }
     result = Create();
