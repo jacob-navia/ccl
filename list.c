@@ -681,7 +681,7 @@ static int InsertIn(List * l, size_t idx, List * newData)
         return CONTAINER_ERROR_INDEX;
     }
     if (l->ElementSize != newData->ElementSize) {
-        l->RaiseError("iList.InsertIn", CONTAINER_ERROR_INCOMPATIBLE);
+        l->RaiseError("iList.InsertIn", CONTAINER_ERROR_INCOMPATIBLE,l,newData);
         return CONTAINER_ERROR_INCOMPATIBLE;
     }
     if (newData->count == 0)
@@ -947,7 +947,7 @@ static int Append(List * l1, List * l2)
         return CONTAINER_ERROR_READONLY;
     }
     if (l2->ElementSize != l1->ElementSize || l2->Allocator != l1->Allocator) {
-        l1->RaiseError("iList.Append", CONTAINER_ERROR_INCOMPATIBLE);
+        l1->RaiseError("iList.Append", CONTAINER_ERROR_INCOMPATIBLE,l1,l2);
         return CONTAINER_ERROR_INCOMPATIBLE;
     }
     if (l1->Flags & CONTAINER_HAS_OBSERVER)
@@ -1806,8 +1806,8 @@ static int Select(List *src,const Mask *m)
     if (src->Flags & CONTAINER_READONLY)
         return ErrorReadOnly(src,"Select");
     if (m->length != src->count) {
-        iError.RaiseError("Select",CONTAINER_ERROR_INCOMPATIBLE);
-        return CONTAINER_ERROR_INCOMPATIBLE;
+        iError.RaiseError("Select",CONTAINER_ERROR_BADMASK,src,m);
+        return CONTAINER_ERROR_BADMASK;
     }
     if (src->count == 0) return 0;
     i=0;
@@ -1867,7 +1867,7 @@ static List *SelectCopy(const List *src,const Mask *m)
         return NULL;
     }
     if (m->length != src->count) {
-        iError.RaiseError("SelectCopy",CONTAINER_ERROR_INCOMPATIBLE);
+        iError.RaiseError("SelectCopy",CONTAINER_ERROR_BADMASK,src,m);
         return NULL;
     }
     result = Create(src->ElementSize);

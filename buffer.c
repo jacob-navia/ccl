@@ -50,7 +50,7 @@ static StreamBuffer *CreateFromFile(const char *FileName)
 	StreamBuffer *result = NULL;
 	size_t siz;
 	if (f == NULL) {
-		iError.RaiseError("iBuffer.CreateFromFile",CONTAINER_ERROR_NOENT);
+		iError.RaiseError("iBuffer.CreateFromFile",CONTAINER_ERROR_NOENT,FileName);
 		return NULL;
 	}
 	else if (fseek(f, 0, SEEK_END)) {

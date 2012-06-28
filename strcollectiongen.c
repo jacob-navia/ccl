@@ -1710,8 +1710,8 @@ static int Select(ElementType *src,const Mask *m)
     if (src == NULL || m == NULL)
         return NullPtrError("Select");
     if (m->length != src->count) {
-        iError.RaiseError("iVector.Select",CONTAINER_ERROR_INCOMPATIBLE);
-        return CONTAINER_ERROR_INCOMPATIBLE;
+        iError.RaiseError("iVector.Select",CONTAINER_ERROR_BADMASK,src,m);
+        return CONTAINER_ERROR_BADMASK;
     }
     for (i=0; i<m->length;i++) {
         if (m->data[i]) {
@@ -1741,7 +1741,7 @@ static ElementType  *SelectCopy(const ElementType *src,const Mask *m)
     ElementType *result;
     
     if (m->length != src->count) {
-        iError.RaiseError("iVector.SelectCopy",CONTAINER_ERROR_INCOMPATIBLE);
+        iError.RaiseError("iVector.SelectCopy",CONTAINER_ERROR_BADMASK,src,m);
         return NULL;
     }
     result = Create(src->count);

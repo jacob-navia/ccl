@@ -54,6 +54,7 @@
 #define CONTAINER_ERROR_BUFFEROVERFLOW  -20
 #define CONTAINER_ERROR_DIVISION_BY_ZERO -21
 #define CONTAINER_ERROR_WRONGELEMENT    -22
+#define CONTAINER_ERROR_BADMASK         -23
 
 typedef void *(*ErrorFunction)(const char *,int,...);
 typedef int (*DestructorFunction)(void *);

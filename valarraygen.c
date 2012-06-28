@@ -2090,7 +2090,8 @@ static int Select(ValArray *src,const Mask *m)
 {
 	size_t i,offset=0;
 	if (m->length != src->count) {
-		return ErrorIncompatible("Select");
+		iError.RaiseError("Select",CONTAINER_ERROR_BADMASK,src,m);
+                return CONTAINER_ERROR_BADMASK;
 	}
 	for (i=0; i<m->length;i++) {
 		if (m->data[i]) {
@@ -2112,7 +2113,7 @@ static ValArray  *SelectCopy(const ValArray *src,const Mask *m)
 	ValArray *result;
 	
 	if (m->length != src->count) {
-		ErrorIncompatible("SelectCopy");
+		iError.RaiseError("SelectCopy",CONTAINER_ERROR_BADMASK,src,m);
 		return NULL;
 	}
 	result = Create(src->count);
