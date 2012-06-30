@@ -26,8 +26,8 @@
 #define NO_C99
 
 /* General container flags */
-#define CONTAINER_READONLY	1
-#define CONTAINER_HAS_OBSERVER	2
+#define CONTAINER_READONLY      1
+#define CONTAINER_HAS_OBSERVER  2
 /************************************************************************** */
 /*                                                                          */
 /*                          ErrorHandling                                   */
@@ -46,7 +46,7 @@
 #define CONTAINER_ERROR_FILE_WRITE      -12
 #define CONTAINER_FULL                  -13
 #define CONTAINER_ASSERTION_FAILED      -14
-#define CONTAINER_ERROR_BADARG	        -15
+#define CONTAINER_ERROR_BADARG          -15
 #define CONTAINER_ERROR_NOMEMORY        -16
 #define CONTAINER_ERROR_NOENT           -17
 #define CONTAINER_ERROR_INCOMPATIBLE    -18
@@ -583,9 +583,11 @@ typedef struct _PQueue PQueue;
 typedef struct _PQueueElement PQueueElement;
 
 typedef struct tagPQueueInterface {
+    int (*Add)(PQueue *Q,intptr_t key,void *Element);
     size_t (*Size)(PQueue *Q);
     PQueue *(*Create)(size_t elementSize);
     PQueue *(*CreateWithAllocator)(size_t elementSize, ContainerAllocator *allocator);
+    int (*Equal)(PQueue *q1, PQueue *q2);
     size_t (*Sizeof)(PQueue *Q);
     int (*Push)(PQueue *Q,intptr_t key,void *Element);
     int (*Clear)(PQueue *Q);
@@ -597,7 +599,7 @@ typedef struct tagPQueueInterface {
 //  int (*Replace)(PQueue *src,intptr_t key,void *data);
 } PQueueInterface;
 
-extern PQueueInterface iPriorityQueue;
+extern PQueueInterface iPQueue;
 
 /* --------------------------------------------------------------------
  *                           Double Ended QUEues                      *
@@ -1042,7 +1044,7 @@ extern TreeMapInterface iTreeMap;
  * ----------------------------------------------------------------------------------  */
 typedef struct _BitString BitString;
 #define BIT_TYPE unsigned char
-#define BITSTRING_READONLY	1
+#define BITSTRING_READONLY    1
 
 /* Definition of the functions associated with this type. */
 typedef struct tagBitString {

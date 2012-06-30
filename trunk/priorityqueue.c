@@ -213,6 +213,7 @@ static PQueue *Union(PQueue *ha, PQueue *hb)
         ha->Minimum = hb->Minimum;
 
     destroyheap(hb);
+    memset(hb,0,sizeof(*hb));
     return ha;
 }
 
@@ -601,7 +602,7 @@ static PQueue *Copy(PQueue *src)
     result = CreateWithAllocator(src->ElementSize,src->Allocator);
     if (result == NULL) return NULL;
     it = iHeap.NewIterator(src->Heap);
-    for (obj = it->GetFirst(it); obj != NULL; it = it->GetNext(it)) {
+    for (obj = it->GetFirst(it); obj != NULL; obj = it->GetNext(it)) {
         r = Add(result,obj->Key,obj->Data);
         if (r < 0) {
             Finalize(result);
@@ -611,6 +612,27 @@ static PQueue *Copy(PQueue *src)
     iHeap.deleteIterator(it);
     return result;
 }
+
+static int Equal(PQueue *src1,PQueue *src2)
+{
+    Iterator *it1,*it2;
+    PQueueElement *obj1,*obj2;
+
+    if (src1 == NULL && src2 == NULL) return 1;
+    if (src1 == NULL || src2 == NULL) return 0;
+    if ((src1->ElementSize != src2->ElementSize) ||
+        (src1->count != src2->count)) return 0;
+    it1 = iHeap.NewIterator(src1->Heap);
+    it2 = iHeap.NewIterator(src2->Heap);
+    for (obj1 = it1->GetFirst(it1),obj2 = it2->GetFirst(it2); obj1 != NULL; obj1 = it1->GetNext(it1),obj2 = it2->GetNext(it2)) {
+        if (obj1->Key != obj2->Key) return 0;
+        if (memcmp(obj1->Data,obj2->Data,src1->ElementSize)) return 0;
+    }
+    iHeap.deleteIterator(it1);
+    iHeap.deleteIterator(it2);
+    return 1;
+}
+
 
 static PQueueElement *FindInLevel(PQueueElement *root,intptr_t key)
 {
@@ -634,10 +656,12 @@ static void *Find(PQueue *p,intptr_t key)
     return x;
 }
 
-PQueueInterface iPriorityQueue = {
+PQueueInterface iPQueue = {
+    Add,
     Size,
     Create,
     CreateWithAllocator,
+    Equal,
     Sizeof,
     Add,
     Clear,
