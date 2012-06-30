@@ -420,4 +420,6 @@ struct WstrCollection {
     const ContainerAllocator *Allocator;
     DestructorFunction DestructorFn;
 };
+#define CCL_PRIORITY_MIN	(INT_MIN+1)
+#define CCL_PRIORITY_MAX	(INT_MAX-1)
 #endif

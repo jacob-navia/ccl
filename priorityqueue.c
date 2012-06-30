@@ -18,6 +18,7 @@ that maintains the heap property, that is, where key(parent) ≤ key(child)
 for all nodes in the tree.
 */
 #include "containers.h"
+#include "ccl_internal.h"
 static PQueue *Create(size_t ElementSize);
 static int Add(PQueue *, intptr_t, void *);
 static intptr_t Front(PQueue *,void *result);
@@ -160,6 +161,7 @@ static PQueue *CreateWithAllocator(size_t ElementSize,ContainerAllocator *alloca
     n->ElementSize = ElementSize;
     n->Heap = iHeap.Create(n->ElementSize + sizeof(PQueueElement), allocator);
     n->Allocator = allocator;
+    n->VTable = &iPQueue;
     return n;
 }
 
@@ -270,6 +272,8 @@ static int Add(PQueue *h, intptr_t key, void *data)
 
     /* just insert on root list, and make sure it's not the new min */
     if (data) memcpy(x->Data , data,h->ElementSize);
+    if (key < CCL_PRIORITY_MIN) key = CCL_PRIORITY_MIN;
+    if (key > CCL_PRIORITY_MAX) key = CCL_PRIORITY_MAX;
     x->Key = key;
 
     insertel(h, x);
@@ -391,8 +395,10 @@ static void removerootlist(PQueue *h, PQueueElement *x)
 {
     if (x->Left == x)
         h->Root = NULL;
-    else
+    else {
         h->Root = removeNode(x);
+        x->Key = INT_MIN;
+    }
 }
 
 
@@ -603,10 +609,12 @@ static PQueue *Copy(PQueue *src)
     if (result == NULL) return NULL;
     it = iHeap.NewIterator(src->Heap);
     for (obj = it->GetFirst(it); obj != NULL; obj = it->GetNext(it)) {
-        r = Add(result,obj->Key,obj->Data);
-        if (r < 0) {
-            Finalize(result);
-            return NULL;
+        if (obj->Key != INT_MIN) {
+            r = Add(result,obj->Key,obj->Data);
+            if (r < 0) {
+                Finalize(result);
+                return NULL;
+            }
         }
     }
     iHeap.deleteIterator(it);
