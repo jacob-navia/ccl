@@ -38,9 +38,9 @@ dotest:	libccl.a test.o
 libccl.a:	$(OBJS) containers.h ccl_internal.h ccl_internal.h
 	ar r libccl.a $(OBJS)
 clean:
-	rm -rf $(OBJS) libccl.a dotest dotest.dSYM container-lib-src.zip
+	rm -rf $(OBJS) libccl.a dotest dotest.dSYM ccl.zip
 zip:	$(SRC)
-	rm container-lib-src.zip;rm -rf ccl;svn export . ccl;zip -9 -r  container-lib-src.zip ccl 
+	rm ccl.zip;rm -rf ccl;svn export . ccl;zip -9 -r ccl.zip ccl 
 
 valarraylongdouble.o:   valarraygen.c valarraylongdouble.c containers.h ccl_internal.h valarraygen.h valarray.h
 valarraydouble.o:       valarraygen.c valarraydouble.c containers.h ccl_internal.h valarraygen.h valarray.h
