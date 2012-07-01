@@ -583,18 +583,18 @@ typedef struct _PQueue PQueue;
 typedef struct _PQueueElement PQueueElement;
 
 typedef struct tagPQueueInterface {
-    int (*Add)(PQueue *Q,intptr_t key,void *Element);
-    size_t (*Size)(PQueue *Q);
+    int (*Add)(PQueue *Q,intptr_t key,const void *Element);
+    size_t (*Size)(const PQueue *Q);
     PQueue *(*Create)(size_t elementSize);
     PQueue *(*CreateWithAllocator)(size_t elementSize, ContainerAllocator *allocator);
-    int (*Equal)(PQueue *q1, PQueue *q2);
-    size_t (*Sizeof)(PQueue *Q);
-    int (*Push)(PQueue *Q,intptr_t key,void *Element);
+    int (*Equal)(const PQueue *q1,const PQueue *q2);
+    size_t (*Sizeof)(const PQueue *Q);
+    int (*Push)(PQueue *Q,intptr_t key,const void *Element);
     int (*Clear)(PQueue *Q);
     int (*Finalize)(PQueue *Q);
     intptr_t (*Pop)(PQueue *Q,void *result);
-    intptr_t (*Front)(PQueue *Q,void *result);
-    PQueue *(*Copy)(PQueue *src);
+    intptr_t (*Front)(const PQueue *Q,void *result);
+    PQueue *(*Copy)(const PQueue *src);
     PQueue *(*Union)(PQueue *left, PQueue *right);
 //  int (*Replace)(PQueue *src,intptr_t key,void *data);
 } PQueueInterface;

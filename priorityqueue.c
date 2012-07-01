@@ -20,8 +20,8 @@ for all nodes in the tree.
 #include "containers.h"
 #include "ccl_internal.h"
 static PQueue *Create(size_t ElementSize);
-static int Add(PQueue *, intptr_t, void *);
-static intptr_t Front(PQueue *,void *result);
+static int Add(PQueue *, intptr_t, const void *);
+static intptr_t Front(const PQueue *,void *result);
 static intptr_t Replace(PQueue *, PQueueElement *, intptr_t);
 
 static int Finalize(PQueue *);
@@ -262,7 +262,7 @@ static void insertel(PQueue *h, PQueueElement *x)
     h->count++;
     h->timestamp++;
 }
-static int Add(PQueue *h, intptr_t key, void *data)
+static int Add(PQueue *h, intptr_t key, const void *data)
 {
     PQueueElement *x;
 
@@ -281,7 +281,7 @@ static int Add(PQueue *h, intptr_t key, void *data)
     return 1;
 }
 
-static intptr_t Front(PQueue *h,void *result)
+static intptr_t Front(const PQueue *h,void *result)
 {
     if (h->Minimum == NULL)
         return INT_MIN;
@@ -564,14 +564,14 @@ static PQueueElement * NewElement(PQueue *h)
 }
 
 
-static size_t Size(PQueue *p)
+static size_t Size(const PQueue *p)
 {
     if (p == NULL)
         return 0;
     return p->count;
 }
 
-static size_t Sizeof(PQueue *p)
+static size_t Sizeof(const PQueue *p)
 {
     size_t result = sizeof(PQueue);
 
@@ -597,7 +597,7 @@ static intptr_t Pop(PQueue *p,void *result)
     return x->Key;
 }
 
-static PQueue *Copy(PQueue *src)
+static PQueue *Copy(const PQueue *src)
 {
     PQueue *result;
     Iterator *it;
@@ -621,7 +621,7 @@ static PQueue *Copy(PQueue *src)
     return result;
 }
 
-static int Equal(PQueue *src1,PQueue *src2)
+static int Equal(const PQueue *src1, const PQueue *src2)
 {
     Iterator *it1,*it2;
     PQueueElement *obj1,*obj2;
