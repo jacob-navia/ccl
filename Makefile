@@ -33,7 +33,8 @@ OBJS=vector.o error.o dlist.o qsortex.o bitstrings.o generic.o \
 LIST_GENERIC=listgen.c listgen.h
 DLIST_GENERIC=dlistgen.c dlistgen.h
 
-dotest:	libccl.a test.o
+all: 	libccl.a ccl.pdf
+dotest:	libccl.a test.o 
 	gcc -o dotest -g $(CFLAGS) test.c libccl.a -lm
 libccl.a:	$(OBJS) containers.h ccl_internal.h ccl_internal.h
 	ar r libccl.a $(OBJS)
@@ -83,4 +84,23 @@ longlonglist.o:	longlonglist.h longlonglist.c ccl_internal.h containers.h $(LIST
 intdlist.o:      intdlist.h intdlist.c ccl_internal.h containers.h $(LIST_GENERIC)
 doubledlist.o:   doubledlist.h doubledlist.c ccl_internal.h containers.h $(DLIST_GENERIC)
 longlongdlist.o: longlongdlist.h longlongdlist.c ccl_internal.h containers.h $(DLIST_GENERIC)
+
+#------------------------------------------------------documentation
+PNGS = =AuxiliaryInterfaces.png DListVocabulary.png Pool.png  bitstrings.png Basic.png  Dictionary.png  StreamBuffer.png list.png BloomFilter.png  Iterator.png  ValArray.png Circular.png  ListVocabulary.png VectorVocabulary.png Containers.png  Memorymanagement.png Vocabulary.png
+
+ccl.pdf:	ccl.tex libccl.a
+	ccl.tex table.tex $(PNGS) ../containers.h
+	/usr/texbin/pdflatex ccl.tex
+table.tex:	dotable ../containers.h valarraygen.h listgen.h
+	./dotable
+
+ccl.html:	tth ccl.tex $(PNGS) table.tex
+	./tth ccl.tex
+
+dotable:	dotable.c
+	gcc -g -o dotable dotable.c libccl.a
+
+tth:	tth.c
+	gcc -o tth -g tth.c
+
 
