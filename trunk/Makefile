@@ -85,22 +85,3 @@ intdlist.o:      intdlist.h intdlist.c ccl_internal.h containers.h $(LIST_GENERI
 doubledlist.o:   doubledlist.h doubledlist.c ccl_internal.h containers.h $(DLIST_GENERIC)
 longlongdlist.o: longlongdlist.h longlongdlist.c ccl_internal.h containers.h $(DLIST_GENERIC)
 
-#------------------------------------------------------documentation
-PNGS = =AuxiliaryInterfaces.png DListVocabulary.png Pool.png  bitstrings.png Basic.png  Dictionary.png  StreamBuffer.png list.png BloomFilter.png  Iterator.png  ValArray.png Circular.png  ListVocabulary.png VectorVocabulary.png Containers.png  Memorymanagement.png Vocabulary.png
-
-ccl.pdf:	ccl.tex libccl.a
-	ccl.tex table.tex $(PNGS) ../containers.h
-	/usr/texbin/pdflatex ccl.tex
-table.tex:	dotable ../containers.h valarraygen.h listgen.h
-	./dotable
-
-ccl.html:	tth ccl.tex $(PNGS) table.tex
-	./tth ccl.tex
-
-dotable:	dotable.c
-	gcc -g -o dotable dotable.c libccl.a
-
-tth:	tth.c
-	gcc -o tth -g tth.c
-
-
