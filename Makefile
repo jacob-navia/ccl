@@ -33,7 +33,7 @@ OBJS=vector.o error.o dlist.o qsortex.o bitstrings.o generic.o \
 LIST_GENERIC=listgen.c listgen.h
 DLIST_GENERIC=dlistgen.c dlistgen.h
 
-all: 	libccl.a ccl.pdf
+all: 	libccl.a dotest
 dotest:	libccl.a test.o 
 	gcc -o dotest -g $(CFLAGS) test.c libccl.a -lm
 libccl.a:	$(OBJS) containers.h ccl_internal.h ccl_internal.h
