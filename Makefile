@@ -32,14 +32,29 @@ OBJS=vector.o error.o dlist.o qsortex.o bitstrings.o generic.o \
     doubledlist.o longlongdlist.o
 LIST_GENERIC=listgen.c listgen.h
 DLIST_GENERIC=dlistgen.c dlistgen.h
+#DRAWINGS
+PNGFILES=AuxiliaryInterfaces.png DListVocabulary.png Pool.png  bitstrings.png Basic.png \
+        Dictionary.png  StreamBuffer.png list.png BloomFilter.png  Iterator.png  ValArray.png \
+        Circular.png  ListVocabulary.png VectorVocabulary.png Containers.png  Memorymanagement.png\
+        Vocabulary.png
+#Documentation source files. Some of those are automatically generated
+TEXFILES=BitString.tex Dlist.tex PQueue.tex ValArray.tex \
+ContainerHeap.tex HashTable.tex Queue.tex Vector.tex rgb.tex\
+Deque.tex Introduction.tex StreamBuffer.tex WDictionary.tex strcollection.tex\
+Dictionary.tex List.tex TreeMap.tex ccl.tex  table.tex
 
-all: 	libccl.a dotest
+#----------------------------------IMPORTANT --------------------
+####
+#### Please remove ccl.pdf from the targets if you do not have the TeX system installed
+####
+#-----------------------------------IMPORTANT --------------------
+all: 	libccl.a dotest ccl.pdf
 dotest:	libccl.a test.o 
 	gcc -o dotest -g $(CFLAGS) test.c libccl.a -lm
 libccl.a:	$(OBJS) containers.h ccl_internal.h ccl_internal.h
 	ar r libccl.a $(OBJS)
 clean:
-	rm -rf $(OBJS) libccl.a dotest dotest.dSYM ccl.zip
+	rm -rf $(OBJS) libccl.a dotest dotest.dSYM ccl.zip ccl.pdf ccl.log ccl.aux ccl.toc ccl.ilg
 zip:	$(SRC)
 	rm ccl.zip;rm -rf ccl;svn export . ccl;zip -9 -r ccl.zip ccl 
 
@@ -85,3 +100,7 @@ intdlist.o:      intdlist.h intdlist.c ccl_internal.h containers.h $(LIST_GENERI
 doubledlist.o:   doubledlist.h doubledlist.c ccl_internal.h containers.h $(DLIST_GENERIC)
 longlongdlist.o: longlongdlist.h longlongdlist.c ccl_internal.h containers.h $(DLIST_GENERIC)
 
+# This supposes that pdflatex and makeindex are in the path
+# please change accordingly
+ccl.pdf:	$(TEXFILES) $(PNGFILES) 
+	makeindex ccl.idx;pdflatex ccl.tex
