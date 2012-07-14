@@ -4,8 +4,8 @@ PNGS=AuxiliaryInterfaces.png DListVocabulary.png Pool.png  bitstrings.png Basic.
 
 all:	ccl.pdf ccl.html
 
-ccl.pdf:	ccl.tex table.tex $(PNGS) ../containers.h ccl.idx
-	$(PDFLATEX) ccl.tex;$(MAKEINDEX) ccl.idx;
+ccl.pdf:	ccl.tex table.tex $(PNGS) ../containers.h 
+	$(PDFLATEX) ccl.tex;$(MAKEINDEX) ccl.idx;$(PDFLATEX) ccl.tex
 
 table.tex:	dotable ../containers.h ../valarraygen.h 
 	./dotable
@@ -19,6 +19,10 @@ dotable:	dotable.c
 tth:	tth.c
 	gcc -o tth -g tth.c
 clean:
-	rm -f table.tex ccl.pdf ccl.html dotable tth ccldoc.zip ccl.tid ccl.idx ccl.log ccl.toc ccl.tin ccl.aux ccl.tms ccl.ilg
+	rm -f table.tex ccl.pdf ccl.html dotable tth ccldoc.zip ccl.tid ccl.idx ccl.log ccl.toc \
+	ccl.tin ccl.aux ccl.tms ccl.ilg StreamBuffer.tex \
+	BitString.tex Dictionary.tex  Queue.tex ValArray.tex strcollection.tex \
+	ContainerHeap.tex Dlist.tex List.tex Deque.tex HashTable.tex PQueue.tex TreeMap.tex WDictionary.tex
+
 zip:
 	zip -9 ccldoc.zip dotable.c ccl.tex tth.c ../libccl.a $(PNGS) Introduction.tex Makefile
