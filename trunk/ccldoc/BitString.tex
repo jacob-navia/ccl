@@ -1,0 +1,65 @@
+\begin{verbatim}
+typedef struct tagBitStringInterface {
+   int (*Add)(BitString *BitStr,int);
+   int (*AddRange)(BitString *b, size_t bitSize, void *data);
+   BitString *(*And)(BitString *bsl,BitString *bsr);
+   int (*AndAssign)(BitString *bsl,BitString *bsr);
+   int (*Append)(BitString *left,BitString *right);
+   int (*Apply)(BitString *BitStr,int (*Applyfn)(int ,void * arg),
+        void *arg);
+   uintmax_t (*BitBlockCount)(BitString *b);
+   int (*BitLeftShift)(BitString *bs,size_t shift);
+   int (*BitRightShift)(BitString *bs,size_t shift);
+   int (*Clear)(BitString *BitStr);
+   int (*Contains)(BitString *BitStr,BitString *str,void *ExtraArgs);
+   BitString *(*Copy)(BitString *);
+   int (*CopyBits)(BitString *bitstr,void *buf);
+   BitString *(*Create)(size_t bitlen);
+   BitString *(*CreateWithAllocator)(size_t startsiz,
+              const ContainerAllocator *mm);
+   int (*Equal)(BitString *bsl,BitString *bsr);
+   int (*Erase)(BitString *BitStr,int bit);
+   int (*EraseAt)(BitString *BitStr,size_t idx);
+   int (*Finalize)(BitString *BitStr);
+   const ContainerAllocator *(*GetAllocator)(const BitString *b);
+   size_t (*GetCapacity)(BitString *BitStr);
+   unsigned char *(*GetData)(BitString *BitStr);
+   int (*GetElement)(BitString *BitStr,size_t idx);
+   size_t (*GetElementSize)(BitString *b);
+   unsigned (*GetFlags)(BitString *BitStr); 
+   BitString *(*GetRange)(BitString *b,size_t start,size_t end);
+   int (*IndexOf)(BitString *BitStr,int SearchedBit,void *ExtraArgs,
+        size_t *result);
+   BitString *(*Init)(BitString *BitStr,size_t bitlen);
+   int (*InitIterator)(BitString *,void *);
+   BitString *(*InitializeWith)(size_t size,void *data);
+   size_t (*Insert)(BitString *BitStr,int bit);
+   size_t (*InsertAt)(BitString *BitStr,size_t idx,int bit);
+   int (*LessEqual)(BitString *bsl,BitString *bsr);
+   BitString *(*Load)(FILE *stream, ReadFunction saveFn,void *arg);
+   int (*Memset)(BitString *,size_t start,size_t stop,int newval);
+   Iterator *(*NewIterator)(BitString *);
+   BitString *(*Not)(BitString *bsl);
+   int (*NotAssign)(BitString *bsl);
+   BitString *(*Or)(BitString *left,BitString *right);
+   int (*OrAssign)(BitString *bsl,BitString *bsr);
+   int (*PopBack)(BitString *BitStr);
+   uintmax_t (*PopulationCount)(BitString *b);
+   size_t (*Print)(BitString *b,size_t bufsiz,unsigned char *out);
+   int (*PushBack)(BitString *BitStr,int val);
+   int (*ReplaceAt)(BitString *BitStr,size_t idx,int newval);
+   BitString *(*Reverse)(BitString *b);
+   int (*Save)(const BitString *bitstr,FILE *stream,
+         SaveFunction saveFn,void *arg);
+   int (*SetCapacity)(BitString *BitStr,size_t newCapacity);
+   int (*SetElement)(BitString *bs,size_t position,int b);
+   ErrorFunction *(*SetErrorFunction)(BitString *,ErrorFunction fn);
+   unsigned (*SetFlags)(BitString *BitStr,unsigned flags);
+   size_t (*Size)(BitString *BitStr); 
+   size_t (*Sizeof)(BitString *b);
+   BitString *(*StringToBitString)(unsigned char *);
+   BitString *(*Xor)(BitString *bsl,BitString *bsr);
+   int (*XorAssign)(BitString *bsl,BitString *bsr);
+   int (*deleteIterator)(Iterator *);
+} BitStringInterface;
+\end{verbatim}

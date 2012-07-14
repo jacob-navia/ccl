@@ -1,0 +1,117 @@
+\begin{verbatim}
+typedef struct tagValArrayInterface {
+   int (*Abs)(ValArray *src); 
+   ElementType (*Accumulate)(const ValArray *src);
+   int (*Add)(ValArray *AL,ElementType newval);
+   int (*AddRange)(ValArray *AL,size_t n,
+         const ElementType *newvalues);
+   int (*And)(ValArray *left, const ValArray *right);
+   int (*AndScalar)(ValArray *left, const ElementType right);
+   int (*Append)(ValArray *AL1, ValArray *AL2);
+   int (*Apply)(ValArray *AL,int (*Applyfn)(ElementType element,
+        void * arg),void *arg);
+   ElementType (*Back)(const ValArray *src);
+   int (*BitLeftShift)(ValArray *data,int shift);
+   int (*BitRightShift)(ValArray *data, const int shift);
+   int (*Clear)(ValArray *AL);
+   char *(*Compare)(const ValArray *left, const ValArray *right,
+         char *bytearray);
+   Mask *(*CompareEqual)(const ValArray *left,const ValArray *right,
+         Mask *bytearray);
+   Mask *(*CompareEqualScalar)(const ValArray *left,
+          const ElementType right, Mask *bytearray);
+   char *(*CompareScalar)(const ValArray *left,
+          const ElementType right,char *bytearray);
+   int (*Contains)(const ValArray *AL,ElementType data);
+   ValArray *(*Copy)(const ValArray *AL);
+   int (*CopyElement)(const ValArray *AL,size_t idx,
+        ElementType *outbuf);
+   ElementType *(*CopyTo)(ValArray *AL);
+   ValArray *(*Create)(size_t startsize);
+   ValArray *(*CreateSequence)(size_t n,ElementType start,
+              ElementType increment);
+   ValArray *(*CreateWithAllocator)(size_t startsize,
+              ContainerAllocator *allocator);
+   int (*DivideBy)(ValArray *left, const ValArray *right);
+   int (*DivideByScalar)(ValArray *left, ElementType right);
+   int (*DivideScalarBy)(ValArray *left,ElementType right);
+   int (*Equal)(const ValArray *first, const ValArray *second);
+   int (*Erase)(ValArray *AL,ElementType elem);
+   int (*EraseAt)(ValArray *AL,size_t idx);
+   Mask *(*FCompare)(const ValArray *left, const ValArray *right,
+          Mask *bytearray,ElementType tolerance);
+   int (*FillSequential)(ValArray *dst,size_t length,ElementType start,
+         ElementType increment);
+   int (*Finalize)(ValArray *AL);
+   int (*ForEach)(ValArray *src,ElementType (*ApplyFn)(ElementType));
+   int (*Fprintf)(const ValArray *src,FILE *out,const char *fmt);
+   ElementType (*Front)(const ValArray *src);
+   ContainerAllocator *(*GetAllocator)(const ValArray *AL);
+   size_t (*GetCapacity)(const ValArray *AL);
+   ElementType *(*GetData)(const ValArray *src);
+   ElementType (*GetElement)(const ValArray *AL,size_t idx);
+   size_t (*GetElementSize)(const ValArray *AL);
+   unsigned (*GetFlags)(const ValArray *AL);
+   ValArray *(*GetRange)(const ValArray *AL, size_t start,
+              size_t end);
+   int (*GetSlice)(ValArray *array,size_t *start,size_t *length,
+         size_t *increment);
+   ValArray *(*IndexIn)(const ValArray *SC,const ValArraySize_t *AL);
+   int (*IndexOf)(ValArray *AL,ElementType data,size_t *result);
+   ValArray *(*Init)(ValArray *AL,size_t startsize);
+   int (*InitIterator)(ValArray *AL,void *buf);
+   ValArray *(*InitializeWith)(size_t n, ElementType *data);
+   int (*Insert)(ValArray *AL,ElementType);
+   int (*InsertAt)(ValArray *AL,size_t idx,ElementType newval);
+   int (*InsertIn)(ValArray *AL, size_t idx, ValArray *newData);
+   int (*Inverse)(ValArray *src);
+   ValArray *(*Load)(FILE *stream);
+   ElementType (*Max)(const ValArray *src);
+   int (*Memset)(ValArray *dst,ElementType fillValue,size_t length);
+   ElementType (*Min)(const ValArray *src);
+   int (*Mismatch)(const ValArray *a1,const ValArray *a2,
+        size_t *mismatch);
+   int (*Mod)(ValArray *left,const ValArray *right);
+   int (*ModScalar)(ValArray *left,const ElementType right);
+   int (*MultiplyWith)(ValArray *left, const ValArray *right);
+   int (*MultiplyWithScalar)(ValArray *left, ElementType right);
+   Iterator *(*NewIterator)(ValArray *AL);
+   int (*Not)(ValArray *left);
+   int (*Or)(ValArray *left, const ValArray *right);
+   int (*OrScalar)(ValArray *left, const ElementType right);
+   int (*PopBack)(ValArray *AL,ElementType *result);
+   ElementType (*Product)(const ValArray *src);
+   int (*PushBack)(ValArray *AL,ElementType data);
+   int (*RemoveRange)(ValArray *src,size_t start,size_t end);
+   int (*ReplaceAt)(ValArray *AL,size_t idx,ElementType newval);
+   int (*ResetSlice)(ValArray *array);
+   int (*Resize)(ValArray *src, size_t newSize);
+   int (*Reverse)(ValArray *AL);
+   int (*RotateLeft)(ValArray *AL, size_t n);
+   int (*RotateRight)(ValArray *AL,size_t n);
+   int (*Save)(const ValArray *AL,FILE *stream);
+   int (*Select)(ValArray *src,const Mask *m);
+   ValArray *(*SelectCopy)(const ValArray *src,const Mask *m);
+   int (*SetCapacity)(ValArray *AL,size_t newCapacity);
+   CompareFunction (*SetCompareFunction)(ValArray *l,
+                   CompareFunction fn);
+   DestructorFunction (*SetDestructor)(ValArray *cb,
+                      DestructorFunction fn);
+   ErrorFunction (*SetErrorFunction)(ValArray *AL,ErrorFunction);
+   unsigned (*SetFlags)(ValArray *AL,unsigned flags);
+   int (*SetSlice)(ValArray *src,size_t start,size_t length,
+        size_t increment);
+   size_t (*Size)(const ValArray *AL);
+   size_t (*Sizeof)(const ValArray *AL);
+   size_t (*SizeofIterator)(const ValArray *);
+   int (*Sort)(ValArray *AL);
+   int (*SubtractFrom)(ValArray *left, const ValArray *right);
+   int (*SubtractFromScalar)(ElementType left, ValArray *right);
+   int (*SubtractScalarFrom)(ValArray *left, ElementType right);
+   int (*SumScalarTo)(ValArray *left,ElementType right);
+   int (*SumTo)(ValArray *left,const ValArray *right);
+   int (*Xor)(ValArray *left, const ValArray *right);
+   int (*XorScalar)(ValArray *left, const ElementType right);
+   int (*deleteIterator)(Iterator *);
+} ValArrayInterface;
+\end{verbatim}

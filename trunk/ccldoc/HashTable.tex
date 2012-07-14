@@ -1,0 +1,45 @@
+\begin{verbatim}
+typedef struct tagHashTableInterface {
+   int (*Add)(HashTable *HT,const void *key,size_t klen,
+        const void *Data);
+   int (*Apply)(HashTable *HT,int (*Applyfn)(void *Key,size_t klen,
+        void *data,void *arg),void *arg);
+   int (*Clear)(HashTable *HT);
+   int (*Contains)(const HashTable *ht,const void *Key,size_t klen);
+   HashTable *(*Copy)(const HashTable *Orig,Pool *pool);
+   HashTable *(*Create)(size_t ElementSize);
+   int (*Erase)(HashTable *HT,const void *key,size_t klen);
+   int (*Finalize)(HashTable *HT);
+   void *(*GetElement)(const HashTable *HT,const void *Key,
+         size_t klen);
+   size_t (*GetElementSize)(const HashTable *HT);
+   unsigned (*GetFlags)(const HashTable *HT);
+   HashTable *(*Init)(HashTable *ht,size_t ElementSize);
+   int (*InitIterator)(HashTable *SC,void *buf);
+   HashTable *(*Load)(FILE *stream, ReadFunction readFn, void *arg);
+   HashTable *(*Merge)(Pool *p, const HashTable *overlay,
+         const HashTable *base, void * (*merger)(Pool *p,
+         const void *key, size_t klen, const void *h1_val,
+         const void *h2_val, const void *data), const void *data);
+   Iterator *(*NewIterator)(HashTable *);
+   HashTable *(*Overlay)(Pool *p, const HashTable *overlay,
+               const HashTable *base);
+   int (*Replace)(HashTable *HT,const void *key, size_t klen,
+        const void *val);
+   int (*Resize)(HashTable *HT,size_t newSize);
+   int (*Save)(const HashTable *HT,FILE *stream, SaveFunction saveFn,
+        void *arg);
+   int (*Search)(HashTable *ht,int (*Comparefn)(void *rec,
+         const void *key,size_t klen,const void *value), void *rec);
+   DestructorFunction (*SetDestructor)(HashTable *v,
+                      DestructorFunction fn);
+   ErrorFunction (*SetErrorFunction)(HashTable *HT,ErrorFunction fn);
+   unsigned (*SetFlags)(HashTable *HT,unsigned flags);
+   GeneralHashFunction (*SetHashFunction)(HashTable *ht,
+                        GeneralHashFunction hf);
+   size_t (*Size)(const HashTable *HT);
+   size_t (*Sizeof)(const HashTable *HT);
+   size_t (*SizeofIterator)(const HashTable *ht);
+   int (*deleteIterator)(Iterator *);
+} HashTableInterface;
+\end{verbatim}

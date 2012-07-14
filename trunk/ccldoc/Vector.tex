@@ -1,0 +1,76 @@
+\begin{verbatim}
+typedef struct tagVectorInterface {
+   int (*Add)(Vector *AL,const void *newval);
+   int (*AddRange)(Vector *AL,size_t n,const void *newvalues);
+   int (*Append)(Vector *AL1, Vector *AL2);
+   int (*Apply)(Vector *AL,int (*Applyfn)(void *element,void * arg),
+        void *arg);
+   void *(*Back)(const Vector *AL);
+   int (*Clear)(Vector *AL);
+   Mask *(*CompareEqual)(const Vector *left,const Vector *right,
+         Mask *m);
+   Mask *(*CompareEqualScalar)(const Vector *left, const void *right,
+         Mask *m);
+   int (*Contains)(const Vector *AL,const void *element,
+        void *ExtraArgs);
+   Vector *(*Copy)(const Vector *AL);
+   int (*CopyElement)(const Vector *AL,size_t idx,void *outbuf);
+   void **(*CopyTo)(const Vector *AL);
+   Vector *(*Create)(size_t elementsize,size_t startsize);
+   Vector *(*CreateWithAllocator)(size_t elemsiz,size_t startsiz,
+           const ContainerAllocator *mm);
+   int (*Equal)(const Vector *first,const Vector *second);
+   int (*Erase)(Vector *AL,const void *);
+   int (*EraseAll)(Vector *AL,const void *);
+   int (*EraseAt)(Vector *AL,size_t idx);
+   int (*Finalize)(Vector *AL);
+   void *(*Front)(const Vector *AL);
+   const ContainerAllocator *(*GetAllocator)(const Vector *AL);
+   size_t (*GetCapacity)(const Vector *AL);
+   void **(*GetData)(const Vector *AL);
+   void *(*GetElement)(const Vector *AL,size_t idx);
+   size_t (*GetElementSize)(const Vector *AL);
+   unsigned (*GetFlags)(const Vector *AL);
+   Vector *(*GetRange)(const Vector *AL, size_t start, size_t end);
+   Vector *(*IndexIn)(Vector *SC,Vector *AL);
+   int (*IndexOf)(const Vector *AL,const void *data,void *ExtraArgs,
+        size_t *result);
+   Vector *(*Init)(Vector *r,size_t elementsize,size_t startsize);
+   int (*InitIterator)(Vector *V,void *buf);
+   Vector *(*InitializeWith)(size_t elementSize, size_t n,
+           const void *Data);
+   int (*Insert)(Vector *AL,void *);
+   int (*InsertAt)(Vector *AL,size_t idx,void *newval);
+   int (*InsertIn)(Vector *AL, size_t idx,Vector *newData);
+   Vector *(*Load)(FILE *stream, ReadFunction readFn,void *arg);
+   int (*Mismatch)(Vector *a1,Vector *a2,size_t *mismatch);
+   Iterator *(*NewIterator)(Vector *AL);
+   int (*PopBack)(Vector *AL,void *result);
+   int (*PushBack)(Vector *AL,const void *str);
+   int (*RemoveRange)(Vector *SC,size_t start,size_t end);
+   int (*ReplaceAt)(Vector *AL,size_t idx,void *newval);
+   int (*Reserve)(Vector *src,size_t newCapacity);
+   int (*Resize)(Vector *AL,size_t newSize);
+   int (*Reverse)(Vector *AL);
+   int (*RotateLeft)(Vector *V,size_t n);
+   int (*RotateRight)(Vector *V,size_t n);
+   int (*Save)(const Vector *AL,FILE *stream, SaveFunction saveFn,
+        void *arg);
+   int (*SearchWithKey)(Vector *vec,size_t startByte,size_t sizeKey,
+        size_t startIndex,void *item,size_t *result);
+   int (*Select)(Vector *src,const Mask *m);
+   Vector *(*SelectCopy)(Vector *src,Mask *m);
+   int (*SetCapacity)(Vector *AL,size_t newCapacity);
+   CompareFunction (*SetCompareFunction)(Vector *l,
+                   CompareFunction fn);
+   DestructorFunction (*SetDestructor)(Vector *v,
+                      DestructorFunction fn);
+   ErrorFunction (*SetErrorFunction)(Vector *AL,ErrorFunction);
+   unsigned (*SetFlags)(Vector *AL,unsigned flags);
+   size_t (*Size)(const Vector *AL);
+   size_t (*Sizeof)(const Vector *AL);
+   size_t (*SizeofIterator)(const Vector *);
+   int (*Sort)(Vector *AL);
+   int (*deleteIterator)(Iterator *);
+} VectorInterface;
+\end{verbatim}

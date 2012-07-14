@@ -10,7 +10,7 @@ CC=gcc
 #CFLAGS=-Wno-pointer-sign -DUNIX -Wall -g
 SRC=	vector.c bloom.c error.c dlist.c qsortex.c heap.c \
 	deque.c hashtable.c malloc_debug.c containers.h ccl_internal.h \
-	stdint.h pool.c pooldebug.c redblacktree.c scapegoat.c smallpool.c ccl_internal.h \
+	stdint.h.noc99 pool.c pooldebug.c redblacktree.c scapegoat.c smallpool.c ccl_internal.h \
 	bitstrings.c dictionarygen.c list.c memorymanager.c strcollection.c searchtree.c \
 	containers.h ccl_internal.h redblacktree.c fgetline.c generic.c queue.c buffer.c observer.c \
 	valarraydouble.c vectorsize_t.c valarrayint.c valarraylongdouble.c valarraygen.c \

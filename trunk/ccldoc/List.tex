@@ -1,0 +1,70 @@
+\begin{verbatim}
+typedef struct tagListInterface {
+   int (*Add)(List *L,const void *newval);
+   int (*AddRange)(List *L, size_t n,const void *data);
+   void *(*Advance)(ListElement **pListElement);
+   int (*Append)(List *l1,List *l2);
+   int (*Apply)(List *L,int(Applyfn)(void *,void *),void *arg);
+   void *(*Back)(const List *l);
+   int (*Clear)(List *L);
+   int (*Contains)(const List *L,const void *element);
+   List *(*Copy)(const List *L);
+   int (*CopyElement)(const List *list,size_t idx,void *OutBuffer);
+   List *(*Create)(size_t element_size);
+   List *(*CreateWithAllocator)(size_t elementsize,
+         const ContainerAllocator *mm);
+   void *(*ElementData)(ListElement *le);
+   int (*Equal)(const List *l1,const List *l2);
+   int (*Erase)(List *L,const void *);
+   int (*EraseAll)(List *l,const void *);
+   int (*EraseAt)(List *L,size_t idx);
+   int (*EraseRange)(List *L,size_t start,size_t end);
+   int (*Finalize)(List *L);
+   ListElement *(*FirstElement)(List *l);
+   void *(*Front)(const List *l);
+   const ContainerAllocator *(*GetAllocator)(const List *list);
+   void *(*GetElement)(const List *L,size_t idx);
+   size_t (*GetElementSize)(const List *l);
+   unsigned (*GetFlags)(const List *L);
+   ContainerHeap *(*GetHeap)(const List *l);
+   List *(*GetRange)(const List *l,size_t start,size_t end);
+   int (*IndexOf)(const List *L,const void *SearchedElement,
+        void *ExtraArgs,size_t *result);
+   List *(*Init)(List *aList,size_t element_size);
+   int (*InitIterator)(List *L,void *buf);
+   List *(*InitWithAllocator)(List *aList,size_t element_size,
+         const ContainerAllocator *mm);
+   List *(*InitializeWith)(size_t elementSize,size_t n,
+         const void *data);
+   int (*InsertAt)(List *L,size_t idx,const void *newval);
+   int (*InsertIn)(List *l, size_t idx,List *newData);
+   ListElement *(*LastElement)(List *l);
+   List *(*Load)(FILE *stream, ReadFunction loadFn,void *arg);
+   Iterator *(*NewIterator)(List *L);
+   ListElement *(*NextElement)(ListElement *le);
+   int (*PopFront)(List *L,void *result);
+   int (*PushFront)(List *L,const void *str);
+   int (*RemoveRange)(List *l,size_t start, size_t end);
+   int (*ReplaceAt)(List *L,size_t idx,const void *newval);
+   int (*Reverse)(List *l);
+   int (*RotateLeft)(List *l, size_t n);
+   int (*RotateRight)(List *l,size_t n);
+   int (*Save)(const List *L,FILE *stream, SaveFunction saveFn,
+        void *arg);
+   int (*Select)(List *src,const Mask *m);
+   List *(*SelectCopy)(const List *src,const Mask *m);
+   CompareFunction (*SetCompareFunction)(List *l,CompareFunction fn);
+   DestructorFunction (*SetDestructor)(List *v,DestructorFunction fn);
+   int (*SetElementData)(List *l, ListElement *le,void *data);
+   ErrorFunction (*SetErrorFunction)(List *L,ErrorFunction);
+   unsigned (*SetFlags)(List *L,unsigned flags);
+   size_t (*Size)(const List *L);
+   size_t (*Sizeof)(const List *l);
+   size_t (*SizeofIterator)(const List *);
+   ListElement *(*Skip)(ListElement *l,size_t n);
+   int (*Sort)(List *l);
+   List *(*SplitAfter)(List *l, ListElement *pt);
+   int (*UseHeap)(List *L, const ContainerAllocator *m);
+   int (*deleteIterator)(Iterator *);
+} ListInterface;
+\end{verbatim}
