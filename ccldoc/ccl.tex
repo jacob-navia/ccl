@@ -11768,11 +11768,12 @@ together since they implement exactly the same functions: all the \verb,ValArray
 }
 \end{landscape}
 \pagestyle{headings}
+\iftth\else
 \begin{tikzpicture}[snake=zigzag, line before snake = 5mm, line after snake = 5mm]
 %draw vertical line   
 \draw (1,0) -- (1,0.2);
 \draw[snake] (1,0.2) -- (1,2.5);
-\draw (1,2.5) -- (1,15);
+\draw (1,2.5) -- (1,16);
 
 %draw vertical lines
 \foreach \y in {0,2.5,4,5,7}
@@ -11794,7 +11795,9 @@ together since they implement exactly the same functions: all the \verb,ValArray
 \draw (1,12) node[left=3pt] {WDictionary} node[right=3pt] {2012/03/01};
 \draw (1,13) node[left=3pt] {Priority Queue} node[right=3pt] {2012/04/30};
 \draw (1,14) node[left=3pt] {Templated lists} node[right=3pt] {2012/05/22};
+\draw (1,15) node[left=3pt] {First official request to WG14} node[right=3pt] {2012/07/08};
 \end{tikzpicture}
+\fi
 \printindex
 \iftth\else
 % Author: Till Tantau
