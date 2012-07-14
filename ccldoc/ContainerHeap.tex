@@ -1,0 +1,15 @@
+\begin{verbatim}
+typedef struct tagContainerHeapInterface {
+   void (*Clear)(ContainerHeap *heap);
+   ContainerHeap *(*Create)(size_t ElementSize,
+                  const ContainerAllocator *m);
+   void (*Finalize)(ContainerHeap *heap);
+   int (*FreeObject)(ContainerHeap *heap,void *element);
+   ContainerHeap *(*InitHeap)(void *heap,size_t nbElements,
+                  const ContainerAllocator *allocator);
+   Iterator *(*NewIterator)(ContainerHeap *);
+   void *(*NewObject)(ContainerHeap *heap);
+   size_t (*Sizeof)(ContainerHeap *heap);
+   int (*deleteIterator)(Iterator *it);
+} ContainerHeapInterface;
+\end{verbatim}

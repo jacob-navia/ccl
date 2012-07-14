@@ -1,0 +1,36 @@
+\begin{verbatim}
+typedef struct tagDequeInterface {
+   void (*Apply)(Deque *Q,int (*Applyfn)(void *,void * arg),
+        void *arg);
+   int (*Back)(Deque *d,void *outbuf);
+   int (*Clear)(Deque *Q);
+   size_t (*Contains)(Deque * d, void* item);
+   Deque *(*Copy)(Deque *d);
+   Deque *(*Create)(size_t elementSize);
+   int (*Equal)(Deque *d1,Deque *d2);
+   int (*Erase)(Deque * d, const void* item);
+   int (*EraseAll)(Deque * d, const void* item);
+   int (*Finalize)(Deque *Q);
+   int (*Front)(Deque *d,void *outbuf);
+   unsigned (*GetFlags)(Deque *Q);
+   Deque *(*Init)(Deque *d,size_t elementSize);
+   int (*InitIterator)(Deque *dc,void *buf);
+   Deque *(*Load)(FILE *stream, ReadFunction readFn,void *arg);
+   Iterator *(*NewIterator)(Deque *Deq);
+   int (*PopBack)(Deque *d,void *outbuf);
+   int (*PopFront)(Deque *d,void *outbuf);
+   int (*PushBack)(Deque *Q,const void *Element);
+   int (*PushFront)(Deque *Q, void *Element);
+   int (*Reverse)(Deque * d);
+   int (*Save)(const Deque *d,FILE *stream, SaveFunction saveFn,
+        void *arg);
+   DestructorFunction (*SetDestructor)(Deque *Q,
+                      DestructorFunction fn);
+   ErrorFunction (*SetErrorFunction)(Deque *d,ErrorFunction);
+   unsigned (*SetFlags)(Deque *Q,unsigned newFlags);
+   size_t (*Size)(Deque *Q);
+   size_t (*Sizeof)(Deque *d);
+   size_t (*SizeofIterator)(Deque *);
+   int (*deleteIterator)(Iterator *);
+} DequeInterface;
+\end{verbatim}

@@ -1,0 +1,52 @@
+\begin{verbatim}
+typedef struct tagWDictionaryInterface {
+   int (*Add)(WDictionary *Dict,const wchar_t *key,const void *Data);
+   int (*Apply)(WDictionary *Dict,int (*Applyfn)(const wchar_t *Key,
+   Vector *(*CastToArray)(const WDictionary *);
+   int (*Clear)(WDictionary *Dict);
+   int (*Contains)(const WDictionary *dict,const wchar_t *key);
+   WDictionary *(*Copy)(const WDictionary *dict);
+   int (*CopyElement)(const WDictionary *Dict,const wchar_t *Key,
+        void *outbuf);
+   WDictionary *(*Create)(size_t ElementSize,size_t hint);
+   WDictionary *(*CreateWithAllocator)(size_t elementsize,size_t hint,
+                const ContainerAllocator *mm);
+   int (*Equal)(const WDictionary *d1,const WDictionary *d2);
+   int (*Erase)(WDictionary *Dict,const wchar_t *);
+   int (*Finalize)(WDictionary *Dict);
+   const ContainerAllocator *(*GetAllocator)(const WDictionary *Dict);
+   void *(*GetElement)(const WDictionary *Dict,const wchar_t *Key);
+   size_t (*GetElementSize)(const WDictionary *d);
+   unsigned (*GetFlags)(const WDictionary *Dict);
+   WstrCollection *(*GetKeys)(const WDictionary *Dict);
+   double (*GetLoadFactor)(WDictionary *d);
+   WDictionary *(*Init)(WDictionary *dict,size_t ElementSize,
+                size_t hint);
+   int (*InitIterator)(WDictionary *dict,void *buf);
+   WDictionary *(*InitWithAllocator)(WDictionary *D,size_t elemsize,
+                size_t hint,const ContainerAllocator *mm);
+   WDictionary *(*InitializeWith)(size_t elementSize,size_t n,
+                 const wchar_t **Keys,const void *Values);
+   int (*Insert)(WDictionary *Dict,const wchar_t *key,
+        const void *Data);
+   int (*InsertIn)(WDictionary *dst,WDictionary *src);
+   WDictionary * (*Load)(FILE *stream, ReadFunction readFn,
+                  void *arg);
+   Iterator *(*NewIterator)(WDictionary *dict);
+   int (*Replace)(WDictionary *dict,const wchar_t *Key,
+        const void *Data);
+   int (*Save)(const WDictionary *Dict,FILE *stream,
+         SaveFunction saveFn,void *arg);
+   DestructorFunction (*SetDestructor)(WDictionary *v,
+                      DestructorFunction fn);
+   ErrorFunction (*SetErrorFunction)(WDictionary *Dict,
+                 ErrorFunction fn);
+   unsigned (*SetFlags)(WDictionary *Dict,unsigned flags);
+   WHashFunction (*SetHashFunction)(WDictionary *d,
+                 WHashFunction newFn);
+   size_t (*Size)(const WDictionary *Dict);
+   size_t (*Sizeof)(const WDictionary *dict);
+   size_t (*SizeofIterator)(const WDictionary *);
+   int (*deleteIterator)(Iterator *);
+} WDictionaryInterface;
+\end{verbatim}

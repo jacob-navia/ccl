@@ -1,0 +1,89 @@
+\begin{verbatim}
+typedef struct tagstrCollectionInterface {
+   int (*Add)(strCollection *SC,const char *newval);
+   int (*AddRange)(strCollection *s,size_t n,const char **values);
+   int (*Append)(strCollection *,strCollection *);
+   int (*Apply)(strCollection *SC,int (*Applyfn)(char *,void * arg),
+        void *arg);
+   char *(*Back)(const strCollection *str);
+   struct _Vector *(*CastToArray)(const strCollection *SC);
+   int (*Clear)(strCollection *SC);
+   Mask *(*CompareEqual)(const strCollection *left,
+          const strCollection *right,Mask *m);
+   Mask *(*CompareEqualScalar)(const strCollection *left,
+          const char *str,Mask *m);
+   int (*Contains)(const strCollection *SC,const char *str);
+   strCollection *(*Copy)(const strCollection *SC);
+   char **(*CopyTo)(const strCollection *SC);
+   strCollection *(*Create)(size_t startsize);
+   strCollection *(*CreateFromFile)(const char *fileName);
+   strCollection *(*CreateWithAllocator)(size_t startsiz,
+                  const ContainerAllocator *mm);
+   int (*Equal)(const strCollection *SC1,const strCollection *SC2);
+   int (*Erase)(strCollection *SC,const char *);
+   int (*EraseAll)(strCollection *SC,const char *);
+   int (*EraseAt)(strCollection *SC,size_t idx);
+   int (*Finalize)(strCollection *SC);
+   size_t (*FindFirst)(const strCollection *SC,const char *text);
+   size_t (*FindNext)(const strCollection *SC, const char *text,
+          size_t start);
+   strCollection *(*FindText)(const strCollection *SC,
+                  const char *text);
+   Vector *(*FindTextIndex)(const strCollection *SC,const char *text);
+   Vector *(*FindTextPositions)(const strCollection *SC,
+           const char *text);
+   char *(*Front)(const strCollection *str);
+   const ContainerAllocator *(*GetAllocator)(const strCollection *AL);
+   size_t (*GetCapacity)(const strCollection *SC);
+   char **(*GetData)(const strCollection *SC);
+   char *(*GetElement)(const strCollection *SC,size_t idx);
+   size_t (*GetElementSize)(const strCollection *SC);
+   unsigned (*GetFlags)(const strCollection *SC);
+   strCollection *(*GetRange)(strCollection *SC, size_t start,
+                  size_t end);
+   strCollection *(*IndexIn)(const strCollection *SC,
+                  const Vector *AL);
+   int (*IndexOf)(const strCollection *SC,const char *SearchedString,
+        size_t *result);
+   strCollection *(*Init)(strCollection *result,size_t startsize);
+   int (*InitIterator)(strCollection *SC,void *buf);
+   strCollection *(*InitWithAllocator)(strCollection *c,size_t start,
+                  const ContainerAllocator *mm);
+   strCollection *(*InitializeWith)(size_t n, char **data);
+   int (*Insert)(strCollection *SC,char *);
+   int (*InsertAt)(strCollection *SC,size_t idx,const char *newval);
+   int (*InsertIn)(strCollection *source, size_t idx,
+        strCollection *newData);
+   strCollection *(*Load)(FILE *stream, ReadFunction readFn,
+                  void *arg);
+   int (*Mismatch)(const strCollection *a1,const strCollection *a2,
+        size_t *mismatch);
+   Iterator *(*NewIterator)(strCollection *SC);
+   size_t (*PopBack)(strCollection *, char *result,size_t bufsize);
+   size_t (*PopFront)(strCollection *SC,char *outbuf,size_t buflen);
+   int (*PushBack)(strCollection *,const char *data);
+   int (*PushFront)(strCollection *SC,char *str);
+   int (*RemoveRange)(strCollection *SC,size_t start,size_t end);
+   int (*ReplaceAt)(strCollection *SC,size_t idx,char *newval);
+   int (*Reverse)(strCollection *SC);
+   int (*Save)(const strCollection *SC,FILE *stream,
+         SaveFunction saveFn,void *arg);
+   int (*Select)(strCollection *src, const Mask *m);
+   strCollection *(*SelectCopy)(const strCollection *src,
+                  const Mask *m);
+   int (*SetCapacity)(strCollection *SC,size_t newCapacity);
+   StringCompareFn (*SetCompareFunction)(strCollection *SC,
+                   StringCompareFn);
+   DestructorFunction (*SetDestructor)(strCollection *v,
+                      DestructorFunction fn);
+   ErrorFunction (*SetErrorFunction)(strCollection *SC,
+                 ErrorFunction fn);
+   unsigned (*SetFlags)(strCollection *SC,unsigned flags);
+   size_t (*Size)(const strCollection *SC);
+   size_t (*Sizeof)(const strCollection *SC);
+   size_t (*SizeofIterator)(const strCollection *l);
+   int (*Sort)(strCollection *SC);
+   int (*WriteToFile)(const strCollection *SC,const char *filename);
+   int (*deleteIterator)(Iterator *);
+} strCollectionInterface;
+\end{verbatim}

@@ -1,0 +1,40 @@
+\begin{verbatim}
+typedef struct tagTreeMapInterface {
+   int (*Add)(TreeMap *ST, void *Data,void *ExtraArgs); 
+   int (*AddRange)(TreeMap *ST,size_t n, void *Data,void *ExtraArgs);
+   int (*Apply)(TreeMap *ST,int (*Applyfn)(const void *data,void *arg),
+        void *arg);
+   int (*Clear)(TreeMap *ST); 
+   int (*Contains)(TreeMap *ST,void *element,void *ExtraArgs);
+   TreeMap *(*Copy)(TreeMap *src);
+   TreeMap *(*Create)(size_t ElementSize);
+   TreeMap *(*CreateWithAllocator)(size_t ElementSize,
+            const ContainerAllocator *m);
+   int (*Equal)(TreeMap *t1, TreeMap *t2);
+   int (*Erase)(TreeMap *tree, const void *element,void *ExtraArgs); 
+   int (*Finalize)(TreeMap *ST); 
+   const ContainerAllocator *(*GetAllocator)(const TreeMap *t);
+   void *(*GetElement)(TreeMap *tree,const void *element,
+         void *ExtraArgs);
+   size_t (*GetElementSize)(TreeMap *d);
+   unsigned (*GetFlags)(TreeMap *ST); 
+   int (*InitIterator)(TreeMap *,void *buf);
+   TreeMap *(*InitializeWith)(size_t ElementSize, size_t n,
+             void *data);
+   int (*Insert)(TreeMap *RB, const void *Data, void *ExtraArgs);
+   TreeMap *(*Load)(FILE *stream, ReadFunction loadFn,void *arg);
+   Iterator *(*NewIterator)(TreeMap *);
+   int (*Save)(const TreeMap *src,FILE *stream, SaveFunction saveFn,
+        void *arg);
+   CompareFunction (*SetCompareFunction)(TreeMap *ST,
+                   CompareFunction fn);
+   DestructorFunction (*SetDestructor)(TreeMap *v,
+                      DestructorFunction fn);
+   ErrorFunction (*SetErrorFunction)(TreeMap *ST, ErrorFunction fn);
+   unsigned (*SetFlags)(TreeMap *ST, unsigned flags); 
+   size_t (*Size)(TreeMap *ST); 
+   size_t (*Sizeof)(TreeMap *ST);
+   size_t (*SizeofIterator)(TreeMap *);
+   int (*deleteIterator)(Iterator *);
+} TreeMapInterface;
+\end{verbatim}
