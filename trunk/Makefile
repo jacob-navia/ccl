@@ -56,7 +56,7 @@ libccl.a:	$(OBJS) containers.h ccl_internal.h ccl_internal.h
 clean:
 	rm -rf $(OBJS) libccl.a dotest dotest.dSYM ccl.zip ccl.pdf ccl.log ccl.aux ccl.toc ccl.ilg
 zip:	$(SRC)
-	rm ccl.zip;rm -rf ccl;svn export . ccl;zip -9 -r ccl.zip ccl 
+	rm ccl.zip;rm -rf ccl;svn export . ccl;/bin/sh dolinks.sh;zip -9 -r ccl.zip ccl 
 
 valarraylongdouble.o:   valarraygen.c valarraylongdouble.c containers.h ccl_internal.h valarraygen.h valarray.h
 valarraydouble.o:       valarraygen.c valarraydouble.c containers.h ccl_internal.h valarraygen.h valarray.h
