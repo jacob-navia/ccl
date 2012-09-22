@@ -220,11 +220,16 @@ see \S\ref{#1} on page~\pageref{#1}
 \iftth\else\pagestyle{empty} \titleJT\fi
 %\cleardoublepage
 %\maketitle
-\newpage
-\noindent
-\includegraphics[scale=0.63]{Containers.png}
 
+\pagestyle{empty}
+\newpage
+\hspace*{-1.0in}
+%\addtolength{\topmargin}{-1.8in}
+\includegraphics[scale=0.65]{Containers.png}
 \cleardoublepage
+%\addtolength{\topmargin}{1.8in}
+\pagestyle{headings}
+
 \tableofcontents* % the asterisk means that the contents itself isn't put into the ToC
 \iftth\else\pagestyle{headings}\fi
 \chapter{Introduction}
@@ -489,17 +494,17 @@ Trees (red/black trees, AVL trees)
 
 Use this container when finding a given element is primordial. Insertion, deletions and traversal times are more expensive.
 \item
-Dictionary. This is a simple implementation of a hash table with character keys. It comes in two flavours\footnote{
+Dictionary. This is a simple implementation of a hash table with character keys. It comes in two flavors\footnote{
 Hashtables are present in all major computer languages:
 \begin{itemize}
-\item C\# features a hashtable class that "Represents a collection of key/value pairs that are organized based on the hash code of the key." 
+\item C\# features a hash table class that "Represents a collection of key/value pairs that are organized based on the hash code of the key." 
 according to the documentation from Microsoft.
 \item Java has relatively recently added a HashTable class that "... maps keys to values. Any non-null object can be used as a key or as a value."
-\item Fortran doesn't include them in the language itself but there are librares that implement hash tables in Fortran. For instance 
+\item Fortran doesn't include them in the language itself but there are libraries that implement hash tables in Fortran. For instance 
 Herbert J. Bernstein implemented a hash table library in Fortran 2003.
 \item In Common Lisp hash tables are standard: \param{make-hash-table} and other functions implement all the needed functionality.
 \end{itemize}
-They were absent from the C++ STL for unknown reasons. They have been now incoporated into the latest C++ standard.
+They were absent from the C++ STL for unknown reasons. They have been now incorporated into the latest C++ standard.
 }
 : 
 \begin{enumerate}
@@ -694,16 +699,26 @@ Sometimes it can be useful for some containers (specially lists) to create the  
 Since normally the detailed structure (and the size of course) of each container header is implementation dependent, you use the Sizeof function with an argument of \Null to get the size of the header. This can be used within a C99 compiler environment to allocate the space for that variable.
 \footnote{This incredibly useful feature has been made now optional by the C99 committee, even if it was mandatory when the C99 standard was published.}
 The declaration of the container header in C99 would be:
-\begin{verbatim}
+\begin{verbatim}lc tta
 int function(void)
 {
     char listSpace[iList.Sizeof(NULL)];
     iList.Init(listSpace);
 }
 \end{verbatim}
+
 If C99 is not available, the best way is to just print the size of the container you are interested in, and then use that value that should stay fixed 
 for a given version. This can be automated and you can find in the Appendix 1, a small program that generates a series of \texttt{\#defines} with the 
-values of the sizes of the containers described in this documentation
+values of the sizes of the containers described in this documentation.
+
+Problems with the above construct could arise because of the alignment requirements of the platform 
+where the library is running. Instead of a \verb,char, as the type
+of the buffer, it is better to use a slightly more complicated expression to ensure correct alignment. For instance:
+\begin{verbatim}
+    size_t s = (sizeof(void *)-1+iList.Sizeof(NULL))/sizeof(void *);
+    void *listSpace[s];
+\end{verbatim}
+
 \footnote{
 Other frameworks use a similar method. For instance Apple Foundation classes has several classes that take an "allocator" argument, for instance the
 \texttt{CFBundleCreate} and other functions that create objects.
@@ -790,7 +805,7 @@ These functions return a pointer to the requested element or \Null if the elemen
 stored in the container. This could be used to bypass all the flags that control the access to the container. For read-only containers, use the 
 \texttt{CopyElement} function that returns a copy of the requested data into a buffer.
 
-The function \texttt{GetRange} retrieves a slice of a container returning a container of the same type with a copy of the elements storeds in the
+The function \texttt{GetRange} retrieves a slice of a container returning a container of the same type with a copy of the elements stored in the
 given range: \index{GetRange}
 \begin{verbatim}
 Container *iContainer.GetRange(const Container *src,
@@ -823,7 +838,7 @@ Mask *(*CompareEqualScalar)(const Container *, const Mask *);
 
 The \verb,CompareEqual, function compares two sequential containers of the same type and length, producing a mask containing a value different from zero at each element position where the pair of elements from each container is equal, zero otherwise.
 
-The \verb,CompareEqualScalar, function compares each element of the given sequential container with a single elemnt, producing a mask with a value 
+The \verb,CompareEqualScalar, function compares each element of the given sequential container with a single element, producing a mask with a value 
 different from zero\footnote{Usually this value is 1 of course} for each element that is equal to the given element.
 \section{Sorting a sequential container: Sort}
 The "Sort" function will sort a container in place. To keep the old, unsorted contents, make a copy of the container first.
@@ -840,7 +855,7 @@ newContainer * iContainer.Copy(const Container *);
 The functions "Save" and "Load" will save / load the contents, state, and characteristics of a container into / from disk. They need an open file stream, open in binary mode, and in the correct direction: saving needs a stream open in the write direction, loading needs a stream open in the read direction.
 \begin{verbatim}
 int Save(const Container *c,FILE *stream, SaveFunction fn,void *arg);
-Container *Load(FILE *stream,ReadGunction fn,void *arg);
+Container *Load(FILE *stream,ReadFunction fn,void *arg);
 \end{verbatim}
 Both \texttt{Save} and \texttt{Load} provide default functions to save and load an element but they do a \textsl{shallow} save: pointers aren't followed 
 to save the data they point to \footnote{In general it is a bad idea to save elements containing pointers without a custom save/load function. The 
@@ -929,7 +944,7 @@ Iterators are objects returned by each container that allow you to iterate (obvi
 You use iterators like this:
 \begin{verbatim}
 Iterator *it = iContainer.NewIterator(someContainer);
-Mytype *Myobject;
+Mytype *myobject;
 for (myobject = it->GetFirst(it); 
      myobject!= NULL; 
      myobject = it->GetNext(it)) {
@@ -995,7 +1010,7 @@ iterator as follows: An iterator applies only to a \textbf{single} container sta
 indirectly moves the state and invalidates the iterator.
 
 An implementation may catch some of the movements of the container in the state space and report an error when an iterator is used that belongs to 
-a different container state. But not all access can be catched. If the user has pointers to an iterator's data and modifies this data without
+a different container state. But not all access can be detected. If the user has pointers to an iterator's data and modifies this data without
 using the container API an implementation may not catch this error.
 
 \section{Setting and retrieving the state: GetFlags and SetFlags}
@@ -1164,7 +1179,7 @@ Sort&Sorts the contents \\\hline
 \multicolumn{2}{|c|}{ \textbf{Iterator vocabulary}} \\\hline
 GetFirst & Retrieves a pointer to the first element\\\hline
 GetNext & Retrieves a pointer to the next element \\\hline
-GetPrevious & Retrives a pointer to the previous element if the container supports bidirectional seek.\\\hline
+GetPrevious & Retrieves a pointer to the previous element if the container supports bidirectional seek.\\\hline
 GetCurrent& Retrieves a pointer to the current element \\\hline
 GetLast & Retrieves a pointer to the last element \\\hline
 Replace & Replaces the current element with a different element. If the given pointer to the replacement is \Null 
@@ -1359,7 +1374,7 @@ change is made.
 This is the established procedure to build custom memory allocators to provide for special alignment requirements, improve speed, allocate objects
 from the stack instead of the heap, and many other usages.
 
-All containers have an \verb,Allocator, object, either explicitely when created with the \verb,CreateWithAllocator, API or implicitely since all 
+All containers have an \verb,Allocator, object, either explicitly when created with the \verb,CreateWithAllocator, API or implicitly since all 
 creation functions use the object pointed to by the \verb,CurrentAllocator, global variable to obtain memory.
 
 The library can also include a debug version on top of the standard C functions, offering the same interface. Changing the CurrentAllocator to point to that object allows to switch to the debug version. The debug version of the sample implementation offers:
@@ -1692,7 +1707,7 @@ typedef struct _Iterator {
     void *(*GetCurrent)(Iterator *);
     void *(*GetLast)(Iterator *);
     void *(*Seek)(Iterator *it,size_t pos);
-    int (*Replace)(Iterator *it, void *data, int drection);
+    int (*Replace)(Iterator *it, void *data, int direction);
 } Iterator;
 \end{verbatim}
 %--------------------------------------------------------------------------------------------------------------------------
@@ -1847,7 +1862,7 @@ reason. Both objects can unsubscribe (terminate) their relationship.
 \begin{itemize}
 \item
 It is in general a bad idea to modify the object being observed during a notification since this could trigger other notification
-messages. Implementations are not required to avoid this situation that is the responsability of the programmer. Contrary to the iterator interface
+messages. Implementations are not required to avoid this situation that is the responsibility of the programmer. Contrary to the iterator interface
 no error is issued when a possible infinite loop is started. Implementations may catch the error by limiting the number of recursive
 invocations of this interface but they are not required to do so.
 \item
@@ -1905,7 +1920,8 @@ int (*Subscribe)(void *ObservedObject, ObserverFunction callback,
 \apidescription
 This function establishes the relationship between the observed object (argument 1) and the observer, represented by its callback (argument 2).
 The third argument establishes which operations are to be observed.
-This operation performs an allocation to register the relationship in the observer interface tables, therefore it can fail with an out of memory condition.
+This operation performs an allocation to register the relationship in the observer interface tables, therefore it can fail with an out of memory 
+condition.
 \apierrors
 \doerror{BADARG} The observed object pointer is \Null, the callback function pointer is \Null, or the operations argument is zero.
 \doerror{NOMEMORY} There is not enough memory to proceed.
@@ -1938,9 +1954,9 @@ observing. The observer interface will remove all relationships that contain thi
 \item The \texttt{callback} argument is \Null. This means that the given \texttt{ObservedObject} is going out of scope and wants to break all
 relationships to all its observers. The interface removes from its tables all relationships that have this object as the observed object.
 This happens normally immediately after the notification \texttt{FINALIZE} is sent.
-\item If both \texttt{callback} and \texttt{ObservedObject} are non \Null, only the matching relationships will be removed from the tables.
+\item If both \texttt{callback} and \texttt{ObservedObject} are non \Null, only the matching relationship will be removed from the tables.
 \end{itemize}
-\subsection{Notifications messages}
+\subsection{Notification messages}
 \begin{longtable}{p{2.5cm}|p{5cm}|p{4.5cm}}
 {\textbf{Operation}} &
 {\textbf{Argument 1}} &
@@ -2004,7 +2020,7 @@ We setup our observer function calling the Subscribe API. We request to be notif
 finalizes. Our callback function does nothing but print some of its arguments. We see that we get called when the requested operations are performed.
 \section{Types used by the library}
 Here is a complete list of all the auxiliary data types defined by the library. This definitions are the minimum requirements, i.e. all the fields mentioned here must be present in all implementations. Many implementations will need more fields, that in all cases can be added to the data
-types present here without affectingconformance. 
+types present here without affecting conformance. 
 
 The order and specific layout of the structure fields are not normative: an implementation can change this order, or insert extra fields between them.
 If an implementation does insert fields between the here mentioned fields it becomes binary incompatible with the sample implementation and maybe
@@ -3250,7 +3266,7 @@ in the mask are copied to the new list. The length of the mask should be equal t
 \apierrors
 \doerror{BADARG} The list or the mask are \Null.
 \doerror{INCOMPATIBLE} The mask and the list have different lengths.
-\doerror{NOMEMORY} Insufficient ressources to create the result list.
+\doerror{NOMEMORY} Insufficient resources to create the result list.
 \returns
 A pointer to a new list or \Null if there was an error.
 \example
@@ -3428,7 +3444,7 @@ the integrity of the system.
 \apierrors
 \doerror{BADARG} The list pointer or the element are \Null.
 \doerror{READONLY} The source list is read only.
-\doerror{NOMEMORY} There aren't enough ressources to create a new list.
+\doerror{NOMEMORY} There aren't enough resources to create a new list.
 \returns\\
 A pointer to the newly created list or \Null  if an error occurs or the given list element is the last element of the list.
 \example
@@ -3512,7 +3528,7 @@ It comes in two flavors:
 In this specialization the function \texttt{GetElementSize} returns always zero since it has no meaning in a list composed of strings of different
 length.\footnote{An alternative would have been to return the average string length, but that solution would have needed a result type different from a 
 size\_t (a floating point number would be needed), making this interface different from all other containers where this function returns a
-size\_t. A size\_t of zero was choosen as a compromise solution. It would also have been possible to eliminate this function but that would have needed 
+size\_t. A size\_t of zero was chosen as a compromise solution. It would also have been possible to eliminate this function but that would have needed 
 also an interface change.\par In all specializations it is needed to make compromises since the specialization is different from its original 
 interface. One 
 way to solve this is to try to keep the interface identical at the cost of some redundant or unnecessary functions. In this case the only function 
@@ -3615,11 +3631,6 @@ that should be an element of "list". The direction argument means to insert befo
 \section{The Vector interface: iVector}
 \index{iVector}
 \renewcommand{\container}{Vector}
-\noindent
-\includegraphics[scale=0.59]{VectorVocabulary.png}
-
-\hfill Vector vocabulary.\par
-\index{Vector}
 The "vector" container is an array that resizes to accommodate new elements. Access is always checked against the array bounds.
 Insertion and deletion of items are more expensive than in lists, and the cost increases linearly with the array size. Access is very cheap, since a 
 multiplication suffices to get to any array position.
@@ -3642,6 +3653,17 @@ where the return value of the error function is used are:
 \subsection{The interface}
 \index{iVector}
 \input{Vector.tex}
+
+\pagestyle{empty}
+\newpage
+\hspace*{-1.0in}
+\addtolength{\topmargin}{-1.8in}
+\includegraphics[scale=0.51]{VectorVocabulary.png}
+\newpage
+\addtolength{\topmargin}{1.8in}
+\pagestyle{headings}
+
+\index{Vector}
 \subsection{The API}
 %-----------------------------------------------------------------------------------------------------
 \api{Add}
@@ -4881,7 +4903,7 @@ NOT b = 1111 1111  1111 1111  0000 0000  0000 0000
 The bits starting by the given pointer are copied into a new bit string using the size (in bytes) indicated by the second parameter \texttt{size}.
 \apierrors
 \doerror{BADARG} The pointer is \Null
-\doerror{NOMEMORY} There is not enough ressources to finish the operation.
+\doerror{NOMEMORY} There is not enough resources to finish the operation.
 \returns A new bit string or \Null if there is an error.
 \example
 #include "containers.h"
@@ -5012,7 +5034,7 @@ Erasing bit 2 of 11  1000 1110  0011 1000
     int (*Set)(BitString *B,size_t start,size_t stop,bool newvalue);
 \end{verbatim}
 \apidescription
-Sets the range of bits delimiteded by its \textsl{start} and \textsl{end} arguments to the value given by its \textsl{newvalue} argument. If the new
+Sets the range of bits delimited by its \textsl{start} and \textsl{end} arguments to the value given by its \textsl{newvalue} argument. If the new
 value is different than zero a '1' bit is written, otherwise the bit is set to zero. If the \textsl{stop} argument is bigger than the length of the
 bitstring, the end of the string will be used.
 \doerror{BADARG} The bit string pointer is NULL.
@@ -5484,7 +5506,7 @@ A shallow copy of the given dictionary is performed. Only ElementSize bytes will
 \end{verbatim}
 %--------------------------------------------------------------------------------------------------------------------------
 \api{CopyElement}
-    int (*CopyElement)(Dictionary *Dict,cont char *Key, void *outbuf);
+    int (*CopyElement)(Dictionary *Dict,const char *Key, void *outbuf);
 \end{verbatim}
 \apidescription
 A shallow copy of the given dictionary element is performed. 
@@ -5663,7 +5685,7 @@ the operation aborts.
 Initializes the indicated storage for use asa dictionary object. This procedure is completely equivalent to \texttt{Create} with the difference
 that there is no allocation done for the dictionary header. Uses the current memory manager for the allocations of the slot table.
 \returns
-A pointer to its first argument if successfull or \Null if there is no memory to complete the operation.
+A pointer to its first argument if successful or \Null if there is no memory to complete the operation.
 \api{InitializeWith}
 Dictionary *(*InitializeWith)(size_t elemSize, size_t n, 
                          char **keys,void *Values);
@@ -5685,7 +5707,7 @@ of size \verb,elementSize,. The \verb,keys, argument should be a table of string
 Initializes the indicated storage for use as a dictionary object. This procedure is completely equivalent to \texttt{CreateWithAllocator} with the difference
 that there is no allocation done for the dictionary header. Uses the given memory manager for the allocations of the slot table.
 \returns
-A pointer to its first argument if successfull or \Null if there is no memory to complete the operation.
+A pointer to its first argument if successful or \Null if there is no memory to complete the operation.
 
 %--------------------------------------------------------------------------------------------------------------------------
 \api{Insert}
@@ -5743,7 +5765,7 @@ a query since the return value is the current value of the destructor function. 
 \returns The old value of the destructor.
 
 \api{SetHashFunction}
-size_t (*SetHashFunction)(Dicttionary *dict,HashFunction newFn);
+size_t (*SetHashFunction)(Dictionary *dict,HashFunction newFn);
 \end{verbatim}
 \apidescription This function is both a query function  and a function to change the hash function used by the given dictionary.
 \begin{ShorterItemize}
@@ -6193,7 +6215,7 @@ Queues are a type of container adaptors, specifically designed to operate in a F
 
 The sample implementation shows how to implement this container as an "adaptor" container, i.e. based on another container. The implementation uses a linked list to implement a queue
 \footnote{The Java language provides an interface in the class \texttt{java.util}. C\# offers a Queue class in \texttt{System.Collections}, 
-implemented as a circular array that is icreased automatically if needed. There is also a generic Queue class.
+implemented as a circular array that is increased automatically if needed. There is also a generic Queue class.
 \par
 In C++ the definition is:
 %\begin{verbatim}
@@ -6431,7 +6453,7 @@ A positive value of the operation completed, zero if the container is empty, or 
     int (*PopFront)(Deque *d,void *outbuf);
 \end{verbatim}
 \apidescription
-Copies into the given buffer the first element stored in the Deque d, thnen erases the element from the deque.
+Copies into the given buffer the first element stored in the Deque d, then erases the element from the deque.
 \apierrors
 \doerror{BADARG} Either d or outbuf are \Null.
 \returns
@@ -6563,12 +6585,12 @@ the text representation of it. We use the \verb,Push, primitive to add to the pr
 We print some information about the queue in lines 16-18. In line 19 we store the length of the queue in a temporary variable.
 This is necessary since we will use the \verb,Pop, primitive that erases the lowest priority element, so the length of the queue will
 change. We can't use \verb,MAX_ITERATIONS, either because it could be that the queue doesn't have its full length because an error
-in line 13 forced us to break the first loop in line 14 withoutb reaching \verb,MAX_ITERATIONS,
+in line 13 forced us to break the first loop in line 14 without reaching \verb,MAX_ITERATIONS,
 \footnote{This example requires C99. The snprintf function is specific to C99 but that would be easy to replace by plain sprintf. The 
 \verb,%zu, format directive is also specific to C99. In C90 systems it could be replaced by \%u or \%lu.
 }.
 
-The output is obviously insorted order, since the queue releases the data from the lowest priority to the highest.
+The output is obviously in sorted order, since the queue releases the data from the lowest priority to the highest.
 
 \subsection{The API}
 %---------------------------------------------------------------------------------------------------------------------------------------
@@ -6878,9 +6900,14 @@ This is a generic interface description. The \texttt{ElementType} token is repla
 int, double, etc. In the same
 style, \texttt{ValArray} and the \texttt{ValArrayInterface} tokens are replaced with the corresponding value array name and interface name.
 \input{ValArray.tex}
+\pagestyle{empty}
 \newpage
-\includegraphics[scale=0.55]{ValArray.png}
-
+\hspace*{-1.0in}
+\addtolength{\topmargin}{-1.8in}
+\includegraphics[scale=0.63]{ValArray.png}
+\newpage
+\addtolength{\topmargin}{1.8in}
+\pagestyle{headings}
 \api{Abs}
     int (*Abs)(ValArray *src);
 \end{verbatim}
@@ -7178,7 +7205,7 @@ The sample implementation uses the ideas of Donald Knuth
 \footnote{ Knuth, Donald E. (1998). The Art of Computer Programming.  Volume
 2: Seminumerical Algorithms. Third edition. Section 4.2.2,
 p. 233. Reading, MA: Addison-Wesley.  ISBN 0-201-89684-2.}
-as implemeted by Theodore C. Belding
+as implemented by Theodore C. Belding
 \footnote{
 University of Michigan Center for the Study of Complex Systems\par
 \texttt{$<$mailto:Ted.Belding@umich.edu$>$}\par
@@ -7267,7 +7294,7 @@ type
 No errors. 
 \returns A positive number.
 \example
-ValARray *myValARray = iValArray.Create(6);
+ValArray *myValArray = iValArray.Create(6);
 iValArray.FillSequential(myValArray,5,2);
 // Now the contents of myValArray are:
 5,7,9,11,13,15
@@ -7440,9 +7467,9 @@ type\footnote{The smallest element is the identity value for the operation Max s
 \apidescription
 Assigns to each element of the argument the given data. Conceptually this operation is: \texttt{dst = data}. If a slice is active in the destination 
 array only the elements described by the slice are modified. If the given length is bigger than the number of elements in the array, the array
-will be expanded to accomodate the new elements.
+will be expanded to accommodate the new elements.
 \apierrors
-\doerror{NOMEMORY} There is not enough ressources to expand the array to the desired length.
+\doerror{NOMEMORY} There is not enough resources to expand the array to the desired length.
 \returns A positive number for success, a negative error code otherwise.
 
 
@@ -7840,7 +7867,7 @@ a circular buffer, that your data changes as you add items into it}.
 
 These objects are designed to store sequentially arbitrary data, resizing themselves as necessary. There is a cursor, a pointer that indicates where 
 the next data item will be written. You can move the cursor, overwriting old data, or leaving holes in the buffer structure
-\footnote{Buffers exist in many languages. The C++ STL doesn't explicitely provide them, but other STL extensions do, like the one proposed by 
+\footnote{Buffers exist in many languages. The C++ STL doesn't explicitly provide them, but other STL extensions do, like the one proposed by 
 Matthew Wilson. In that implementation, buffers store only objects of a single type. In contrast to that this library proposes no typed buffers: each buffer can store
 objects of any type without any limitations, the buffer doesn't care about the type of its objects.}
 .  
@@ -7895,7 +7922,7 @@ Creates a new buffer using the given allocator and start size. If the start size
 Releases all memory used by the buffer.
 \apierrors
 \doerror{BADARG} The given buffer pointer is \Null.
-\returns A positive value if successful or anegative error code.
+\returns A positive value if successful or a negative error code.
 \api{GetData}
     const char *(*GetData)(const StreamBuffer *b);
 \end{verbatim}
@@ -8073,7 +8100,7 @@ and the container remains full with the same number of elements.
 	int (*Clear)(CircularBuffer *cb);
 \end{verbatim}
 \apidescription
-Resets the number of elements inside the container to empty without freeeing the memory used by the buffer.
+Resets the number of elements inside the container to empty without freeing the memory used by the buffer.
 \apierrors
 \doerror{BADARG} The buffer pointer $b$ is \Null.
 \returns A negative error code if an error occurs, or a positive number when the container is reset.
@@ -8267,7 +8294,7 @@ specified in the core library.
 
 The reason is that there is a downside to the interface definitions as presented here: all functions within an interface module are declared 
 \verb,static, to avoid polluting the user name space with those names. This has the consequence that interfaces are a monolithic  piece of
-code that can't be splitted.
+code that can't be cut in smaller pieces.
 
 Converting an object from type "A" to another of type "B" implies then that we have \textbf{both} interfaces present. If for every container
 we would define a conversion into all others, the function table of each container would need all other interfaces and if a user uses just
@@ -8358,12 +8385,12 @@ Infinite arrays exist in many computer languages.
 \end{ShorterItemize}
 
 Since in the C language arrays must contain elements of the same type, obvious restrictions apply: all C types have specific bounds (defined in the
-appropiate headers) so that a conceptually correct function like the Fibonacci function for instance, is not usable beyond a certain value of the
+appropriate headers) so that a conceptually correct function like the Fibonacci function for instance, is not usable beyond a certain value of the
 input index because of output overflow: the Fibonacci numbers grow without limit.
 
 To implement an infinite array using the library is relatively easy. The \verb,iVector, interface has the necessary hooks for doing this.
 When an index error occurs, the library calls the error function of the given vector passing it the name of the function, the integer constant 
-\verb,CONTAINER_ERROR_INDEX, and a pointerto the array and the requested index. If the error function returns any other value than \Null,
+\verb,CONTAINER_ERROR_INDEX, and a pointer to the array and the requested index. If the error function returns any other value than \Null,
 the Library will assume that it is a valid pointer to some result where the real value of the array at that position is stored.
 
 Using this information we can write this first simple implementation of an infinite array. The array function will be the \textsl{identity} function
@@ -8745,7 +8772,7 @@ the project's home page  \Verb,http://code.google.com/p/ccl/,. There you can fin
 
 The sample implementation has two types of files:
 \begin{enumerate}
-\item Source files that implement a specific container: list.c vector.c, etc. This containers use a void pointer to receive thir arguments and return
+\item Source files that implement a specific container: list.c vector.c, etc. This containers use a void pointer to receive their arguments and return
 a void pointer when retrieving their data.
 \item Source files that implement a \textsl{templated} container, i.e. the file needs a \textsl{parameter file} and a \textsl{templated implementation} 
 file. In this type of files we have a small file that defines the templated file parameters (in the form of pre-processor macros) and then just 
@@ -9222,13 +9249,13 @@ This function adds one element at the end. The \verb,Add, entry point performs t
 function that does the actual work. This is needed because other functions call internally \verb,Add, after they have already performed
 the error checking.
 
-The \verb,Add_nd, function requests a new list element (5). If that suceeds the new element must be inserted in the list.
+The \verb,Add_nd, function requests a new list element (5). If that succeeds the new element must be inserted in the list.
 If the list is empty it just establishes the start of the list (9), if not, it adds it after the last element (12). The new 
 list element is the last one (14). Errors leave the list unchanged. Exclusive access to the list is needed between the line 8 and the line 16 in the code. 
 This operation is a modification of the list, and it needs to update the \verb,timestamp, value to notify possible iterators
 that they are invalid.
 
-If the \verb,Add_nd, function was successfull and this container has a registered observer we notify the observer of this
+If the \verb,Add_nd, function was successful and this container has a registered observer we notify the observer of this
 event.
 \function{AddRange}
 static int AddRange(List * AL,size_t n, void *data)
@@ -9280,7 +9307,7 @@ list is left unchanged.
 Error checking is done in lines 6 to 15, testing for \Null for the list and the data. If the number of elements is zero the
 function does nothing and returns zero. The code accepts data as \Null if the number of elements is zero. If \verb,n, is
 zero this code still checks  that the list is not \Null, and that the list is not read only, considering both to be errors.
-Nothing is specified for those cases and you can't rely on this behavior for other implemetations.
+Nothing is specified for those cases and you can't rely on this behavior for other implementations.
 
 Note that at compile time we do not know the 
 size of each element and we can't index into this array. We just setup a generic pointer to the start of the data area (16), and 
@@ -9507,7 +9534,7 @@ static int CopyElement(List *l,size_t position,void *outBuffer)
 {
     list_element *rvp;
 
-    /* Error checking ellided */
+    /* Error checking elided */
     rvp = l->First;
     while (position) {
         rvp = rvp->Next;
@@ -9910,7 +9937,7 @@ The design of this function went through several iterations. The big problem was
 
 A first solution was to return a 1 based index and reserve zero for the 'not found' value. That could work, but was the source of many bugs in the rest of the software when the value was used without decrementing it first. 
 
-A second solution was to reserve a value within the \texttt{size\_t} range to represent the 'not found' result. That works, and it is doable, but produced other, more subtle, problems in the rest of the sofwtare since in all checks of a size\_t, it could be that \textsl{this} size\_t has a value that is actually the sentinel value of \texttt{IndexOf}: the tests tended to multiply and the handling of those tests started to become a problem.
+A second solution was to reserve a value within the \texttt{size\_t} range to represent the 'not found' result. That works, and it is doable, but produced other, more subtle, problems in the rest of the software since in all checks of a size\_t, it could be that \textsl{this} size\_t has a value that is actually the sentinel value of \texttt{IndexOf}: the tests tended to multiply and the handling of those tests started to become a problem.
 
 Here you see the third iteration: the function receives a pointer to a size\_t that will be set if the function returns with a result greater than zero.
 
@@ -10404,7 +10431,7 @@ static CompareFunction SetCompareFunction(List *l,CompareFunction fn)
    return oldfn;
 }
 \end{Verbatim}
-This function returns the old value of the comparison function and sets it to the new one, if the new one is not \Null. This allows to query the comparison function without changing it, avoiding yet another trivial function like GetComparisonFunction. This is just what in other languages like Objective C or others is called a \textsl{property} of the iList object. Objective C makes all this automatic with its \texttt{synthetise} directive.
+This function returns the old value of the comparison function and sets it to the new one, if the new one is not \Null. This allows to query the comparison function without changing it, avoiding yet another trivial function like GetComparisonFunction. This is just what in other languages like Objective C or others is called a \textsl{property} of the iList object. Objective C makes all this automatic with its \texttt{synthesize} directive.
 
 In C there isn't any such hand holding and you have to write that code yourself. There are several other functions in the same style like \texttt{SetErrorFunction}, \texttt{Size} (that returns the \texttt{count} field) and \texttt{SetFlags}. They aren't listed here but you can look at the code by browsing through the list.c file distributed
 with this software.
@@ -10420,7 +10447,7 @@ static size_t Sizeof(List *l)
            l->count *sizeof(list_element);
 }
 \end{Verbatim}
-Returns the number of bytes used by the given list, including the data, and all overhead. For lists, tghis is the size of the header object, and for 
+Returns the number of bytes used by the given list, including the data, and all overhead. For lists, this is the size of the header object, and for 
 each element the overhead of a pointer to the next element and the size of each stored object. With a \Null list pointer returns the size of the list 
 header object, what allows you to allocate buffers containing a header object and use the \texttt{Init} function.
 \function{Sort}
@@ -10482,39 +10509,39 @@ static bool lcompar (const void *elem1, const void *elem2,
 The default comparison function pulls the list compare function and calls it with the extra arguments needed to
 pass a context to it.
 \function{SplitAfter}
- 1 static List *SplitAfter(List *l, ListElement *pt)
- 2 {
- 3     ListElement *pNext;
- 4     List *result;
- 5     size_t count=0;
- 6 
- 7     if (pt == NULL || l == NULL) {
- 8         iError.NullPtrError("iList.SplitAfter");
- 9         return NULL;
-10     }
-11     if (l->Flags&CONTAINER_READONLY) {
-12         ErrorReadOnly(l,"SplitAfter");
-13         return NULL;
-14     }
-15     pNext = pt->Next;
-16     if (pNext == NULL) return NULL;
-17     result = CreateWithAllocator(l->ElementSize, l->Allocator);
-18     if (result) {
-19         result->First = pNext;
-20         while (pNext) {
-21             count++;
-22             if (pNext->Next == NULL) result->Last = pNext;
-23             pNext = pNext->Next;
-24         }
-25         result->count = count;
-26     }
-27     else return NULL;
-28     pt->Next = NULL;
-29     l->Last = pt;
-30     l->count -= count;
-31     l->timestamp++;
-32     return result;
-33 }
+static List *SplitAfter(List *l, ListElement *pt)
+{
+    ListElement *pNext;
+    List *result;
+    size_t count=0;
+
+    if (pt == NULL || l == NULL) {
+        iError.NullPtrError("iList.SplitAfter");
+        return NULL;
+    }
+    if (l->Flags&CONTAINER_READONLY) {
+        ErrorReadOnly(l,"SplitAfter");
+        return NULL;
+    }
+    pNext = pt->Next;
+    if (pNext == NULL) return NULL;
+    result = CreateWithAllocator(l->ElementSize, l->Allocator);
+    if (result) {
+        result->First = pNext;
+        while (pNext) {
+            count++;
+            if (pNext->Next == NULL) result->Last = pNext;
+            pNext = pNext->Next;
+        }
+        result->count = count;
+    }
+    else return NULL;
+    pt->Next = NULL;
+    l->Last = pt;
+    l->count -= count;
+    l->timestamp++;
+    return result;
+}
 \end{Verbatim}
 After the normal error checking of arguments, this function gets the next element after the given one. If there is none, it is impossible
 to split the list after after the given element since it is the last. We return \Null (lines 15-16).
@@ -10524,7 +10551,7 @@ and we set the given element (argument \verb,pt,) as the first one of the new
 list. We then count the elements (lines 20 to 24) in the new list
 since we need to fill the "count" field in the new list. This makes this operation much more expensive than it would be
 if we didn't maintain a "count" field\footnote{This is an exception however, most of the time the "count" field will save us a lot of work when we can
-return a precalculated field instead of going through all elements of the list each time we need to know that count. Besides we need to 
+return a pre calculated field instead of going through all elements of the list each time we need to know that count. Besides we need to 
 set the pointer to the last element, so we would need to count anyway.}.
 In lines 27-31 we set the correct fields in the new list, decrease the "count" field in the source list by the number of elements in the new list,
 and we note the fact that the input list has been modified in line 31.
@@ -10562,7 +10589,7 @@ end of the list.
 After the error checking is done (lines 3-12) we start
 a first loop where we find the place to cut: lines 15-19.
 Then, we cut (set the previous element's \verb,Next, pointer to\Null in line 21) and append the
-elements we cutted to the end of the list, updating the list's header.
+elements we cut to the end of the list, updating the list's header.
 
 \function{UseHeap}
 static int UseHeap(List *L, ContainerAllocator *m)
@@ -10893,9 +10920,9 @@ This container is a completely different beast as all other ones we have in the 
 Mr Burton Howard Bloom in 1970 according to D. E Knuth in his Art of Computer Programming.
 
 Bloom filters are designed to cheaply test if a given element is in a large set. It is possible that the filter says that an element is there
-when in fact, it is not. But if the filter says it is \textsl{not} there you can be ceratin that the element is not in the set.
+when in fact, it is not. But if the filter says it is \textsl{not} there you can be certain that the element is not in the set.
 
-You can add elements to the set but not remove them. The more elements you add to the filter, the larger the posibility of getting false positives, i.e.
+You can add elements to the set but not remove them. The more elements you add to the filter, the larger the possibility of getting false positives, i.e.
 getting an answer of "yes, the element is there" when in fact it is not.
 
 
@@ -10941,7 +10968,7 @@ words below the address passed to our \texttt{Free} function will be assumed to 
 is of course a chance that the memory
 could contain that number for other reasons, but choosing a value that can't be a pointer and that is high above 100 millions give us a fighting chance 
 that the
-probablity of hitting a bad positive is fairly low.
+probability of hitting a bad positive is fairly low.
 \item The length of the block. This will allow us to verify that nothing was written beyond the required length of the block.
 \item A guard at the end of the block. We will ensure that we can read this quantity when freeing the block.
 \end{enumerate}
@@ -10965,35 +10992,35 @@ unless we would just inspect each memory write, but a few words more after the e
 \end{itemize}
 For completeness here is the code of the free function for the debugging malloc sample:
 \function{Free}
- 1 static void Free(void *pp)
- 2 {
- 3         size_t *ip = NULL;
- 4         size_t s;
- 5         register char *p = pp;
- 6         if (p == NULL)
- 7                 return;
- 8         p -= 2 * sizeof(size_t);
- 9         ip = (size_t *) p;
-10         if (*ip == SIGNATURE) {
-11             *ip++ = 0;
-12             s = *ip;
-13             ip = (size_t *) (&p[s - sizeof(size_t)]);
-14             if (*ip != MAGIC) {
-15                 /* overwritten block size */
-16                 iError.RaiseError("Free",
-                          CONTAINER_ERROR_BUFFEROVERFLOW);
-17                 return;
-18             }
-19             *ip = 0;
-20             AllocatedMemory -= s;
-21             memset(p,66,s);
-22             free(p);
-23         }
-24         else {
-25             /* Wrong block passed to Free */
-26             iError.RaiseError("Free",CONTAINER_ERROR_BADPOINTER);
-27         }
-28 }
+static void Free(void *pp)
+{
+        size_t *ip = NULL;
+        size_t s;
+        register char *p = pp;
+        if (p == NULL)
+                return;
+        p -= 2 * sizeof(size_t);
+        ip = (size_t *) p;
+        if (*ip == SIGNATURE) {
+            *ip++ = 0;
+            s = *ip;
+            ip = (size_t *) (&p[s - sizeof(size_t)]);
+            if (*ip != MAGIC) {
+                /* overwritten block size */
+                iError.RaiseError("Free",
+                       CONTAINER_ERROR_BUFFEROVERFLOW);
+                return;
+            }
+            *ip = 0;
+            AllocatedMemory -= s;
+            memset(p,66,s);
+            free(p);
+        }
+        else {
+            /* Wrong block passed to Free */
+            iError.RaiseError("Free",CONTAINER_ERROR_BADPOINTER);
+        }
+}
 \end{Verbatim}
 \begin{itemize}
 \item Line 6:
@@ -11227,7 +11254,7 @@ implementations can add features here.
 \index{ValArrays,code}
 All ValArrays are implemented using a template file that receives its parameters from a small c file. The same is done for the header files, that
 are also controlled by a header file. Since header files do not contain any definitions, only declarations, the different headers are grouped into
-a single header file that includes the templated file several times. Here is an excertp of valarray.h:
+a single header file that includes the templated file several times. Here is an excerpt of valarray.h:
 \begin{verbatim}
   1 /**********************************************  *       
   2  *          ValArraySize_t                       *
@@ -11299,7 +11326,7 @@ We see here:
 \item Slice management. All operations in a ValArray are constrained by the current slice, that starts with a slice that encloses the whole array 
 (the start is zero, the increment is one, and the length of the slice is the length of the array). When a slice is defined for an array, it will be
 used, if not, an implicit slice is used that includes the whole array.
-\item Error analysis is simplified for ValArrays, and no \Null checking is done. However hard errors like an index error (trying to index an aray beyond
+\item Error analysis is simplified for ValArrays, and no \Null checking is done. However hard errors like an index error (trying to index an array beyond
 its bounds) are always reported.
 \item Contrary to the \verb,GetElement, function in the \verb,vector, container we do not return a pointer to the element but the element
 itself. For the basic types this can always be done and is very efficient. For more complex types use \verb,vector, instead of \verb,ValArray,.
@@ -11308,7 +11335,40 @@ itself. For the basic types this can always be done and is very efficient. For m
 The \verb,valarraygen.c, file can be used to provide for an array of actually \textbf{any} data structure that is small enough to be returned by value.
 It suffices to change the \verb,ElementType, to the concerned structure whose definition must be visible to the compiler. In the next chapter we see how this
 could be done.
+\section{Building the documentation}
+The documentation is written in the \LaTeX markup language. This is an ancient and quite outmoded software written by a certain D. Knuth dozens of
+years ago, and as many outmoded and ancient things, it works perfectly in an incredible number of environments and machines, just like the C language.
+It produces high quality documents that look the same independently of the environment or machine where they are produced.
+Obtaining a version of \TeX and \LaTeX is very easy and it is the reason it has been useful here \footnote{ I used \verb,pdfTeX Version 3.1415926-1.40.11 (TeX Live 2010), \TeX is free of charge, another important point.}
+.
 
+The documentation is stored in a sub-directory of the main sources directory of the sample implementation called \verb,ccldoc,. You will find there
+two types of files:
+\begin{ShorterItemize}
+\item \verb,.png, files containing drawings.
+\item \verb,.tex, files containing the tex source of the documentation.
+\item \verb,.c, files that build auxiliary executables.
+\end{ShorterItemize}
+
+The main source of the documentation is the \verb,ccl.tex, file. This file includes the \verb,Introduction.tex, tex source file, and all the drawings
+and tables.
+
+All other \verb,.tex, files are \textsl{generated} files that are produced by the \verb,dotable, executable compiled from the \verb,dotable.c,
+source file
+\footnote{This program uses the library extensively to read, parse, generate and store the different files and it is a good example
+of the practical applications of the library.
+}. The \verb,dotable.c, source file reads the source code of the library and extracts information about the interfaces, information that
+is used to generate the different interface files (\verb,list.tex,, \verb,vector.tex,, etc) and the table of functions at the end of the
+documentation. The interfaces are sorted in alphabetical order, then written to disk. For historical reasons, the interfaces are not written in
+alphabetical order in the \verb,ccl.h, source file.
+\footnote{This is a big problem when writing interfaces for the library. When you want (for some reason) move a function within its interface 
+definition you have to synchronize also the layout of the structure at its initialization. C99 makes it easier since it allows to name
+the initialization explicitly by their names and not only by their position.}.
+
+The Makefile builds also the \verb,ccl.html, file, that contains the same text of the documentation but in a form suitable to be displayed by any
+web browser. This task is done by the \verb,tth, program that is built from the \verb,tth.c, source file, an adaptation of the program written by
+Ian Hutchinson\footnote{The \Verb,tth, (\textbf{t}ex \textbf{t}o \textbf{h}tml) source code was modified to accept the \Verb,fancyverb, package
+and a few other details. The original package can be found at\par\noindent \verb,http://hutchinson.belmont.ma.us/tth/tth-noncom/download.html,.}.
 %---------------------------------------------------------------------------------------------------------------------------------------
 %                                             Templates
 %---------------------------------------------------------------------------------------------------------------------------------------
@@ -11622,7 +11682,7 @@ struct __intListInterface {
 \end{verbatim}
 \end{enumerate}
 \subsubsection{The implementation file}
-There are two posibilities: 
+There are two possibilities: 
 \begin{ShorterItemize}
 \item Replicate all code of the container. This has the advantage of sparing an extra call instruction at run time and making possible use of
 specialized code tailored to the specific data type being compiled.

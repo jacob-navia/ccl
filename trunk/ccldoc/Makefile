@@ -25,4 +25,4 @@ clean:
 	ContainerHeap.tex Dlist.tex List.tex Deque.tex HashTable.tex PQueue.tex TreeMap.tex WDictionary.tex
 
 zip:
-	zip -9 ccldoc.zip dotable.c ccl.tex tth.c ../libccl.a $(PNGS) Introduction.tex Makefile
+	zip -9 ccldoc.zip dotable.c ccl.tex tth.c $(PNGS) Introduction.tex Makefile rgb.tex

@@ -62,7 +62,7 @@ ignored any error analysis arguing that any specification of failure modes would
 increased by several orders of magnitude, the cost of  a check for NULL was always "too expensive" to afford.
 
 This kind of mental framework was described by one of the people in the discussion group "comp.lang.c++" as follows:\footnote{We were discussing 
-the specifications of the \texttt{mismatach} function of the C++ STL and why any error analysis is absent. The C++ STL prescribes a bounded 
+the specifications of the \texttt{mismatch} function of the C++ STL and why any error analysis is absent. The C++ STL prescribes a bounded 
 region for the first container, but just a starting point for the second one. If the second is shorter than the specified range of the first
  \textsl{undefined behavior} ensues and anything can happen. In many cases this "anything" is different each time the same error occurs. In our
 specific case \texttt{mismatch} would read from memory that doesn't belong to the container it started with. Depending on the contents of
@@ -156,6 +156,60 @@ the specialized version allowing for compile time checking.
 
 To speed up this process specialized versions of the list and vector containers are provided for most of the
 basic types of the language: int, doubles, etc.
+\subsection{Design choices}
+The parameter space for a container library is virtually infinite. There are choices and choices to be made and it would be
+impossible to explain them all. There are choices done by default (the other possibilities aren't realized or not even considered)
+or choices made semi-consciously ("... it is better not to go in that direction") or done because
+other choices done before impose them. And there are choices done with full knowledge of the alternatives,
+where a conscious choice is done after exploring several possible solutions.
+
+Here are some examples of design decisions, to show the kind of reasoning that goes into them,
+and the priorities schema.
+\begin{itemize}
+\item Some libraries propose the use of "invasive" containers where the user defines
+some fields \textsl{within his/her structure definitions} where the containers
+would have a handle to act. For instance the user defines a single field "Next" within
+his data structure definition so that the single linked list container can use it
+to perform its operations.
+
+The problem with this approach is that all the fields necessary must be fully disclosed
+to the user. Any change in those fields provokes a recompilation of \textsl{all} user
+codes. There isn't really a full separation between the container data structures
+and the user's.
+
+A big design goal is the complete separation of the containers from user's code so that
+a new version of the library doesn't need any changes to user code at all, not even
+to the binaries. Within the current design the implementor of the library can change
+the inner structure of its data structures without affecting at all user's code.
+
+\item Another design decision is to hide or not the container access within macros. Instead
+of writing: 
+\begin{verbatim}
+    iList.Add(myList,&mydata);
+    iVector.Add(myVector,&mydata) 
+// that would be replaced by
+#define CCL_ListAdd(myList,mydata) iList.Add(myList,&mydata)
+#define CCL_VectorAdd(myVector,mydata) iVector.Add(myVector,&mydata)
+// ... etc
+\end{verbatim}
+
+This  has been a very difficult design decision, and one that is not closed yet.
+The advantage of this is that the implementor can then make hidden functions that
+inline calls, and in general increase the speed of the generated code. 
+
+Another advantage is that the linker
+doesn't need to include \textbf{all} members of the list container but only
+those that are used into the final executable.
+
+The problem is that this is (in my opinion) \textbf{too} flexible and hides
+completely what is happening from the user. Another problem is that even if the
+new names are all prefixed (here with \verb,CCL_,) name clashes can occur. The
+resulting names are quite long also, even if typing \verb,iList.Add, is also
+quite long.
+
+Here the decision is not definitive since at any moment a set of macros can be added
+to the library.
+\end{itemize}
 %-----------------------------------------------------------------------------------------------------------
 %                                                       Typographical conventions
 %-----------------------------------------------------------------------------------------------------------
@@ -242,7 +296,7 @@ exist about any specific layout of the interfaces or data structures in the libr
 the APIs are listed following the alphabetical order.
 
 \section{Practical tips}
-The code of the sample implementation can be obtaned from:
+The code of the sample implementation can be obtained from:
 
 \noindent\verb,http://code.google.com/p/ccl/,
 
