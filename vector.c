@@ -650,7 +650,8 @@ static int EraseAt(Vector *AL,size_t idx)
         AL->DestructorFn(p);
     }
     if (idx < (AL->count-1)) {
-        memmove(p+AL->ElementSize*idx,p+AL->ElementSize*(idx+1),(AL->count-idx)*AL->ElementSize);
+        // Fix by zhaozg@gmail.com
+        memmove(p,p+AL->ElementSize,(AL->count-idx-1)*AL->ElementSize);
     }
     AL->count--;
     AL->timestamp++;
