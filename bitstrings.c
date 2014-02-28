@@ -17,7 +17,7 @@ static unsigned char maskI[]= {
 	255,1,3,7,15,31,63,127};
 static unsigned char BitIndexMask[] = {
 	1,2,4,8,16,32,64,128};
-#if 0 // CHAR_BIT is 16
+#if 0 /* CHAR_BIT is 16 */
 static unsigned char mask[] = {
 	65535,32767,16383,8191,4095,2047,1023,511,255,127,63,31,15,7,3,1};
 static unsigned char maskI[]= {
@@ -42,17 +42,17 @@ static int NullPtrError(const char *fnName)
 	return CONTAINER_ERROR_BADARG;
 }
 
-static int doerrorCall(const char *fnName,int code)
+static int doerrorCall(const char *fnName,int code,BitString *b)
 {
 	char buf[256];
 
 	snprintf(buf,sizeof(buf),"iBitString.%s",fnName);
-	iError.RaiseError(buf,code);
+	iError.RaiseError(buf,code,b);
 	return code;
 }
-static int ReadOnlyError(const char *fnName)
+static int ReadOnlyError(const char *fnName, BitString *b)
 {
-	return doerrorCall(fnName,CONTAINER_ERROR_READONLY);
+	return doerrorCall(fnName,CONTAINER_ERROR_READONLY,b);
 }
 
 
@@ -103,7 +103,7 @@ static int Clear(BitString *b)
 {
 	if (b == NULL) return NullPtrError("Clear");
 	if (b->Flags&CONTAINER_READONLY)
-		return ReadOnlyError("Clear");
+		return ReadOnlyError("Clear",b);
 	b->count = 0;
 	return 1;
 }
@@ -112,7 +112,7 @@ static int Finalize(BitString *b)
 {
 	if (b == NULL) return CONTAINER_ERROR_BADARG;
 	if (b->Flags&CONTAINER_READONLY)
-		return ReadOnlyError("Finalize");
+		return ReadOnlyError("Finalize",b);
 	b->Allocator->free(b->contents);
 	b->Allocator->free(b);
 	return 1;
@@ -144,7 +144,7 @@ static int SetElement(BitString *bs,size_t position,int b)
 		return NullPtrError("SetElement");
 
 	if (bs->Flags&CONTAINER_READONLY)
-		return ReadOnlyError("SetElement");
+		return ReadOnlyError("SetElement",bs);
 
 	if (position >= bs->count) {
 		iError.RaiseError("SetElement",CONTAINER_ERROR_INDEX,bs,position);
@@ -260,6 +260,10 @@ static BitString *GetRange(BitString *bs,size_t start,size_t end)
 		end = bs->count;
 	len  = end-start;
 	result = Create(len);
+    if (result == NULL) {
+        iError.RaiseError("iBitString.GetRange",CONTAINER_ERROR_NOMEMORY);
+        return NULL;
+    }
 	if (len == 0)
 		return result;
 	result->count = len;
@@ -357,6 +361,10 @@ static BitString * Or(BitString *bsl,BitString *bsr)
 	}
 	resultlen = (bsl->count < bsr->count) ? bsr->count : bsl->count;
 	result = Create(resultlen);
+    if (result == NULL) {
+        iError.RaiseError("iBitString.Or",CONTAINER_ERROR_NOMEMORY);
+        return NULL;
+    }
 	blen = BYTES_FROM_BITS(resultlen);
 	for (i=0; i<blen;i++) {
 		result->contents[i] = bsl->contents[i] | bsr->contents[i];
@@ -392,6 +400,10 @@ static BitString * And(BitString *bsl,BitString *bsr)
 	len = (bsl->count < bsr->count) ? bsl->count : bsr->count;
 	resultlen = (bsl->count < bsr->count) ? bsr->count : bsl->count;
 	result = Create(resultlen);
+    if (result == NULL) {
+        iError.RaiseError("iBitString.And",CONTAINER_ERROR_NOMEMORY);
+        return NULL;
+    }
 	bytelen = BYTES_FROM_BITS(len);
 	for (i=0; i<bytelen;i++) {
 		result->contents[i] = bsl->contents[i] & bsr->contents[i];
@@ -439,6 +451,10 @@ static BitString * Xor(BitString *bsl,BitString *bsr)
 	len = bsl->count < bsr->count ? bsl->count : bsr->count;
 	resultlen = bsl->count < bsr->count ? bsr->count : bsl->count;
 	result = Create(resultlen);
+    if (result == NULL) {
+        iError.RaiseError("iBitString.Xor",CONTAINER_ERROR_NOMEMORY);
+        return NULL;
+    }
 	len = 1+(len >>3);
 	for (i=0; i<len;i++) {
 		result->contents[i] = bsl->contents[i] ^ bsr->contents[i];
@@ -473,6 +489,10 @@ static BitString * Not(BitString *bsl)
 	}
 	len = bsl->count;
 	result = Create(len);
+    if (result == NULL) {
+        iError.RaiseError("iBitString.Not",CONTAINER_ERROR_NOMEMORY);
+        return NULL;
+    }
 	len = 1+(len >> 3);
 	for (i=0; i<len;i++) {
 		result->contents[i] = ~bsl->contents[i];
@@ -498,6 +518,10 @@ static int NotAssign(BitString *bsl)
 static BitString *InitializeWith(size_t siz,void *p)
 {
 	BitString *result = Create(CHAR_BIT*siz);
+    if (result == NULL) {
+        iError.RaiseError("iBitString.InitializeWith",CONTAINER_ERROR_NOMEMORY);
+        return NULL;
+    }
 	memcpy(result->contents,p,siz);
 	result->count = CHAR_BIT*siz;
 	return result;
@@ -567,6 +591,10 @@ static BitString * StringToBitString(unsigned char * str)
 	if (i == 0)
 		return NULL;
 	result = Create(i);
+    if (result == NULL) {
+        iError.RaiseError("iBitString.StringToBitString",CONTAINER_ERROR_NOMEMORY);
+        return NULL;
+    }
 	result->count = i;
 	i=0;
 	str--;
@@ -655,6 +683,10 @@ static BitString *Reverse(BitString *b)
 
 	if (b == NULL)		return NULL;
 	result = Create(b->count);
+    if (result == NULL) {
+        iError.RaiseError("iBitString.Reverse",CONTAINER_ERROR_NOMEMORY);
+        return NULL;
+    }
 	result->count = b->count;
 	i = 0;
 	j = b->count-1;

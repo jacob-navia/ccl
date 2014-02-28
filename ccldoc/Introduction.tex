@@ -260,34 +260,33 @@ This document presents the C container Library to the C standardization committe
 The heap and pool interfaces are optional.
 \item Chapter 5: The containers:
 \begin{center}
-\begin{longtable}{|p{3cm}|p{3cm}|p{2.5cm}|}
+\begin{longtable}{|p{2.7cm}|p{3cm}|p{2.1cm}|p{6.0cm}|}
 \hline
-\textbf{Container}&\textbf{Interface}&\textbf{Required?}\\\hline
-BitString&iBitString& \Checkmark \\
-BloomFilter&iBloomFilter&\XSolidBrush \\
-CircularBuffer&iCircularBuffer& \Checkmark \\
-Deque&iDeque&\Checkmark \\
-Dictionary&iDictionary&\Checkmark \\
-Dlist&iDlist&\Checkmark \\
-HashTable&iHashTable&\XSolidBrush \\
-List&iList&\Checkmark \\
-Queue&iQueue&\Checkmark \\
-PQueue&iPriorityQueue&\Checkmark \\
-StreamBuffer&iStreamBuffer&\Checkmark \\
-StringList&iStringList&\Checkmark\\
-strCollection&istrCollection&\Checkmark \\
-TreeMap&iTreeMap&\Checkmark \\
-Value array&iValArrayXXX&\Checkmark \\
-Vector&iVector&\Checkmark \\
-WstrCollection&iWstrCollection&\XSolidBrush\\
-\hline
-
-\end{longtable}
-\end{center}
+\textbf{Container}&\textbf{Interface}&\textbf{Required?}&\textbf{Short description}\\\hline
+BitString&iBitString& \Checkmark &\footnotesize{Sequence of bits}\\
+BloomFilter&iBloomFilter&\XSolidBrush &\footnotesize{Statistical container}\\
+CircularBuffer&iCircularBuffer& \Checkmark &\footnotesize{Retains the last $n$ items}\\
+Deque&iDeque&\Checkmark &\footnotesize{Queue with fast insertions at both ends.}\\
+Dictionary&iDictionary&\Checkmark& \footnotesize{Associates a character key to arbitrary data.} \\
+Dlist&iDlist&\Checkmark &\footnotesize{Double linked list}\\
+HashTable&iHashTable&\XSolidBrush &\footnotesize{Associates a key with data.}\\
+List&iList&\Checkmark &\footnotesize{Single linked list.}\\
+Queue&iQueue&\Checkmark &\footnotesize{First in, first out container.}\\
+PQueue&iPriorityQueue&\Checkmark &\footnotesize{Pull out items by priority.}\\
+StreamBuffer&iStreamBuffer&\Checkmark &\footnotesize{Sequence of bytes.}\\
+StringList&iStringList&\Checkmark&\footnotesize{List of character strings.}\\
+strCollection&istrCollection&\Checkmark &\footnotesize{Array of character strings.}\\
+TreeMap&iTreeMap&\Checkmark &\footnotesize{Tree structure associates key with data.}\\
+Value array&iValArrayXXX&\Checkmark &\footnotesize{Vector of numbers.\footnote{
 The different ValArray containers should
 include several basic data types like int, char or long.
 Floating point types float and double are required, but not the types long long, long double and all complex types.
-The rationale is to avoid excluding C implementations designed for very small processors or environments.
+The rationale is to avoid excluding C implementations designed for very small processors or environments.}}\\
+Vector&iVector&\Checkmark &\footnotesize{General resizable vector}\\
+WstrCollection&iWstrCollection&\XSolidBrush&\footnotesize{Array of wide character strings.}\\
+\hline
+\end{longtable}
+\end{center}
 \end{itemize}
 All text in footnotes, tables or drawings is not normative.
 
@@ -295,10 +294,10 @@ The order of the APIs within each interface is implementation defined. In genera
 exist about any specific layout of the interfaces or data structures in the library. In the documentation
 the APIs are listed following the alphabetical order.
 
-\section{Practical tips}
 The code of the sample implementation can be obtained from:
 
 \noindent\verb,http://code.google.com/p/ccl/,
 
 Go to Downloads and there you will find the documentation (this document) and the source code in the form of a \verb,ccl.zip, file.
 \index{Download!source} See also the chapter about the sample implementation in this document.
+

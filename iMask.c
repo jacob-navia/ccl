@@ -1,7 +1,7 @@
 #include "containers.h"
 #include "ccl_internal.h"
 
-static Mask *CreateFromMask(size_t n,char *data)
+static Mask *CreateFromMask(size_t n,const char *data)
 {
     Mask *result = CurrentAllocator->malloc(n+sizeof(Mask));
     if (result == NULL) {
@@ -15,7 +15,7 @@ static Mask *CreateFromMask(size_t n,char *data)
     return result;
 }
 
-static Mask *Copy(Mask *src)
+static Mask *Copy(const Mask *src)
 {
     Mask *result;
     if (src == NULL) return NULL;
@@ -54,7 +54,7 @@ static int Finalize(Mask *m)
     return 1;
 }
 
-static size_t Size(Mask *m)
+static size_t Size(const Mask *m)
 {
     return (m == NULL) ? 0 : m->length;
 }
@@ -71,7 +71,7 @@ static int Verify(const Mask *src1, const Mask *src2,const char *name)
     return 0;
 }
 
-static int And(Mask *src1,Mask *src2)
+static int And(Mask *src1,const Mask *src2)
 {
     size_t i;
     int r = Verify(src1,src2,"iMask.And");
@@ -97,7 +97,7 @@ static int Not(Mask *src1)
 }
 
 
-static int Or(Mask *src1,Mask *src2)
+static int Or(Mask *src1,const Mask *src2)
 {
     size_t i;
     int r = Verify(src1,src2,"iMask.or");
@@ -109,7 +109,7 @@ static int Or(Mask *src1,Mask *src2)
     return 1;
 }
 
-static size_t Sizeof(Mask *m)
+static size_t Sizeof(const Mask *m)
 {
     if (m == NULL) return sizeof(Mask);
     return sizeof(Mask) + m->length;

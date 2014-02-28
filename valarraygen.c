@@ -518,7 +518,7 @@ static int EraseAt(ValArray *AL,size_t idx)
 		p = AL->contents + start + idx * AL->Slice->increment;
 		idx += start + idx*incr;
 	}
-	p = AL->contents +idx;
+	else p = AL->contents +idx;
 	if (idx >= top) {
 		return IndexError("Erase");
 	}

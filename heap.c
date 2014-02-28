@@ -127,6 +127,7 @@ static int FreeObject(ContainerHeap *heap,void *element)
     }
 #endif
     memcpy(le->Data, &heap->FreeList,sizeof(ListElement *));
+	le->Next = heap->FreeList;
     heap->FreeList = le;
     heap->timestamp++;
     return 1;

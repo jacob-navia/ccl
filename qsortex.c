@@ -76,7 +76,7 @@ recurse:
     higuy = hi + width;
 
     for (;;) {
-      // Changed <= to < and >= to > according to the advise of "pete" of comp.lang.c.
+      /* Changed <= to < and >= to > according to the advise of "pete" of comp.lang.c. */
       do { loguy += width; } while (loguy <= hi && comp(loguy, lo,ExtraArgs) < 0);
       do { higuy -= width; } while (higuy > lo && comp(higuy, lo,ExtraArgs) > 0);
       if (higuy < loguy) break;

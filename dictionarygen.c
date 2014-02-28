@@ -115,7 +115,11 @@ static int doerrorCall(ErrorFunction err,const char *fnName,int code)
 }
 static int ReadOnlyError(const DATA_TYPE *SC,const char *fnName)
 {
-    return doerrorCall(SC->RaiseError,fnName,CONTAINER_ERROR_READONLY);
+    char buf[256];
+
+    snprintf(buf,sizeof(buf),"iDictionary.%s",fnName);
+    SC->RaiseError(buf,CONTAINER_ERROR_READONLY,SC);
+    return CONTAINER_ERROR_READONLY;
 }
 static int NullPtrError(const char *fnName)
 {

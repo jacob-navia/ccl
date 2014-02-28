@@ -1,7 +1,7 @@
 #include "containers.h"
 static ContainerAllocator DefaultAllocatorObject = { malloc,free,realloc,calloc};
 ContainerAllocator *CurrentAllocator = &DefaultAllocatorObject;
-ContainerAllocator *SetCurrentAllocator(ContainerAllocator *in)
+static ContainerAllocator *SetCurrentAllocator(ContainerAllocator *in)
 {
         ContainerAllocator *c;
         if (in == NULL)
@@ -10,4 +10,14 @@ ContainerAllocator *SetCurrentAllocator(ContainerAllocator *in)
         CurrentAllocator = in;
         return c;
 }
+
+static ContainerAllocator *GetCurrentAllocator(void)
+{	
+	return CurrentAllocator;
+}
+
+AllocatorInterface iAllocator = {
+	SetCurrentAllocator,
+	GetCurrentAllocator,
+};
 

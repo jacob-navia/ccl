@@ -116,11 +116,11 @@ static int ceillog2(unsigned int a)
         return i + 1;
 }
 #else
-// http://graphics.stanford.edu/~seander/bithacks.html
+/* http://graphics.stanford.edu/~seander/bithacks.html */
 #define SYSTEM_LITTLE_ENDIAN 1
 static int ceillog2(unsigned v)
 {
-    union { unsigned int u[2]; double d; } t; // temp
+    union { unsigned int u[2]; double d; } t; /* temp */
 
     t.u[SYSTEM_LITTLE_ENDIAN] = 0x43300000;
     t.u[!SYSTEM_LITTLE_ENDIAN] = v;
@@ -131,15 +131,9 @@ static int ceillog2(unsigned v)
 #endif
 static void DeleteElement(PQueue *h, PQueueElement *x)
 {
-    void *data;
-    intptr_t key;
-
-    data = x->Data;
-    key = x->Key;
-
     Replace(h, x, INT_MIN);
     if (ExtractMin(h) != x) {
-        abort();
+        iError.RaiseError("iPQueue.DeleteElement",CONTAINER_INTERNAL_ERROR);
     }
 }
 
@@ -194,11 +188,9 @@ static PQueue *Union(PQueue *ha, PQueue *hb)
         /* either one or both are empty */
         if (ha->Root == NULL) {
             destroyheap(ha);
+            memset(ha,0,sizeof(*ha));
             return hb;
-        } else {
-            destroyheap(hb);
-            return ha;
-        }
+        } else goto done;
     }
     ha->Root->Left->Right = hb->Root;
     hb->Root->Left->Right = ha->Root;
@@ -213,7 +205,7 @@ static PQueue *Union(PQueue *ha, PQueue *hb)
     /* set Minimum if necessary */
     if (compare(ha, hb->Minimum, ha->Minimum) < 0)
         ha->Minimum = hb->Minimum;
-
+done:
     destroyheap(hb);
     memset(hb,0,sizeof(*hb));
     return ha;
@@ -401,8 +393,8 @@ static void removerootlist(PQueue *h, PQueueElement *x)
     }
 }
 
-
-static inline void insertbefore(PQueueElement *a, PQueueElement *b)
+/* This could be declared inline in C99 implementations */
+static void insertbefore(PQueueElement *a, PQueueElement *b)
 {
     insertafter(a->Left, b);
 }
@@ -678,5 +670,5 @@ PQueueInterface iPQueue = {
     Front,
     Copy,
     Union,
-//  ReplaceKeyData,
+/*  ReplaceKeyData, */
 };

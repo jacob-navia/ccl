@@ -1,6 +1,7 @@
 #include "containers.h"
 #include "ccl_internal.h"
 #include "vectorgen.h"
+/* Number of elements by default */
 #ifndef DEFAULT_START_SIZE
 #define DEFAULT_START_SIZE 20
 #endif
@@ -242,67 +243,67 @@ static Mask *CompareEqualScalar(const VECTOR_TYPE *left,const DATA_TYPE right,Ma
 }
 
 INTERFACE(DATA_TYPE)   INTERFACE_NAME(DATA_TYPE) = {
-	NULL,        // Size,
-	NULL,        // GetFlags, 
-	NULL,        // SetFlags, 
-	NULL,        // Clear,
+	NULL,        /* Size, */
+	NULL,        /* GetFlags,  */
+	NULL,        /* SetFlags,  */
+	NULL,        /* Clear, */
 	Contains,
 	Erase, 
         EraseAll,
-	NULL,        // Finalize,
-	NULL,        // Apply,
-	NULL,        // Equal,
+	NULL,        /* Finalize, */
+	NULL,        /* Apply, */
+	NULL,        /* Equal, */
 	Copy,
-	NULL,        // SetErrorFunction,
+	NULL,        /* SetErrorFunction, */
 	Sizeof,
 	NewIterator,
 	InitIterator,
-	NULL,        // deleteIterator,
+	NULL,        /* deleteIterator, */
 	SizeofIterator,
-	NULL,       // Save,
+	NULL,       /* Save, */
 	Load,
 	GetElementSize,
 /* Sequential container fields */
 	Add, 
-	NULL,       // GetElement,
+	NULL,       /* GetElement, */
 	PushBack,
 	PopBack,
 	InsertAt,
-	NULL,       // EraseAt, 
+	NULL,       /* EraseAt,  */
 	ReplaceAt,
 	IndexOf, 
 /* Vector specific fields */
 	Insert,
-	NULL,       // InsertIn,
-	NULL,       // IndexIn,
-	NULL,       // GetCapacity, 
-	NULL,       // SetCapacity,
-	NULL,       // SetCompareFunction,
+	NULL,       /* InsertIn, */
+	NULL,       /* IndexIn, */
+	NULL,       /* GetCapacity,  */
+	NULL,       /* SetCapacity, */
+	NULL,       /* SetCompareFunction, */
 	Sort,
 	Create,
 	CreateWithAllocator,
 	Init,
-	NULL,       // AddRange, 
+	NULL,       /* AddRange, */
 	GetRange,
-	NULL,       // CopyElement,
+	NULL,       /* CopyElement, */
 	CopyTo, 
-	NULL,        // Reverse,
-	NULL,        // Append,
-	NULL,        // Mismatch,
-	NULL,        // GetAllocator,
-	NULL,        // SetDestructor,
-	NULL,        // SearchWithKey,
-	NULL,        // Select,
-	NULL,        //SelectCopy,
-	NULL,        // Resize,
+	NULL,        /* Reverse, */
+	NULL,        /* Append, */
+	NULL,        /* Mismatch, */
+	NULL,        /* GetAllocator, */
+	NULL,        /* SetDestructor, */
+	NULL,        /* SearchWithKey, */
+	NULL,        /* Select, */
+	NULL,        /* SelectCopy,*/
+	NULL,        /* Resize, */
 	InitializeWith,
-	NULL,        // GetData,
-	NULL,        // Back,
-	NULL,        // Front,
-	NULL,       // RemoveRange,
-	NULL,       // RotateLeft,
-	NULL,       // RotateRight,
-	NULL,       // CompareEqual,
+	NULL,        /* GetData, */
+	NULL,        /* Back, */
+	NULL,        /* Front, */
+	NULL,       /* RemoveRange, */
+	NULL,       /* RotateLeft, */
+	NULL,       /* RotateRight, */
+	NULL,       /* CompareEqual, */
 	CompareEqualScalar,
-	NULL,       // Reserve
+	NULL,       /* Reserve */
 };

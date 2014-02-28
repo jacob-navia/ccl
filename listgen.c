@@ -196,7 +196,7 @@ recurse:
     higuy = hi + 1;
 
     for (;;) {
-      // Changed <= to < and >= to > according to the advise of "pete" of comp.lang.c.
+      /* Changed <= to < and >= to > according to the advise of "pete" of comp.lang.c. */
       do { loguy++; } while (loguy <= hi && COMPARE_EXPRESSION(loguy,lo) < 0);
       do { higuy--; } while (higuy > lo && COMPARE_EXPRESSION(higuy,lo) > 0);
       if (higuy < loguy) break;
@@ -412,67 +412,67 @@ static DATA_TYPE *Advance(LIST_ELEMENT **ple)
 }
 
 INTERFACE(DATA_TYPE)   INTERFACE_NAME(DATA_TYPE) = {
-    NULL,         // Size
-    NULL,         // GetFlags,
-    NULL,         // SetFlags,
-    NULL,         // Clear,
+    NULL,         /* Size, */
+    NULL,         /* GetFlags, */
+    NULL,         /* SetFlags, */
+    NULL,         /* Clear,    */
     Contains,
     Erase,
     EraseAll,
-    NULL,         // Finalize,
-    NULL,         // Apply
-    NULL,         // Equal
+    NULL,         /* Finalize, */
+    NULL,         /* Apply,    */
+    NULL,         /* Equal,    */
     Copy,
-    NULL,         // SetErrorFunction,
+    NULL,         /* SetErrorFunction,*/
     Sizeof,
     NewIterator,
     InitIterator,
-    NULL,         // deleteIterator,
+    NULL,         /* deleteIterator, */
     SizeofIterator,
-    NULL,          // Save,
+    NULL,          /* Save, */
     Load,
     GetElementSize,
     /* end of generic part */
     Add,
-    NULL,         // GetElement,
+    NULL,         /* GetElement, */
     PushFront,
     PopFront,
     InsertAt,
-    NULL,         // EraseAt
+    NULL,         /* EraseAt */
     ReplaceAt,
     IndexOf,
     /* End of sequential container part */
-    NULL,        // InsertIn,
+    NULL,        /* InsertIn, */
     CopyElement,
-    NULL,        // EraseRange,
+    NULL,        /* EraseRange, */
     Sort,
-    NULL,        // Reverse,
-    NULL,        // GetRange,
-    NULL,        // Append,
-    NULL,        // SetCompareFunction,
+    NULL,        /* Reverse, */
+    NULL,        /* GetRange, */
+    NULL,        /* Append, */
+    NULL,        /* SetCompareFunction, */
     DefaultListCompareFunction,
-    NULL,        // UseHeap,
-    NULL,        // AddRange,
+    NULL,        /* UseHeap, */
+    NULL,        /* AddRange, */
     Create,
     CreateWithAllocator,
     Init,
     InitWithAllocator,
     GetAllocator,
-    NULL,          // SetDestructor
+    NULL,          /* SetDestructor */
     InitializeWith,
-    NULL,          // Back,
-    NULL,          // Front,
-    NULL,          // RemoveRange,
-    NULL,          // RotateLeft,
-    NULL,          // RotateRight,
-    NULL,          // Select,
+    NULL,          /* Back, */
+    NULL,          /* Front, */
+    NULL,          /* RemoveRange, */
+    NULL,          /* RotateLeft, */
+    NULL,          /* RotateRight, */
+    NULL,          /* Select, */
     SelectCopy,
-    NULL,          // FirstElement,
-    NULL,          // LastElement,
+    NULL,          /* FirstElement, */
+    NULL,          /* LastElement, */
     NextElement,
     ElementData,
     SetElementData,
     Advance,
-    NULL,          // Skip,
-    NULL,          // SplitAfter,
+    NULL,          /* Skip, */
+    NULL,          /* SplitAfter, */
 };
