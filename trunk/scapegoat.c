@@ -22,7 +22,7 @@ static struct Node **down_link (TreeMap *, struct Node *);
 static struct Node *sibling (struct Node *p);
 static size_t count_nodes_in_subtree (const struct Node *);
 
-static size_t floor_log2 (size_t);
+static int floor_log2 (size_t);
 static size_t calculate_h_alpha (size_t);
 static TreeMap *CreateWithAllocator(size_t ElementSize,const ContainerAllocator *m);
 
@@ -295,7 +295,7 @@ static void compress (struct Node **q, size_t count)
    new root of the balanced tree. */
 static void vine_to_tree (struct Node **q, size_t count)
 {
-  size_t leaf_nodes = count + 1 - ((size_t) 1 << floor_log2 (count + 1));
+  size_t leaf_nodes = count + 1 - ( 1 << floor_log2 (count + 1));
   size_t vine_nodes = count - leaf_nodes;
 
   compress (q, leaf_nodes);
@@ -445,7 +445,7 @@ static size_t count_leading_zeros (size_t x)
 
 /* Returns floor(log2(x)).
    Undefined if X is zero. */
-static size_t floor_log2 (size_t x)
+static int floor_log2 (size_t x)
 {
   return sizeof (size_t) * CHAR_BIT - 1 - count_leading_zeros (x);
 }
@@ -453,7 +453,7 @@ static size_t floor_log2 (size_t x)
 /* Returns floor(pow(sqrt(2), x * 2 + 1)).
    Defined for X from 0 up to the number of bits in size_t minus
    1. */
-static size_t pow_sqrt2 (size_t x)
+static size_t pow_sqrt2 (int x)
 {
   /* These constants are sqrt(2) multiplied by 2**63 or 2**31,
      respectively, and then rounded to nearest. */
@@ -749,6 +749,10 @@ static int Clear(TreeMap *tree)
 	if (tree->DestructorFn) {
 		it = NewIterator(tree);
 	
+        if (it == NULL) {
+            iError.RaiseError("iTree.Clear",CONTAINER_ERROR_NOMEMORY);
+            goto continuation;
+        }
 		for (obj = it->GetFirst(it);
 			 obj != NULL;
 			 obj = it->GetNext(it)) {
@@ -756,7 +760,8 @@ static int Clear(TreeMap *tree)
 		}
 		deleteIterator(it);
 	}
-
+continuation:
+    iHeap.Clear( tree->Heap);
     tree->count = 0;
     tree->root=0;
     tree->max_size=0;            /* Max size since last complete rebalance. */
@@ -779,6 +784,10 @@ static int Apply(TreeMap *tree,int (*Applyfn)(const void *data,void *arg),void *
     Iterator *it = NewIterator(tree);
     void *obj;
 
+    if (it == NULL) {
+        iError.RaiseError("iTree.Apply",CONTAINER_ERROR_NOMEMORY);
+        return CONTAINER_ERROR_NOMEMORY;
+    }
     for (obj = it->GetFirst(it);
     	 obj != NULL;
     	 obj = it->GetNext(it)) {
@@ -790,7 +799,9 @@ static int Apply(TreeMap *tree,int (*Applyfn)(const void *data,void *arg),void *
 
 static int DefaultTreeCompareFunction(const void *left,const void *right,CompareInfo *ExtraArgs)
 {
-    size_t siz=((TreeMap *)ExtraArgs->ContainerLeft)->ElementSize;
+    size_t siz;
+    if (ExtraArgs == NULL) return 0;
+    siz=((TreeMap *)ExtraArgs->ContainerLeft)->ElementSize;
     return memcmp(left,right,siz);
 }
 
@@ -813,6 +824,7 @@ static TreeMap *CreateWithAllocator(size_t ElementSize,const ContainerAllocator 
 
     if (m == NULL)
     	m = CurrentAllocator;
+    if (m == NULL) return NULL;
     result = m->malloc(sizeof(*result));
     if (result == NULL)
     	return NULL;

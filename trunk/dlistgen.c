@@ -272,7 +272,7 @@ static int Sort(LIST_TYPE * l)
     if (l->count < 2)
         return 1;
     if (l->Flags & CONTAINER_READONLY) {
-        l->RaiseError("iDlist.Sort", CONTAINER_ERROR_READONLY);
+        l->RaiseError("iDlist.Sort", CONTAINER_ERROR_READONLY,l);
         return CONTAINER_ERROR_READONLY;
     }
     tab = l->Allocator->malloc(l->count * sizeof(LIST_ELEMENT *));
@@ -401,71 +401,71 @@ static int SetElementData(LIST_TYPE *l,LIST_ELEMENT *le,DATA_TYPE data)
 }
 
 INTERFACE(DATA_TYPE)   INTERFACE_NAME(DATA_TYPE) = {
-    NULL,         // Size
-    NULL,         // GetFlags,
-    NULL,         // SetFlags,
-    NULL,         // Clear,
+    NULL,         /* Size, */
+    NULL,         /* GetFlags, */
+    NULL,         /* SetFlags, */
+    NULL,         /* Clear, */
     Contains,
     Erase,
     EraseAll,
     Finalize,
-    NULL,         // Apply
-    NULL,         // Equal
+    NULL,         /* Apply */
+    NULL,         /* Equal */
     Copy,
-    NULL,         // SetErrorFunction,
+    NULL,         /* SetErrorFunction, */
     Sizeof,
     NewIterator,
     InitIterator,
-    NULL,         // deleteIterator,
+    NULL,         /* deleteIterator, */
     SizeofIterator,
-    NULL,          // Save,
+    NULL,          /* Save, */
     Load,
     GetElementSize,
     /* end of generic part */
     Add,
-    NULL,         // GetElement,
+    NULL,         /* GetElement, */
     PushFront,
     PopFront,
     InsertAt,
-    NULL,         // EraseAt
+    NULL,         /* EraseAt */
     ReplaceAt,
     IndexOf,
     /* End of sequential container part */
     PushBack,
     PopBack,
-    NULL,         // Splice
+    NULL,         /* Splice */
     Sort,
-    NULL,         // Reverse
-    NULL,         // GetRange
-    NULL,         // Append,
-    NULL,         // SetCompareFunction,
-    NULL,         // UseHeap,
-    NULL,         // AddRange,
+    NULL,         /* Reverse */
+    NULL,         /* GetRange */
+    NULL,         /* Append, */
+    NULL,         /* SetCompareFunction, */
+    NULL,         /* UseHeap, */
+    NULL,         /* AddRange, */
     Create,
     CreateWithAllocator,
     Init,
     InitWithAllocator,
     CopyElement,
-    NULL,          // InsertIn,
-    NULL,          // SetDestructor,
+    NULL,          /* InsertIn, */
+    NULL,          /* SetDestructor, */
     InitializeWith,
     GetAllocator,
-    NULL,          // Back,
-    NULL,          // Front,
-    NULL,          // RemoveRange,
-    NULL,          // RotateLeft,
-    NULL,          // RotateRight,
-    NULL,          // Select,
+    NULL,          /* Back, */
+    NULL,          /* Front, */
+    NULL,          /* RemoveRange, */
+    NULL,          /* RotateLeft, */
+    NULL,          /* RotateRight, */
+    NULL,          /* Select, */
     SelectCopy,
-    NULL,          // FirstElement,
-    NULL,          // LastElement,
+    NULL,          /* FirstElement, */
+    NULL,          /* LastElement, */
     NextElement,
-    NULL,          // PreviousElement,
-    NULL,          // ElementData,
+    NULL,          /* PreviousElement, */
+    NULL,          /* ElementData, */
     SetElementData,
-    NULL,           // Advance,
-    NULL,           // Skip,
-    NULL,           // MoveBack,
-    NULL,           // SplitAfter,
+    NULL,           /* Advance, */
+    NULL,           /* Skip, */
+    NULL,           /* MoveBack, */
+    NULL,           /* SplitAfter, */
 
 };

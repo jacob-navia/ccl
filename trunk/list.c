@@ -1,14 +1,17 @@
 /*
  * List routines sample implementation 
  * ----------------------------------- 
- * Thisroutines handle the List container class. This is a very general
+ * This routines handle the List container class. This is a very general
  * implementation and efficiency considerations aren't yet primordial. Lists
  * can have elements of any size. This implement single linked Lists. The
  * design goals here are just correctness and showing how the implementation
  * of the proposed interface COULD be done.
+ * Functions suffixed with XXX_nd are no-debug functions, i.e. they do not check
+ * at all their arguments and suppose the checking is already done.
  * ----------------------------------------------------------------------
  */
 
+/* Number of elements by default */
 #ifndef DEFAULT_START_SIZE
 #define DEFAULT_START_SIZE 20
 #endif
@@ -469,10 +472,14 @@ static int ReplaceAt(List * l, size_t position, const void *data)
         rvp = l->Last;
     else {
         rvp = l->First;
-        while (position) {
+        while (position && rvp) {
             rvp = rvp->Next;
             position--;
         }
+    }
+    if (rvp == NULL) {
+        iError.RaiseError("iList.ReplaceAt",CONTAINER_INTERNAL_ERROR);
+        return CONTAINER_INTERNAL_ERROR;
     }
     if (l->DestructorFn)
         l->DestructorFn(&rvp->Data);
@@ -883,6 +890,8 @@ static int RemoveAt(List * l, size_t position)
 {
     ListElement    *rvp, *last, *removed;
 
+	/* Error handling: l should not be NULL, and position should be within the bounds
+	   of the list. Besides that, the list should not be read only of course. */
     if (l == NULL) {
         return NullPtrError("RemoveAt");
     }
@@ -894,6 +903,7 @@ static int RemoveAt(List * l, size_t position)
         return ErrorReadOnly(l, "RemoveAt");
     }
     rvp = l->First;
+	/* Handle first special cases: removing the first or the last element */
     if (position == 0) {
         removed = l->First;
         if (l->count == 1) {
@@ -907,7 +917,7 @@ static int RemoveAt(List * l, size_t position)
         removed = rvp->Next;
         rvp->Next = NULL;
         l->Last = rvp;
-    } else {
+    } else { /* Normal case */
         last = rvp;
         while (position > 0) {
             last = rvp;
@@ -917,24 +927,25 @@ static int RemoveAt(List * l, size_t position)
         removed = rvp;
         last->Next = rvp->Next;
     }
-    if (l->Flags & CONTAINER_HAS_OBSERVER)
+    if (l->Flags & CONTAINER_HAS_OBSERVER) /* Notify observer if needed */
         iObserver.Notify(l, CCL_ERASE_AT, removed, (void *) position);
-    if (l->DestructorFn)
+    if (l->DestructorFn) /* Call destructor if needed */
         l->DestructorFn(&removed->Data);
-
+	/* Reclaim the space */
     if (l->Heap) {
         iHeap.FreeObject(l->Heap, removed);
     } else
         l->Allocator->free(removed);
-    l->timestamp++;
-    --l->count;
+    l->timestamp++; /* List has been modified */
+    --l->count; /* One element less */
     return 1;
 }
 
 
 static int Append(List * l1, List * l2)
 {
-
+	/* Error handling: l1 and l2 not NULL, l1 not read only and l1 should have
+	   the same number of elements as l2 */
     if (l1 == NULL || l2 == NULL) {
         if (l1)
             l1->RaiseError("iList.Append", CONTAINER_ERROR_BADARG);
@@ -950,16 +961,17 @@ static int Append(List * l1, List * l2)
         l1->RaiseError("iList.Append", CONTAINER_ERROR_INCOMPATIBLE,l1,l2);
         return CONTAINER_ERROR_INCOMPATIBLE;
     }
+	/*                                     Take care of any eventual observer */
     if (l1->Flags & CONTAINER_HAS_OBSERVER)
         iObserver.Notify(l1, CCL_APPEND, l2, NULL);
 
     if (l2->Flags & CONTAINER_HAS_OBSERVER)
         iObserver.Notify(l2, CCL_FINALIZE, NULL, NULL);
 
-    if (l1->count == 0) {
+    if (l1->count == 0) { /* Appending to an empty list? */
         l1->First = l2->First;
         l1->Last = l2->Last;
-    } else if (l2->count > 0) {
+    } else if (l2->count > 0) { /* Append elements to l1 */
         if (l2->First)
             l1->Last->Next = l2->First;
         if (l2->Last)
@@ -967,6 +979,7 @@ static int Append(List * l1, List * l2)
     }
     l1->count += l2->count;
     l1->timestamp++;
+	/* Free the header structure from l2 */
     l2->Allocator->free(l2);
     return 1;
 }
@@ -983,6 +996,7 @@ static int Reverse(List * l)
         l->RaiseError("iList.Reverse", CONTAINER_ERROR_READONLY);
         return CONTAINER_ERROR_READONLY;
     }
+	/* If the list has one or zero elements there is nothing to do */
     if (l->count < 2)
         return 1;
     old = l->First;
@@ -997,7 +1011,7 @@ static int Reverse(List * l)
     l->First = Previous;
     if (l->Last)
         l->Last->Next = NULL;
-    l->timestamp++;
+    l->timestamp++; /* the list has been modified */
     return 1;
 }
 

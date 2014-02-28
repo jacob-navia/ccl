@@ -628,8 +628,8 @@ static int Save(const HashTable *HT,FILE *stream, SaveFunction saveFn,void *arg)
 static HashTable *Load(FILE *stream, ReadFunction readFn,void *arg)
 {
     size_t i,len,keybuflen;
-    HashTable *result,HT;
-    char *keybuf,*valbuf;
+    HashTable *result=NULL,HT;
+    char *keybuf=NULL,*valbuf=NULL;
     guid Guid;
 
     if (readFn == NULL) {
@@ -660,15 +660,13 @@ static HashTable *Load(FILE *stream, ReadFunction readFn,void *arg)
         if (decode_ule128(stream, &len) <= 0) {
         err:
             iError.RaiseError("iHashTable.Load",CONTAINER_ERROR_FILE_READ);
-            free(keybuf);
-            return NULL;
+            goto out;
         }
         if (keybuflen < len) {
             void *tmp = realloc(keybuf,len);
             if (tmp == NULL) {
                 iError.RaiseError("iHashTable.Load",CONTAINER_ERROR_NOMEMORY);
-                free(keybuf);
-                return NULL;
+                goto out;
             }
             keybuf = tmp;
             keybuflen = len;
@@ -681,7 +679,9 @@ static HashTable *Load(FILE *stream, ReadFunction readFn,void *arg)
         }
         iHashTable.Add(result,keybuf,len,valbuf);
     }
-    free(keybuf);
+out:
+    if (keybuf) free(keybuf);
+    if (valbuf) free(valbuf);
     return result;
 }
 
@@ -753,7 +753,7 @@ static int ReplaceWithIterator(Iterator *it, void *data,int direction)
         return CONTAINER_ERROR_OBJECT_CHANGED;
     }
     if (li->ht->Flags & CONTAINER_READONLY) {
-        li->ht->RaiseError("Replace",CONTAINER_ERROR_READONLY);
+        li->ht->RaiseError("Replace",CONTAINER_ERROR_READONLY,li->ht);
         return CONTAINER_ERROR_READONLY;
     }
     if (li->ht->count == 0)

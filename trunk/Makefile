@@ -4,13 +4,13 @@
 # 
 #---------------------------------------------------
 # Optimized CFLAGS setting
-CFLAGS=-O2 -Wno-pointer-sign -DUNIX -Wall -D__MAC_OSX
+CFLAGS=-g -Wno-pointer-sign -DUNIX -Wall -D__MAC_OSX -std=c99 -pedantic
 CC=gcc
 # Debug CFLAGS setting
 #CFLAGS=-Wno-pointer-sign -DUNIX -Wall -g
 SRC=	vector.c bloom.c error.c dlist.c qsortex.c heap.c \
 	deque.c hashtable.c malloc_debug.c containers.h ccl_internal.h \
-	stdint.h.noc99 pool.c pooldebug.c redblacktree.c scapegoat.c smallpool.c ccl_internal.h \
+	pool.c pooldebug.c redblacktree.c scapegoat.c smallpool.c ccl_internal.h \
 	bitstrings.c dictionarygen.c list.c memorymanager.c strcollection.c searchtree.c \
 	containers.h ccl_internal.h redblacktree.c fgetline.c generic.c queue.c buffer.c observer.c \
 	valarraydouble.c vectorsize_t.c valarrayint.c valarraylongdouble.c valarraygen.c \
@@ -32,31 +32,15 @@ OBJS=vector.o error.o dlist.o qsortex.o bitstrings.o generic.o \
     doubledlist.o longlongdlist.o
 LIST_GENERIC=listgen.c listgen.h
 DLIST_GENERIC=dlistgen.c dlistgen.h
-#DRAWINGS
-PNGFILES=AuxiliaryInterfaces.png DListVocabulary.png Pool.png  bitstrings.png Basic.png \
-        Dictionary.png  StreamBuffer.png list.png BloomFilter.png  Iterator.png  ValArray.png \
-        Circular.png  ListVocabulary.png VectorVocabulary.png Containers.png  Memorymanagement.png\
-        Vocabulary.png
-#Documentation source files. Some of those are automatically generated
-TEXFILES=BitString.tex Dlist.tex PQueue.tex ValArray.tex \
-ContainerHeap.tex HashTable.tex Queue.tex Vector.tex rgb.tex\
-Deque.tex Introduction.tex StreamBuffer.tex WDictionary.tex strcollection.tex\
-Dictionary.tex List.tex TreeMap.tex ccl.tex  table.tex
 
-#----------------------------------IMPORTANT --------------------
-####
-#### Please remove ccl.pdf from the targets if you do not have the TeX system installed
-####
-#-----------------------------------IMPORTANT --------------------
-all: 	libccl.a dotest ccl.pdf
-dotest:	libccl.a test.o 
+dotest:	libccl.a test.o
 	gcc -o dotest -g $(CFLAGS) test.c libccl.a -lm
 libccl.a:	$(OBJS) containers.h ccl_internal.h ccl_internal.h
 	ar r libccl.a $(OBJS)
 clean:
-	rm -rf $(OBJS) libccl.a dotest dotest.dSYM ccl.zip ccl.pdf ccl.log ccl.aux ccl.toc ccl.ilg
+	rm -rf $(OBJS) libccl.a dotest dotest.dSYM container-lib-src.zip
 zip:	$(SRC)
-	rm ccl.zip;rm -rf ccl;svn export . ccl;/bin/sh dolinks.sh;zip -9 -r ccl.zip ccl 
+	rm container-lib-src.zip;rm -rf ccl;svn export . ccl;zip -9 -r  container-lib-src.zip ccl 
 
 valarraylongdouble.o:   valarraygen.c valarraylongdouble.c containers.h ccl_internal.h valarraygen.h valarray.h
 valarraydouble.o:       valarraygen.c valarraydouble.c containers.h ccl_internal.h valarraygen.h valarray.h
@@ -100,7 +84,3 @@ intdlist.o:      intdlist.h intdlist.c ccl_internal.h containers.h $(LIST_GENERI
 doubledlist.o:   doubledlist.h doubledlist.c ccl_internal.h containers.h $(DLIST_GENERIC)
 longlongdlist.o: longlongdlist.h longlongdlist.c ccl_internal.h containers.h $(DLIST_GENERIC)
 
-# This supposes that pdflatex and makeindex are in the path
-# please change accordingly
-ccl.pdf:	$(TEXFILES) $(PNGFILES) 
-	makeindex ccl.idx;pdflatex ccl.tex

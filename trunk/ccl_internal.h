@@ -7,7 +7,7 @@
 /* Use C99 features */
 #define MINIMUM_ARRAY_INDEX
 #endif
-#ifdef SPARC32 // old sparcs are missing this protptype
+#ifdef SPARC32 /* old sparcs are missing this protptype */
 int snprintf(char *restrict s, size_t n, const char *restrict format, ...);
 #endif
 

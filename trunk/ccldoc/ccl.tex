@@ -1213,7 +1213,7 @@ typedef struct _Mask Mask;
 typedef struct tagMaskInterface {
     int (*And)(Mask *src1,Mask *src2);
     int (*Clear)(Mask *m);
-    Mask *(*Copy)(Mask *src);
+    Mask *(*Copy)(const Mask *src);
     Mask *(*Create)(size_t length);
     Mask *(*CreateFromMask)(size_t length,char *data);
     int (*Finalize)(Mask *m);
@@ -1221,6 +1221,7 @@ typedef struct tagMaskInterface {
     size_t (*PopulationCount)(const Mask *m);
     int (*Set)(Mask *m,size_t idx,int val);
     size_t (*Size)(Mask *);
+    size_t (*Sizeof)(Mask *);
 } iMask;
 \end{verbatim}
 \subsection{The API}
@@ -1244,17 +1245,18 @@ Sets all elements of the mask to zero.
 \returns
 A positive number if the mask was cleared, a negative error code if an error occurs.
 \api{Copy}
-Mask *(*Copy)(Mask *src);
+Mask *(*Copy)(const Mask *src);
 \end{verbatim}
 \apidescription
 Allocates a new mask and copies the contents of the given one into it.
 \apierrors
 \doerror{BADARG} The mask pointer is \Null.
+\doerror{NOMEMORY} No memory is available to perform the allocation.
 \returns
 A pointer to the new mask or \Null if an error occurs.
 
 \api{CreateFromMask}
-    Mask *(*CreateFromMask)(size_t length,char *data);
+    Mask *(*CreateFromMask)(size_t length,const char *data);
 \end{verbatim}
 \apidescription
 Creates a new mask with the specified length and copies the given data into the mask. Each character in the input data is transformed into the
@@ -1294,7 +1296,7 @@ A positive number if the operation was performed, a negative error code if an er
 
 
 \api{Or}
-    int (*Or)(Mask *src1,Mask *src2);
+    int (*Or)(Mask *src1,const Mask *src2);
 \end{verbatim}
 \apidescription
 Stores into src1 the result of a logical OR operation between each element of src1 with the corresponding element of src2.
@@ -1336,7 +1338,7 @@ The number of elements in the mask is returned.
 \returns The number of elements. If the mask pointer is \Null, the result is zero.
 
 \api{Sizeof}
-    size_t (*Sizeof)(Mask *);
+    size_t (*Sizeof)(const Mask *);
 \end{verbatim}
 \apidescription
 The number of bytes used by the given mask. If the argument is \Null the number of bytes of the header structure is returned.
@@ -1529,7 +1531,7 @@ Note that there is no realloc function. Pooled memory is often implemented witho
     Pool *iPool.Create(ContainerAllocator *m);
 \end{verbatim}
 \apidescription
-Creates a new pool object that will use the given memory manager. If m is null, the object pointed by the CurrentAllocator will be used.
+Creates a new pool object that will use the given memory manager. If m is \Null, the object pointed by the CurrentAllocator will be used.
 \apierrors
 \doerror{NOMEMORY} Not enough memory to complete the operation.
 \returns
@@ -2220,7 +2222,7 @@ integer for \verb,intList,, a double for \verb,doubleList, etc.
 \item The creation and initialization functions that construct a new container receive one argument less than its generic counterparts since the
 size of each element is fixed.
 
-To make things clear and to save work from the library user some specializations are delivered with the sample implementation to show how a
+To make things clear and to save work from the library user, some specializations are delivered with the sample implementation to show how a
 \textsl{file templated} container looks like.
 \end{ShorterItemize}
 \begin{center}
@@ -2245,7 +2247,7 @@ int (*Add)(TYPEList *l, TYPE data);
 
 \apidescription
 Adds the given element to the container. In its generic form it is assumed that "data" points to a contiguous memory area of at least ElementSize 
-bytes. Inits specialized form the data is passed by value. Returns a value greater than zero if the addition of the element to the list completed 
+bytes. In its specialized form the data is passed by value. Returns a value greater than zero if the addition of the element to the list completed 
 successfully, a negative error code otherwise.
 
 \apierrors
@@ -8786,6 +8788,7 @@ includes the templated implementation file. This containers receive data of a co
 bitstrings.c&The bitstring container.\\\hline
 bloom.c&The bloom filter container\\\hline
 buffer.c&Growable buffers and circular buffers\\\hline
+ccl.h&Main include file for the library. Only public definitions here. \\ \hline
 ccl\_internal.h&Definitions of all the types defined internally by the library.\\\hline
 containers.h&Main header file of the library. It defines all the user visible interfaces.\\\hline
 deque.c&The deque container\\\hline
@@ -8850,6 +8853,7 @@ vectorgen.c&Implementation of the template form of the vector container\\\hline
 wdictionary.c&Dictionary for a dictionary using wide character strings\\\hline
 wstrcollection.c&String collection using wide character data. Parameter file for strcollectiongen.c\\\hline \hline
 \end{longtable}
+
 } % End of scriptsize
 \subsection{Building the software}
 The library comes with several "makefiles" to build it automatically. Those makefiles build a library called \verb,libccl.a, under Unix systems, or \verb,ccl.lib, under windows.
@@ -11827,18 +11831,23 @@ together since they implement exactly the same functions: all the \verb,ValArray
 \end{longtable}
 }
 \end{landscape}
-\pagestyle{headings}
+
 \iftth\else
+\pagestyle{empty}
+\begin{center}
+{\Large{Timeline}}\par\vspace{2cm}
 \begin{tikzpicture}[snake=zigzag, line before snake = 5mm, line after snake = 5mm]
 %draw vertical line   
+{\color{green}
 \draw (1,0) -- (1,0.2);
 \draw[snake] (1,0.2) -- (1,2.5);
 \draw (1,2.5) -- (1,16);
-
+}
+{\color{red}
 %draw vertical lines
-\foreach \y in {0,2.5,4,5,7}
-   \draw (1cm - 3pt, \y cm) -- (1cm + 3pt,\y cm);
-
+\foreach \y in {0,2.5,4,5,6,7,8,9,10,11,12,13,14,15}
+   \draw (1cm - 5pt, \y cm) -- (1cm + 5pt,\y cm);
+}
 %draw nodes
 \draw (1,0) node[left=3pt] { Start } node[right=3pt] {2009};
 \draw (1,2.5) node[left=3pt] { Release 1.0 } node[right=3pt] {2010/06/24};
@@ -11856,8 +11865,11 @@ together since they implement exactly the same functions: all the \verb,ValArray
 \draw (1,13) node[left=3pt] {Priority Queue} node[right=3pt] {2012/04/30};
 \draw (1,14) node[left=3pt] {Templated lists} node[right=3pt] {2012/05/22};
 \draw (1,15) node[left=3pt] {First official request to WG14} node[right=3pt] {2012/07/08};
+
 \end{tikzpicture}
 \fi
+\end{center}
+\pagestyle{headings}
 \printindex
 \iftth\else
 % Author: Till Tantau
@@ -11910,4 +11922,55 @@ together since they implement exactly the same functions: all the \verb,ValArray
  };
 \end{tikzpicture}
 \fi
+\newpage
+\begin{center}
+Epilogue
+\end{center}
+It took the committee less than one hour to reject all these years of work. Here is what the committee published about it:
+
+N1625 is a proposal on adding a container library to the C Standard. 
+
+Does an existing implementation exist? 
+Yes, and is freely available. Jacob Navia is the compiler implementer, and presented his proposal.
+
+Bill Seymour: Why do this in C? C is a good language that will be around for a long time. Having a container library can solve many problems for those who use C by providing facilities that do not exist today. C is not an “overcomplicated moving target” language.
+
+Blaine sees the proposal as inventing objects. Does C need objects? Blaine does not think so. Is there a way to have a simple object system? Is there anything the language to do to help this out? 
+This proposal does not address changes to the languages.
+
+David K is concerned about the implementation. If C++ can do this faster, why do it? 
+
+PJ: Since the implementation is freely available, why standardize it?
+
+Rajan asked if Jacob would be willing to make this work a TS? Jacobs sees a real need to standardize it, and sees a lot of work still needed. He sees creating a standard as only a starting point to create a much better implementation.
+
+Blaine believes it would be very difficult to implement this and get performance improvements from one compiler vendor to another w/o having language support.
+
+Prosser points out that the proposal is really insufficient to do what he already does today.
+
+Parks points out that for his environment, C and C++ need to be able to work together, and see this as a divergent path for his projects.
+In general, the thrust of this proposal is to provide a C library for containers so that a user does not have to use C++. 
+
+Should Jacob continue this work?\par
+Blaine sees this as a good solution for those who do not want to use C++. It’s a large library, and will have to meet other concerns, such as threading.
+
+Roger: Is there a large audience in pure C solutions?
+
+Clark: If this model becomes popular in the next ten years, that would be great, but we would like to see a demand before we jump into it.
+Which comes first: A standard approach, or an existing market approach? Jacobs sees common approaches to problems such as this will not be adopted by the market without involvement by the Standards Committee. Everyone will continue to develop their own approach because there is no standard.
+
+PJ points out that for practical purposes, most shops are using a mix of C and C++, and that is the most likely scenario going forward. More and more use of a mix of C and C++ is the trend being taken by industry. As such, there is not likely a large audience for a C only solution.
+
+Jacob believes his approach can achieve the same performance as C++.
+
+Parks is not convinced the market of C programmers is as concerned about this problem as much as they do about other problems we are working on.
+
+Mike points out that his experience is that those who are writing in C only write in C.
+In summary, most believe the proposal is very thorough and well thought out. The question is the value of doing something is C solely for the sake of providing a competing approach to C++ that can be used by those who prefer C over C++.
+
+Do we want to encourage Jacob to continue working on this effort?\par
+Are we willing to help with this work? Jacob cannot do all this work alone.\par
+Are we interested in seeing this work progress? That implies we want to see it come back.\par
+Straw Poll: Does the committee want to pursue a library based container proposal in the near term?\par 
+Yes - 4, No – 12, Abstain – 3
 \end{document}

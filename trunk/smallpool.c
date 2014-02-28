@@ -3,11 +3,14 @@ Some of the algorithms of this code have been adapted from the Apache runtime li
 */
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 #ifndef _MSC_VER
 #include <inttypes.h>
 #else
 typedef unsigned int uint32_t;
+#ifndef UINT32_MAX
 #define UINT32_MAX 0xffffffff
+#endif
 #endif
 #include "containers.h"
 #include "ccl_internal.h"

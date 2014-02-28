@@ -82,22 +82,26 @@ typedef struct tagAllocator {
     void *(*calloc)(size_t,size_t);
 } ContainerAllocator;
 extern ContainerAllocator * CurrentAllocator;
-ContainerAllocator *SetCurrentAllocator(ContainerAllocator *in);
 extern ContainerAllocator iDebugMalloc;
 
+typedef struct tagAllocatorInterface {
+    ContainerAllocator *(*Change)(ContainerAllocator *newAllocator);
+    ContainerAllocator *(*GetCurrent)(void);
+} AllocatorInterface;
+extern AllocatorInterface iAllocator;
 /****************************************************************************
  *                   Masks interface                                        *
  ****************************************************************************/
 typedef struct _Mask Mask;
 typedef struct tagMaskInterface {
-    int (*And)(Mask * src1,Mask * src2);
-    int (*Or)(Mask * src1,Mask * src2);
+    int (*And)(Mask * src1,const Mask * src2);
+    int (*Or)(Mask * src1,const Mask * src2);
     int (*Not)(Mask *src);
-    Mask *(*CreateFromMask)(size_t n,char *data);
+    Mask *(*CreateFromMask)(size_t n,const char *data);
     Mask *(*Create)(size_t n);
-    Mask *(*Copy)(Mask *src);
-    size_t (*Size)(Mask *);
-    size_t (*Sizeof)(Mask *);
+    Mask *(*Copy)(const Mask *src);
+    size_t (*Size)(const Mask *);
+    size_t (*Sizeof)(const Mask *);
     int (*Set)(Mask *m,size_t idx,int val);
     int (*Clear)(Mask *m);
     int (*Finalize)(Mask *m);
@@ -388,7 +392,7 @@ typedef struct tagstrCollection {
     Mask *(*CompareEqualScalar)(const strCollection *left, const char *str,Mask *m);
     int (*Select)(strCollection *src, const Mask *m);
     strCollection *(*SelectCopy)(const strCollection *src,const Mask *m);
-//    unsigned char *(*Find)(strCollection *SC,unsigned char *str,CompareInfo *ci);
+    /*    unsigned char *(*Find)(strCollection *SC,unsigned char *str,CompareInfo *ci); */
 } strCollectionInterface;
 
 extern strCollectionInterface istrCollection;
@@ -473,7 +477,7 @@ typedef struct tagWstrCollection {
     Mask *(*CompareEqualScalar)(const WstrCollection *left, const wchar_t *str,Mask *m);
     int (*Select)(WstrCollection *src,const Mask*m);
     WstrCollection *(*SelectCopy)(const WstrCollection *src, const Mask *m);
-//    wchar_t *Find(WstrCollection *SC,wchar_t *data,CompareInfo *ci);
+/*    wchar_t *Find(WstrCollection *SC,wchar_t *data,CompareInfo *ci); */
 } WstrCollectionInterface;
 
 extern WstrCollectionInterface iWstrCollection;
@@ -596,7 +600,7 @@ typedef struct tagPQueueInterface {
     intptr_t (*Front)(const PQueue *Q,void *result);
     PQueue *(*Copy)(const PQueue *src);
     PQueue *(*Union)(PQueue *left, PQueue *right);
-//  int (*Replace)(PQueue *src,intptr_t key,void *data);
+    /*  int (*Replace)(PQueue *src,intptr_t key,void *data); */
 } PQueueInterface;
 
 extern PQueueInterface iPQueue;
