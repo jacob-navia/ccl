@@ -15,6 +15,11 @@ static void PrintList(List *l)
         printf("%d ",*pi);
     }
     printf("\n");
+    
+    /* PV: ccl.pdf, 3.12.3 says that iterators need to be deleted again. This has been
+       added here. Note the inconsistent lower case first letter d, where the text in the
+       manual says DeleteIterator. */
+    iList.deleteIterator(it); // dispose the iterator object
 }
 
 static int testRemoveRange(void)
@@ -23,14 +28,60 @@ static int testRemoveRange(void)
     int table[] = {1,2,3,4,5,6,7,8,9,10};
 
     l1 = iList.InitializeWith(sizeof(int),10,table);
-    iList.Copy(l1);
-    printf("Original list:\n");
+    List *l2 = iList.Copy(l1);
+    size_t sizeBefore = iList.Size(l1);
+    //iList.RemoveRange(l1,2,5);
+    iList.RemoveRange(l1,6,9);
+    size_t sizeAfter = iList.Size(l1);
+    printf("Original list (L=%u):\n", (unsigned int)sizeBefore);
+    PrintList(l2);
+    iList.Finalize(l2);
+    //printf("Removing element 2 to 5  (L=%d):\n", sizeAfter);
+    printf("Removing element 6 to 9  (L=%u):\n", (unsigned)sizeAfter);
     PrintList(l1);
-    printf("Removing element 2 to 5\n");
-    iList.RemoveRange(l1,2,5);
+
+    // We use rotate list in order to prove the correct manipulation of the internal Last pointer
+    printf("RotateRight(1):\n");
+    iList.RotateRight(l1,1);
     PrintList(l1);
+   
+    printf("RotateRight(3):\n");
+    iList.RotateRight(l1,3);
+    PrintList(l1);
+    
+    printf("RotateLeft(4):\n");
+    iList.RotateLeft(l1,4);
+    PrintList(l1);
+    
+    // Remove until the end
+    iList.RemoveRange(l1,6,7);
+    sizeAfter = iList.Size(l1);
+    printf("Removing element 6 to 7  (L=%u):\n", (unsigned)sizeAfter);
+    PrintList(l1);
+    
+    // Remove from beginning to the middle
+    iList.RemoveRange(l1,0,2);
+    sizeAfter = iList.Size(l1);
+    printf("Removing element 0 to 2  (L=%u):\n", (unsigned)sizeAfter);
+    PrintList(l1);
+    
+    printf("RotateLeft(2):\n");
+    iList.RotateLeft(l1,2);
+    PrintList(l1);
+    printf("RotateRight(2):\n");
+    iList.RotateLeft(l1,2);
+    PrintList(l1);
+    
+    // Remove all
+    iList.RemoveRange(l1,0,4);
+    sizeAfter = iList.Size(l1);
+    printf("Removing element 0 to 4  (L=%u):\n", (unsigned)sizeAfter);
+    PrintList(l1);
+    
     return 1;
 }
+
+
 static void testList(void)
 {
 	FILE *outFile;
@@ -273,7 +324,7 @@ static void TestBitstring(void){
 	d = iBitString.And(c,b);
 	PrintBitstring(d,"011 AND 1101101");
 	i = iBitString.BitBlockCount(c);
-	printf("The block count of c is %ld\n",i);
+	printf("The block count of c is %ld\n",(long)i);
 	iBitString.Finalize(b);
 	iBitString.Finalize(c);
 	iBitString.Finalize(d);
@@ -420,7 +471,7 @@ static void testBinarySearchTree(void)
 	if (iBinarySearchTree.Size(tree) != i)
 		Abort();
 	iBinarySearchTree.Apply(tree,printDoubleTree,stdout);
-	printf("Size: %lu\n",iBinarySearchTree.Sizeof(tree));
+	printf("Size: %lu\n", (long unsigned)iBinarySearchTree.Sizeof(tree));
 	iBinarySearchTree.SetCompareFunction(tree1,compareDoubles);
 	for (i=0; i<MAX_IT;i++) {
 		d = i+1;
@@ -450,7 +501,7 @@ static void testScapegoatTree(void)
 	if (iTreeMap.Size(tree) != i)
 		Abort();
 	iTreeMap.Apply(tree,printDoubleTree,stdout);
-	printf("Size: %lu\n",iTreeMap.Sizeof(tree));
+	printf("Size: %lu\n", (long unsigned)iTreeMap.Sizeof(tree));
 	iTreeMap.SetCompareFunction(tree1,compareDoubles);
 	for (i=0; i<MAX_IT;i++) {
 		d = i+1;
@@ -509,7 +560,7 @@ static int testStreamBuffers(void)
 	}
 	buf[0]=0;
 	iStreamBuffer.Write(sb,&buf,1);
-	printf("Buffer size is: %ld\n",iStreamBuffer.Size(sb));
+	printf("Buffer size is: %ld\n", (long)iStreamBuffer.Size(sb));
 	iStreamBuffer.SetPosition(sb,0);
 	p = iStreamBuffer.GetData(sb);
 	while (*p) {
