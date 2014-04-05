@@ -1731,22 +1731,27 @@ static int RemoveRange(List * l, size_t start, size_t end)
         rvp = rvp->Next;
         position++;
     }
-    rvpE = previous;
+    // PV: rvp, not previous, is the head of the remaining list
+    //rvpE = previous;
+    rvpE = rvp;
     if (rvpS) {
-        if (rvpE)
-            rvpS->Next = rvpE;
-        else
-            rvpS->Next = NULL;
+        rvpS->Next = rvpE;
     }
+    // PV: This could become an else; test start==0 by assert only
     if (start == 0) {
         l->First = rvpE;
     }
-    if (end == l->count - 1) {
-        l->Last = rvpE;
-        if (rvpE)
-            rvpE->Next = NULL;
-    }
-    l->count -= (end - start - 1);
+    // PV: This seems to be wrong. end == l->count-1 means that the last element is not deleted and the last pointer doesn't need to be changed
+    //if (end == l->count - 1) {
+    //    l->Last = rvpE;
+    //    if (rvpE)
+    //        rvpE->Next = NULL;
+    //}
+    if(rvpE == NULL)
+        l->Last = rvpS;
+    
+    // PV: We delete from start (including) till end (excluding), these are end-start elements
+    l->count -= (end - start);
     l->timestamp++;
     return 1;
 }
