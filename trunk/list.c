@@ -1474,13 +1474,13 @@ static Iterator *NewIterator(List * L)
     InitIterator(L,result);
     return &result->it;
 }
-static int deleteIterator(Iterator * it)
+static int DeleteIterator(Iterator * it)
 {
     struct ListIterator *li;
     List           *L;
 
     if (it == NULL) {
-        return NullPtrError("deleteIterator");
+        return NullPtrError("DeleteIterator");
     }
     li = (struct ListIterator *) it;
     L = li->L;
@@ -2026,7 +2026,7 @@ ListInterface   iList = {
     Sizeof,
     NewIterator,
     InitIterator,
-    deleteIterator,
+    DeleteIterator,
     SizeofIterator,
     Save,
     Load,

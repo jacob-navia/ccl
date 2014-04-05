@@ -97,11 +97,11 @@ static int InitIterator(SequentialContainer *gen,void *buf)
         return gen->vTable->InitIterator(gen,buf);
 }
 
-static int deleteIterator(Iterator *git)
+static int DeleteIterator(Iterator *git)
 {
 	SequentialIterator *GenIt = (SequentialIterator *)git;
 	SequentialContainer *gen = GenIt->Gen;
-	return gen->vTable->deleteIterator(git);
+	return gen->vTable->DeleteIterator(git);
 }
 
 static size_t SizeofIterator(const SequentialContainer *git)
@@ -198,7 +198,7 @@ SetErrorFunction,
 Sizeof,
 NewIterator,
 InitIterator,
-deleteIterator,
+DeleteIterator,
 SizeofIterator,
 Save,	
 Add,

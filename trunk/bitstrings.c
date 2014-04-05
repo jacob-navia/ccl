@@ -1272,7 +1272,7 @@ static int InitIterator(BitString *bitstr,void *buf)
 }
 
 
-static int deleteIterator(Iterator * it)
+static int DeleteIterator(Iterator * it)
 {
 	struct BitstringIterator *bi = (struct BitstringIterator *)it;
 	bi->Bits->Allocator->free(bi);
@@ -1400,7 +1400,7 @@ BitStringInterface iBitString = {
 	Sizeof,
 	NewIterator,
         InitIterator,
-	deleteIterator,
+	DeleteIterator,
 	Save,
 	Load,
 	GetElementSize,

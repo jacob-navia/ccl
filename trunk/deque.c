@@ -607,13 +607,13 @@ static int InitIterator(Deque *L,void *buf)
 }
 
 
-static int deleteIterator(Iterator *it)
+static int DeleteIterator(Iterator *it)
 {
     struct DequeIterator *li;
     Deque *L;
 
     if (it == NULL) {
-    	iError.RaiseError("deleteIterator",CONTAINER_ERROR_BADARG);
+    	iError.RaiseError("DeleteIterator",CONTAINER_ERROR_BADARG);
     	return CONTAINER_ERROR_BADARG;
     }
     li = (struct DequeIterator *)it;
@@ -655,7 +655,7 @@ DequeInterface iDeque = {
     Sizeof,
     NewIterator,
     InitIterator,
-    deleteIterator,
+    DeleteIterator,
     SizeofIterator,
     Save,
     Load,

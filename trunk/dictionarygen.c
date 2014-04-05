@@ -836,12 +836,12 @@ static int InitIterator(DATA_TYPE *Dict,void *buf)
 }
 
 
-static int deleteIterator(Iterator *it)
+static int DeleteIterator(Iterator *it)
 {
     struct ITERATOR *d = (struct ITERATOR *)it;
     DATA_TYPE *Dict;
     if (d ==NULL) {
-        return NullPtrError("deleteIterator");
+        return NullPtrError("DeleteIterator");
     }
     Dict = d->Dict;
     Dict->Allocator->free(it);
@@ -1105,7 +1105,7 @@ INTERFACE EXTERNAL_NAME  = {
     Sizeof,
     NewIterator,
     InitIterator,
-    deleteIterator,
+    DeleteIterator,
     SizeofIterator,
     Save,
     Load,

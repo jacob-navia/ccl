@@ -515,7 +515,7 @@ static int EraseAt(ValArray *AL,size_t idx)
 		top = AL->Slice->length;
 		incr = AL->Slice->increment;
 		start = AL->Slice->start;
-		p = AL->contents + start + idx * AL->Slice->increment;
+		 p = AL->contents + start + idx * AL->Slice->increment;
 		idx += start + idx*incr;
 	}
 	else p = AL->contents +idx;
@@ -1160,7 +1160,7 @@ static int InitIterator(ValArray *AL,void *buf)
 }
 
 
-static int deleteIterator(Iterator * it)
+static int DeleteIterator(Iterator * it)
 {
 	struct ValArrayIterator *ali = (struct ValArrayIterator *)it;
 	ali->AL->Allocator->free(it);
@@ -2187,7 +2187,7 @@ ValArrayInterface iValArrayInterface = {
 	Sizeof,
 	NewIterator,
 	InitIterator,
-	deleteIterator,
+	DeleteIterator,
 	SizeofIterator,
 	Save,
 	Load,

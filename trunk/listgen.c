@@ -322,7 +322,7 @@ static LIST_TYPE *SetVTable(LIST_TYPE *result)
     intface->RotateRight = (int (*)(LIST_TYPE *, size_t))iList.RotateRight;
     intface->Save = (int (*)(const LIST_TYPE *, FILE *, SaveFunction, void *))iList.Save;
     intface->Size = (size_t (*)(const LIST_TYPE *))iList.Size;
-    intface->deleteIterator = (int (*)(Iterator *))iList.deleteIterator;
+    intface->DeleteIterator = (int (*)(Iterator *))iList.DeleteIterator;
     intface->SplitAfter = (LIST_TYPE *(*)(LIST_TYPE *, LIST_ELEMENT *))iList.SplitAfter;
     intface->Back = (DATA_TYPE *(*)(const LIST_TYPE *))iList.Back;
     intface->Front = (DATA_TYPE *(*)(const LIST_TYPE *))iList.Front;
@@ -427,7 +427,7 @@ INTERFACE(DATA_TYPE)   INTERFACE_NAME(DATA_TYPE) = {
     Sizeof,
     NewIterator,
     InitIterator,
-    NULL,         /* deleteIterator, */
+    NULL,         /* DeleteIterator, */
     SizeofIterator,
     NULL,          /* Save, */
     Load,

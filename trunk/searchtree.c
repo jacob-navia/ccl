@@ -59,7 +59,7 @@ static int DefaultCompareFunction(const void *arg1, const void *arg2, CompareInf
 static BinarySearchTree *Merge(BinarySearchTree *left, BinarySearchTree *right, const void *data);
 static int Equal(const BinarySearchTree *left, const BinarySearchTree *right);
 static Iterator *NewIterator(BinarySearchTree *);
-static int deleteIterator(Iterator *);
+static int DeleteIterator(Iterator *);
 
 struct tagBinarySearchTree {
 	struct tagBinarySearchTreeInterface *VTable;
@@ -808,7 +808,7 @@ static Iterator *NewIterator(BinarySearchTree *tree)
 	return NULL;
 }
 
-static int deleteIterator(Iterator *tree)
+static int DeleteIterator(Iterator *tree)
 {
 	return 1;
 }
@@ -848,7 +848,7 @@ BinarySearchTreeInterface iBinarySearchTree = {
 	DefaultCompareFunction,
 	Merge,
 	NewIterator,
-	deleteIterator,
+	DeleteIterator,
 	Create,
 	SetDestructor,
 };
