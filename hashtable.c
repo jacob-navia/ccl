@@ -819,7 +819,7 @@ static size_t SizeofIterator(const HashTable *ht)
 	return sizeof(struct HashTableIterator);
 }
 
-static int deleteIterator(Iterator *it)
+static int DeleteIterator(Iterator *it)
 {
 #if 0
     struct HashTableIterator *d = (struct HashTableIterator *)it;
@@ -866,7 +866,7 @@ Overlay,
 Merge,
 NewIterator,
 InitIterator,
-deleteIterator,
+DeleteIterator,
 SizeofIterator,
 Save,
 Load,

@@ -609,7 +609,7 @@ static PQueue *Copy(const PQueue *src)
             }
         }
     }
-    iHeap.deleteIterator(it);
+    iHeap.DeleteIterator(it);
     return result;
 }
 
@@ -628,8 +628,8 @@ static int Equal(const PQueue *src1, const PQueue *src2)
         if (obj1->Key != obj2->Key) return 0;
         if (memcmp(obj1->Data,obj2->Data,src1->ElementSize)) return 0;
     }
-    iHeap.deleteIterator(it1);
-    iHeap.deleteIterator(it2);
+    iHeap.DeleteIterator(it1);
+    iHeap.DeleteIterator(it2);
     return 1;
 }
 

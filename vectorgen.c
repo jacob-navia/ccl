@@ -258,7 +258,7 @@ INTERFACE(DATA_TYPE)   INTERFACE_NAME(DATA_TYPE) = {
 	Sizeof,
 	NewIterator,
 	InitIterator,
-	NULL,        /* deleteIterator, */
+	NULL,        /* DeleteIterator, */
 	SizeofIterator,
 	NULL,       /* Save, */
 	Load,

@@ -1448,7 +1448,7 @@ static size_t Sizeof(const Dlist *dl)
     return sizeof(Dlist) + dl->count * (sizeof(DlistElement)+dl->ElementSize);
 }
 
-static int deleteIterator(Iterator *it)
+static int DeleteIterator(Iterator *it)
 {
     struct DListIterator *li = (struct DListIterator *)it;
     Dlist *L;
@@ -1984,7 +1984,7 @@ DlistInterface iDlist = {
     Sizeof,
     NewIterator,
     InitIterator,
-    deleteIterator,
+    DeleteIterator,
     SizeofIterator,
     Save,
     Load,

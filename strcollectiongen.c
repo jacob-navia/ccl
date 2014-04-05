@@ -1145,13 +1145,13 @@ static int InitIterator(ElementType *SC,void *buf)
 }
 
 
-static int deleteIterator(Iterator *it)
+static int DeleteIterator(Iterator *it)
 {
     struct strCollectionIterator *sci = (struct strCollectionIterator *)it;
     ElementType *SC;
 
     if (sci == NULL) {
-        return NullPtrError("deleteIterator");
+        return NullPtrError("DeleteIterator");
     }
     SC = sci->SC;
     SC->Allocator->free(it);
@@ -1783,7 +1783,7 @@ INTERFACE_TYP INTERFACE_OBJECT = {
     Sizeof,
     NewIterator,
     InitIterator,
-    deleteIterator,
+    DeleteIterator,
     SizeofIterator,
     Save,
     Load,

@@ -44,7 +44,7 @@ static CompareFunction SetCompareFunction(RedBlackTree *ST,CompareFunction fn);
 static size_t Sizeof(RedBlackTree *ST);
 static int DefaultCompareFunction(const void *arg1, const void *arg2, CompareInfo *ExtraArgs);
 static Iterator *NewIterator(RedBlackTree *);
-static int deleteIterator(Iterator *);
+static int DeleteIterator(Iterator *);
 static RedBlackTree *Create(size_t ElementSize,size_t KeySize)
 {
     RedBlackTree *result = CurrentAllocator->malloc(sizeof(RedBlackTree));
@@ -668,7 +668,7 @@ static int Remove(RedBlackTree *Tree, const void *delete_key, void *ExtraArgs)
 }
 
 static Iterator *NewIterator(RedBlackTree *p) { return NULL;}
-static int deleteIterator(Iterator * it) {return 1;}
+static int DeleteIterator(Iterator * it) {return 1;}
 
 static int Apply(RedBlackTree *ST,int (*Applyfn)(const void *data,void *arg),void *arg)
 { return 0; }
@@ -724,7 +724,7 @@ RedBlackTreeInterface iRedBlackTree = {
     Sizeof,
     DefaultCompareFunction,
     NewIterator,
-    deleteIterator,
+    DeleteIterator,
     SetDestructor,
 };
 

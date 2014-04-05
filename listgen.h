@@ -80,7 +80,7 @@ struct INTERFACE_STRUCT_INTERNAL_NAME(DATA_TYPE) {
     size_t (*Sizeof)(const LIST_TYPE *l);
     Iterator *(*NewIterator)(LIST_TYPE *L);
     int (*InitIterator)(LIST_TYPE *L,void *buf);
-    int (*deleteIterator)(Iterator *);
+    int (*DeleteIterator)(Iterator *);
     size_t (*SizeofIterator)(const LIST_TYPE *);
     int (*Save)(const LIST_TYPE *L,FILE *stream, SaveFunction saveFn,void *arg);
     LIST_TYPE *(*Load)(FILE *stream, ReadFunction loadFn,void *arg);

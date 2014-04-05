@@ -17,7 +17,7 @@ typedef struct {
     size_t (*Sizeof)(const ValArray *AL);
     Iterator *(*NewIterator)(ValArray *AL);
     int (*InitIterator)(ValArray *AL,void *buf);
-    int (*deleteIterator)(Iterator *);
+    int (*DeleteIterator)(Iterator *);
     size_t (*SizeofIterator)(const ValArray *);
     int (*Save)(const ValArray *AL,FILE *stream);
     ValArray *(*Load)(FILE *stream);

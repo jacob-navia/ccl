@@ -706,7 +706,7 @@ static int InitIterator(TreeMap *tree,void *buf)
     return 1;
 }
 
-static int deleteIterator(Iterator *it)
+static int DeleteIterator(Iterator *it)
 {
     struct TreeMapIterator *itbb = (struct TreeMapIterator *)it;
     itbb->bst_table->Allocator->free(it);
@@ -758,7 +758,7 @@ static int Clear(TreeMap *tree)
 			 obj = it->GetNext(it)) {
 			tree->DestructorFn(obj);
 		}
-		deleteIterator(it);
+		DeleteIterator(it);
 	}
 continuation:
     iHeap.Clear( tree->Heap);
@@ -793,7 +793,7 @@ static int Apply(TreeMap *tree,int (*Applyfn)(const void *data,void *arg),void *
     	 obj = it->GetNext(it)) {
     	Applyfn(obj,arg);
     }
-    deleteIterator(it);
+    DeleteIterator(it);
     return 1;
 }
 
@@ -1001,7 +1001,7 @@ TreeMapInterface iTreeMap = {
     Sizeof,
     NewIterator,
     InitIterator,
-    deleteIterator,
+    DeleteIterator,
     SizeofIterator,
     Save,
     Add,

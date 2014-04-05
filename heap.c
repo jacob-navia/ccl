@@ -399,7 +399,7 @@ static Iterator *NewIterator(ContainerHeap *heap)
     return &result->it;
 }
 
-static int deleteIterator(Iterator *it)
+static int DeleteIterator(Iterator *it)
 {
     struct HeapIterator *hi = (struct HeapIterator *)it;
     ContainerHeap *heap = hi->Heap;
@@ -416,5 +416,5 @@ HeapInterface iHeap = {
     InitHeap,
     GetHeapSize,
     NewIterator,
-    deleteIterator
+    DeleteIterator
 };

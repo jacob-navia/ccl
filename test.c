@@ -19,7 +19,7 @@ static void PrintList(List *l)
     /* PV: ccl.pdf, 3.12.3 says that iterators need to be deleted again. This has been
        added here. Note the inconsistent lower case first letter d, where the text in the
        manual says DeleteIterator. */
-    iList.deleteIterator(it); // dispose the iterator object
+    iList.DeleteIterator(it); // dispose the iterator object
 }
 
 static int testRemoveRange(void)
@@ -419,7 +419,7 @@ static int TestDictionary(void)
 		pi != NULL; pi = it->GetNext(it)) {
 		sum += *pi;
 	}
-	iDictionary.deleteIterator(it);
+	iDictionary.DeleteIterator(it);
 	if (sum != 3)
 		Abort();
 	r=iDictionary.Erase(d,"long data");

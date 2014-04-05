@@ -1450,13 +1450,13 @@ static int InitIterator(LIST_TYPE(DATA_TYPE) *L,void *r)
     result->Current = NULL;
     return 1;
 }
-static int deleteIterator(Iterator *it)
+static int DeleteIterator(Iterator *it)
 {
     struct ITERATOR(DATA_TYPE) *li;
     LIST_TYPE(DATA_TYPE) *L;
 
     if (it == NULL) {
-        return NullPtrError("deleteIterator");
+        return NullPtrError("DeleteIterator");
     }
     li = (struct ITERATOR(DATA_TYPE) *)it;
     L = li->L;
@@ -1894,7 +1894,7 @@ INTERFACE(DATA_TYPE) iSTRINGLIST(DATA_TYPE) = {
     SetErrorFunction,
     Sizeof,
     NewIterator,
-    deleteIterator,
+    DeleteIterator,
     SizeofIterator,
     Save,
     Load,

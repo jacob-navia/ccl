@@ -1375,11 +1375,11 @@ static int InitIterator(Vector *AL,void *buf)
 }
 
 
-static int deleteIterator(Iterator * it)
+static int DeleteIterator(Iterator * it)
 {
     struct VectorIterator *ali = (struct VectorIterator *)it;
     if (ali == NULL) {
-        return NullPtrError("deleteIterator");
+        return NullPtrError("DeleteIterator");
     }
     ali->AL->Allocator->free(it);
     return 1;
@@ -1958,7 +1958,7 @@ VectorInterface iVector = {
     Sizeof,
     NewIterator,
     InitIterator,
-    deleteIterator,
+    DeleteIterator,
     SizeofIterator,
     Save,
     Load,

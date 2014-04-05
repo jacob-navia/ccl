@@ -82,7 +82,7 @@ struct INTERFACE_STRUCT_INTERNAL_NAME(DATA_TYPE) {
     ErrorFunction (*SetErrorFunction)(LIST_TYPE(DATA_TYPE) *L,ErrorFunction); /* Set/unset the error function */
     size_t (*Sizeof)(LIST_TYPE(DATA_TYPE) *l);
     Iterator *(*NewIterator)(LIST_TYPE(DATA_TYPE) *L);
-    int (*deleteIterator)(Iterator *);
+    int (*DeleteIterator)(Iterator *);
     size_t (*SizeofIterator)(LIST_TYPE(DATA_TYPE) *l);
     int (*Save)(LIST_TYPE(DATA_TYPE) *L,FILE *stream, SaveFunction saveFn,void *arg);
     LIST_TYPE(DATA_TYPE) *(*Load)(FILE *stream, ReadFunction loadFn,void *arg);

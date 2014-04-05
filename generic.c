@@ -99,11 +99,11 @@ static int InitIterator(GenericContainer *gen,void *buf)
 
 
 
-static int deleteIterator(Iterator *git)
+static int DeleteIterator(Iterator *git)
 {
 	GenericIterator *GenIt = (GenericIterator *)git;
 	GenericContainer *gen = GenIt->Gen;
-	return gen->vTable->deleteIterator(git);
+	return gen->vTable->DeleteIterator(git);
 }
 
 static int Save(const GenericContainer *gen, FILE *stream,SaveFunction saveFn,void *arg)
@@ -127,7 +127,7 @@ SetErrorFunction,
 Sizeof,
 NewIterator,
 InitIterator,
-deleteIterator,
+DeleteIterator,
 SizeofIterator,
 Save,
 };
