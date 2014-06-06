@@ -3,7 +3,7 @@
 struct Error {
 	int code;
 	char *Message;
-} ErrorMessages[] = {
+} ErrorMessagesTable[] = {
 	{CONTAINER_ERROR_BADARG,        "Bad argument"},
 	{CONTAINER_ERROR_NOMEMORY,      "Insufficient memory"},
 	{CONTAINER_ERROR_INDEX,         "Index error"},
@@ -26,6 +26,8 @@ struct Error {
 	{CONTAINER_ERROR_BADMASK,       "Incorrect mask length"},
 	{0,"Unknown error"},
 };
+
+static struct Error *ErrorMessages = ErrorMessagesTable;
 
 static char *StrError(int errcode)
 {

@@ -141,6 +141,7 @@ static void DeleteElement(PQueue *h, PQueueElement *x)
 static void destroyheap(PQueue *h)
 {
     free(h->lognTable);
+    memset(h,0,sizeof(*h));
     free(h);
 }
 
@@ -188,7 +189,6 @@ static PQueue *Union(PQueue *ha, PQueue *hb)
         /* either one or both are empty */
         if (ha->Root == NULL) {
             destroyheap(ha);
-            memset(ha,0,sizeof(*ha));
             return hb;
         } else goto done;
     }
@@ -207,7 +207,6 @@ static PQueue *Union(PQueue *ha, PQueue *hb)
         ha->Minimum = hb->Minimum;
 done:
     destroyheap(hb);
-    memset(hb,0,sizeof(*hb));
     return ha;
 }
 
@@ -633,7 +632,7 @@ static int Equal(const PQueue *src1, const PQueue *src2)
     return 1;
 }
 
-
+#if 0
 static PQueueElement *FindInLevel(PQueueElement *root,intptr_t key)
 {
     PQueueElement *x;
@@ -655,7 +654,7 @@ static void *Find(PQueue *p,intptr_t key)
     x = FindInLevel(p->Root,key);
     return x;
 }
-
+#endif
 PQueueInterface iPQueue = {
     Add,
     Size,

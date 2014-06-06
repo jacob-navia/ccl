@@ -1727,12 +1727,10 @@ static int RemoveRange(List * l, size_t start, size_t end)
     }
     rvpS = previous;
     while (rvp && position < end) {
-        previous = rvp;
-        rvp = rvp->Next;
+         rvp = rvp->Next;
         position++;
     }
     // PV: rvp, not previous, is the head of the remaining list
-    //rvpE = previous;
     rvpE = rvp;
     if (rvpS) {
         rvpS->Next = rvpE;

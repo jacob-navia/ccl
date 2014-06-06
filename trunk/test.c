@@ -570,6 +570,28 @@ static int testStreamBuffers(void)
 	iStreamBuffer.Finalize(sb);
 	return 1;
 }
+static int testSuffixTree(void)
+ {
+    /*Will hold the position of the substring if exists in the tree.*/
+    int position;
+    
+    /*Create the suffix tree*/
+    SuffixTree* tree = iSuffixTree.Create("mississippi");
+    
+    /*Print the suffix tree.*/
+    iSuffixTree.Print(tree,stdout);
+    
+    /*Search for a substring in the tree and return its position if exists.*/
+    position = iSuffixTree.Find(tree, "ssis");
+    
+    /*Print the position of the substring*/
+    printf("\nPosition of ssis in mississippi is %d.\n\n", position);
+    
+    /*Delete the tree and all its nodes.*/
+    iSuffixTree.Finalize(tree);
+    return 0;
+}   
+
 int main(void)
 {
 #if 1
@@ -585,6 +607,7 @@ int main(void)
 	TestBitstring();
 	testScapegoatTree();
 	testStreamBuffers();
+    testSuffixTree();
 	/*RedBlackTree * rb = newRedBlackTree(20,5);*/
 	/*rb->VTable->Finalize(rb);*/
 	return errors;

@@ -71,11 +71,11 @@ struct tagBinarySearchTree {
 	ContainerAllocator *Allocator;
 	DestructorFunction DestructorFn;
 } ;
-
+#if 0
 static const guid BinarySearchTreeGuid = {0x9a011719, 0x22ac, 0x461d,
 {0x89,0xa1,0x75,0xd4,0x4b,0x85,0x53,0xfb}
 };
-
+#endif
 static BinarySearchTree * Create(size_t ElementSize)
 {
 	BinarySearchTree *result = CurrentAllocator->malloc(sizeof(BinarySearchTree));

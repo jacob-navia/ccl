@@ -242,11 +242,19 @@ static void vine_to_tree (struct Node **, size_t count);
    exactly COUNT nodes. */
 static void rebalance_subtree (TreeMap *bt, struct Node *subtree, size_t count)
 {
+    if (subtree == NULL) {
+        iError.RaiseError("rebalance_subtree",CONTAINER_ERROR_BADARG);
+    }
+    else {
   struct Node *up = subtree->up;
   struct Node **q = down_link (bt, subtree);
   tree_to_vine (q);
   vine_to_tree (q, count);
-  (*q)->up = up;
+  if (q) (*q)->up = up;
+  else {
+      iError.RaiseError("rebalance_subtree",CONTAINER_INTERNAL_ERROR);
+  }
+    }
 }
 
 /* Converts the subtree rooted at *Q into a vine (a binary search
