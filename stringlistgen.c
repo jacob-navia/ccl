@@ -1540,7 +1540,7 @@ static LIST_TYPE(DATA_TYPE) *Load(FILE *stream, ReadFunction loadFn,void *arg)
         goto err;
     }
     result->Flags = L.Flags;
-    r = 1;
+
     for (i=0; i < L.count; i++) {
         bw = fread(&Len,1,sizeof(size_t),stream);
         if (bw != sizeof(size_t))

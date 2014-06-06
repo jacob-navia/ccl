@@ -17,7 +17,7 @@ SRC=	vector.c bloom.c error.c dlist.c qsortex.c heap.c \
 	valarrayshort.c valarrayfloat.c valarrayuint.c valarraylonglong.c \
 	valarrayulonglong.c sequential.c iMask.c wstrcollection.c strcollectiongen.c \
 	stringlistgen.c stringlistgen.h stringlist.c stringlist.h wstringlist.h \
-        priorityqueue.c intlist.c listgen.c 
+    priorityqueue.c intlist.c listgen.c SuffixTree.c SuffixTree.h
 DOCS=
 MAKEFILES=Makefile Makefile.lcc Makefile.msvc
 
@@ -29,7 +29,7 @@ OBJS=vector.o error.o dlist.o qsortex.o bitstrings.o generic.o \
     valarraylonglong.o valarrayulonglong.o memorymanager.o sequential.o \
     iMask.o deque.o hashtable.o wstrcollection.o stringlist.o wstringlist.o \
     priorityqueue.o intlist.o doublelist.o longlonglist.o intdlist.o \
-    doubledlist.o longlongdlist.o
+    doubledlist.o longlongdlist.o SuffixTree.o
 LIST_GENERIC=listgen.c listgen.h
 DLIST_GENERIC=dlistgen.c dlistgen.h
 
@@ -83,4 +83,4 @@ longlonglist.o:	longlonglist.h longlonglist.c ccl_internal.h containers.h $(LIST
 intdlist.o:      intdlist.h intdlist.c ccl_internal.h containers.h $(LIST_GENERIC)
 doubledlist.o:   doubledlist.h doubledlist.c ccl_internal.h containers.h $(DLIST_GENERIC)
 longlongdlist.o: longlongdlist.h longlongdlist.c ccl_internal.h containers.h $(DLIST_GENERIC)
-
+SuffixTree.o:	SuffixTree.c containers.h

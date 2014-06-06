@@ -399,7 +399,7 @@ extern strCollectionInterface istrCollection;
 
 /************************************************************************** */
 /*                                                                          */
-/*                            Wide String Collections                            */
+/*                            Wide String Collections                       */
 /*                                                                          */
 /************************************************************************** */
 typedef struct WstrCollection WstrCollection;
@@ -1121,11 +1121,11 @@ typedef struct tagBitString {
 
 extern BitStringInterface iBitString;
 
-/* -------------------------------------------------------------------------------------
- *                                                                                     *
- *                            Bloom filter                                             *
- *                                                                                     *
- * ----------------------------------------------------------------------------------  */
+/* --------------------------------------------------------------------------
+ *                                                                          *
+ *                            Bloom filter                                  *
+ *                                                                          *
+ * -----------------------------------------------------------------------  */
 typedef struct tagBloomFilter BloomFilter;
 typedef struct tagBloomFilterInterface {
     size_t (*CalculateSpace)(size_t nbOfElements,double Probability);
@@ -1136,6 +1136,24 @@ typedef struct tagBloomFilterInterface {
     int (*Finalize)(BloomFilter *b);
 } BloomFilterInterface;
 extern BloomFilterInterface iBloomFilter;
+
+/* --------------------------------------------------------------------------
+ *                                                                          *
+ *                            Suffix Tree                                   *
+ *                                                                          *
+ * -----------------------------------------------------------------------  */
+typedef struct tagSuffixTree SuffixTree;
+typedef struct tagSuffixTreeInterface {
+    SuffixTree *(*Create)(char *text);
+    SuffixTree *(*CreateWithAllocator)(char *text,ContainerAllocator *allocator);
+    int (*Find)(SuffixTree *Tree,char *key);
+    int (*Clear)(SuffixTree *b); 
+    int (*Finalize)(SuffixTree *b); 
+    void (*Print)(SuffixTree *Tree,FILE *outputStream);
+    int (*Apply)(SuffixTree *tree, int(*Applyfn)(void *,void *),void *arg);
+    size_t (*Sizeof)(SuffixTree *tree);
+} SuffixTreeInterface;
+extern SuffixTreeInterface iSuffixTree;
 
 /************************************************************************** */
 /*                                                                          */
