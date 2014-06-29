@@ -23,5 +23,6 @@ static const guid ValArrayGuidULLong = {0x209022f8, 0x4f50, 0x4437, {0x93,0xb1,0
 
 #define ValArrayGuid ValArrayGuidULLong
 #define __IS_UNSIGNED__
+#define VALARRAY_MAGIC_NUMBER 11223344556677889
 #include "valarraygen.c"
 #undef __IS_INTEGER__

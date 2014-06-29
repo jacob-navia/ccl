@@ -22,4 +22,5 @@
 #define __IS_INTEGER__
 static const guid ValArrayGuidUInt = {0x597348e1, 0xe84, 0x4959, {0xae,0x1c,0x62,0x57,0xa8,0xa0,0xea,0x9d}};
 #define ValArrayGuid ValArrayGuidUInt
+#define VALARRAY_MAGIC_NUMBER 11223344556677887
 #include "valarraygen.c"

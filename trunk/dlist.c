@@ -1212,8 +1212,13 @@ static void *GetNext(Iterator *it)
     Dlist *L = li->L;
     void *result;
 
+	if (li->Magic != DLIST_MAGIC_NUMBER) {
+		iError.RaiseError("List.GetNext",CONTAINER_ERROR_WRONG_ITERATOR);
+		return NULL;
+	}
     if (li->index >= L->count || li->Current == NULL)
     	return NULL;
+
     if (li->timestamp != L->timestamp) {
     	L->RaiseError("iDlist.GetNext",CONTAINER_ERROR_OBJECT_CHANGED);
     	return NULL;
@@ -1234,6 +1239,11 @@ static void *GetPrevious(Iterator *it)
     Dlist *L = li->L;
     void *result;
 
+
+	if (li->Magic != DLIST_MAGIC_NUMBER) {
+		iError.RaiseError("List.GetPrevious",CONTAINER_ERROR_WRONG_ITERATOR);
+		return NULL;
+	}
     if (li->index >= L->count || li->index == 0)
     	return NULL;
     if (li->timestamp != L->timestamp) {
@@ -1250,6 +1260,11 @@ static void *GetFirst(Iterator *it)
 {
     struct DListIterator *li = (struct DListIterator *)it;
     Dlist *L = li->L;
+
+	if (li->Magic != DLIST_MAGIC_NUMBER) {
+		iError.RaiseError("List.GetNext",CONTAINER_ERROR_WRONG_ITERATOR);
+		return NULL;
+	}
     if (L->count == 0)
     	return NULL;
     if (li->timestamp != L->timestamp) {
@@ -1274,6 +1289,10 @@ static int ReplaceWithIterator(Iterator *it, void *data,int direction)
 	if (it == NULL) {
 		iError.RaiseError("Replace",CONTAINER_ERROR_BADARG);
 		return 0;
+	}
+	if (li->Magic != DLIST_MAGIC_NUMBER) {
+		iError.RaiseError("List.ReplaceWith",CONTAINER_ERROR_WRONG_ITERATOR);
+		return CONTAINER_ERROR_WRONG_ITERATOR;
 	}
 	if (li->L->Flags & CONTAINER_READONLY) {
 		li->L->RaiseError("Replace",CONTAINER_ERROR_READONLY,li->L);
@@ -1310,6 +1329,10 @@ static void *GetCurrent(Iterator *it)
         iError.NullPtrError("iDlist.GetCurrent");
         return NULL;
     }
+	if (li->Magic != DLIST_MAGIC_NUMBER) {
+		iError.RaiseError("List.GetCurrent",CONTAINER_ERROR_WRONG_ITERATOR);
+		return NULL;
+	}
     if (li->L->count == 0)
     	return NULL;
     if (li->index == (size_t)-1) {
@@ -1327,30 +1350,34 @@ static void *Seek(Iterator *it,size_t idx)
     struct DListIterator *li = (struct DListIterator *)it;
     DlistElement *rvp;
 
-        if (it == NULL) {
-                iError.NullPtrError("iDlist.Seek");
-                return NULL;
-        }
-        if (li->L->count == 0)
-                return NULL;
-        rvp = li->L->First;
-        if (idx == 0) {
-        li->index = 0;
-        li->Current = li->L->First;
-        }
-    else if (idx >= li->L->count-1) {
-        li->index = li->L->count-1;
-        li->Current = li->L->Last;
-    }
-    else {
-        li->index = idx;
-        while (idx > 0) {
-            rvp = rvp->Next;
-            idx--;
-        }
-        li->Current = rvp;
-    }
-    return li->Current;
+	if (it == NULL) {
+		iError.NullPtrError("iDlist.Seek");
+		return NULL;
+	}
+	if (li->Magic != DLIST_MAGIC_NUMBER) {
+		iError.RaiseError("List.Seek",CONTAINER_ERROR_WRONG_ITERATOR);
+		return NULL;
+	}
+	if (li->L->count == 0)
+		return NULL;
+	rvp = li->L->First;
+	if (idx == 0) {
+		li->index = 0;
+		li->Current = li->L->First;
+	}
+	else if (idx >= li->L->count-1) {
+		li->index = li->L->count-1;
+		li->Current = li->L->Last;
+	}
+	else {
+		li->index = idx;
+		while (idx > 0) {
+		    rvp = rvp->Next;
+		    idx--;
+		}
+		li->Current = rvp;
+	}
+	return li->Current;
 }
 
 static void doinit(struct DListIterator *result,Dlist *L)
@@ -1362,6 +1389,7 @@ static void doinit(struct DListIterator *result,Dlist *L)
     result->it.Seek = Seek;
 	result->it.Replace = ReplaceWithIterator;
     result->L = L;
+	result->Magic = DLIST_MAGIC_NUMBER;
     result->timestamp = L->timestamp;
 }
 

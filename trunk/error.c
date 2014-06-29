@@ -1,6 +1,6 @@
 #include "containers.h"
 #include <stdio.h>
-struct Error {
+static struct Error {
 	int code;
 	char *Message;
 } ErrorMessagesTable[] = {
@@ -29,15 +29,45 @@ struct Error {
 
 static struct Error *ErrorMessages = ErrorMessagesTable;
 
+static struct ErrorList {
+    struct ErrorList *Next;
+    int code;
+    char *Message;
+} *UserErrorMessages = NULL;
+
+static int AddError(int code, char *message)
+{
+    struct ErrorList *e = CurrentAllocator->calloc(1,sizeof(struct ErrorList));
+    if (e) {
+        e->Message = CurrentAllocator->malloc(1+strlen(message));
+        if (e->Message) {
+            strcpy(e->Message,message);
+            e->code = code;
+            e->Next = UserErrorMessages;
+            UserErrorMessages = e;
+            return 1;
+        }
+        CurrentAllocator->free(e);
+    }
+    return CONTAINER_ERROR_NOMEMORY;
+}
+
 static char *StrError(int errcode)
 {
-	struct Error *e = ErrorMessages;
-	while (e->code) {
+	struct ErrorList *e = UserErrorMessages;
+    struct Error *E;
+	while (e) {
 		if (e->code == errcode)
-			break;
-		e++;
+			return e->Message;
+		e = e->Next;
 	}
-	return e->Message;
+    E = ErrorMessages;
+    while (E->code) {
+        if (E->code == errcode)
+            break;
+        E++;
+    }
+	return E->Message;
 }
 static void *ContainerRaiseError(const char *fnname,int errcode,...)
 {
@@ -68,5 +98,6 @@ ErrorInterface iError = {
 	StrError,
 	SetError,
 	BadArgError,
+    AddError,
 };
 

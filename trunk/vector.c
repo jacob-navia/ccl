@@ -1169,6 +1169,14 @@ static void *GetNext(Iterator *it)
 static size_t GetPosition(Iterator *it)
 {
     struct VectorIterator *ali = (struct VectorIterator *)it;
+	if (ali == NULL) {
+		NullPtrError("GetPosition");
+		return (size_t)-1;
+	}
+	if (ali->Magic != VECTOR_MAGIC_NUMBER) {
+		iError.RaiseError("vector.GetPosition",CONTAINER_ERROR_WRONG_ITERATOR);
+		return (size_t)-1;
+	}
     return ali->index;
 }
 
@@ -1182,6 +1190,10 @@ static void *Seek(Iterator *it,size_t idx)
         NullPtrError("GetNext");
         return NULL;
     }
+	if (ali->Magic != VECTOR_MAGIC_NUMBER) {
+		iError.RaiseError("vector.Seek",CONTAINER_ERROR_WRONG_ITERATOR);
+		return NULL;
+	}
     AL = ali->AL;
     if (idx >= AL->count)
         return NULL;
@@ -1210,6 +1222,10 @@ static void *GetPrevious(Iterator *it)
         NullPtrError("GetPrevious");
         return NULL;
     }
+	if (ali->Magic != VECTOR_MAGIC_NUMBER) {
+		iError.RaiseError("vector.GetPrevious",CONTAINER_ERROR_WRONG_ITERATOR);
+		return NULL;
+	}
     AL = ali->AL;
     if (ali->index >= AL->count || ali->index == 0)
         return NULL;
@@ -1238,6 +1254,10 @@ static void *GetLast(Iterator *it)
         NullPtrError("GetLast");
         return NULL;
     }
+	if (ali->Magic != VECTOR_MAGIC_NUMBER) {
+		iError.RaiseError("vector.GetLast",CONTAINER_ERROR_WRONG_ITERATOR);
+		return NULL;
+	}
     AL = ali->AL;
     if (AL->count == 0)
         return NULL;
@@ -1263,6 +1283,10 @@ static void *GetCurrent(Iterator *it)
         NullPtrError("GetCurrent");
         return NULL;
     }
+	if (ali->Magic != VECTOR_MAGIC_NUMBER) {
+		iError.RaiseError("vector.GetCurrent",CONTAINER_ERROR_WRONG_ITERATOR);
+		return NULL;
+	}
     return ali->Current;
 }
 
@@ -1275,6 +1299,9 @@ static int ReplaceWithIterator(Iterator *it, void *data,int direction)
     if (it == NULL) {
         return NullPtrError("Replace");
     }
+	if (ali->Magic != VECTOR_MAGIC_NUMBER) {
+		return CONTAINER_ERROR_WRONG_ITERATOR;
+	}
     if (ali->AL->count == 0)
         return 0;
     if (ali->timestamp != ali->AL->timestamp) {
@@ -1310,11 +1337,16 @@ static void *GetFirst(Iterator *it)
         NullPtrError("GetFirst");
         return NULL;
     }
+	if (ali->Magic != VECTOR_MAGIC_NUMBER) {
+		iError.RaiseError("vector.GetFirst",CONTAINER_ERROR_WRONG_ITERATOR);
+		return NULL;
+	}
     if (ali->AL->count == 0) {
         ali->Current = NULL;
         return NULL;
     }
-    ali->index = 1;
+	/* Vranken@fev.com: corrected bad index (was 1) */
+    ali->index = 0;
     ali->Current = ali->AL->contents;
     if (ali->AL->Flags & CONTAINER_READONLY) {
         memcpy(ali->ElementBuffer,ali->AL->contents,ali->AL->ElementSize);
@@ -1348,6 +1380,7 @@ static Iterator *NewIterator(Vector *AL)
     result->Current = NULL;
     result->timestamp = AL->timestamp;
     result->index = -1;
+	result->Magic = VECTOR_MAGIC_NUMBER;
     return &result->it;
 }
 

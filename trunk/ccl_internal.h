@@ -72,8 +72,10 @@ struct _Vector {
     DestructorFunction DestructorFn;
 } ;
 
+#define VECTOR_MAGIC_NUMBER	91188767725543433LL
 struct VectorIterator {
 	Iterator it;
+	long long Magic;
 	Vector *AL;
 	size_t index;
 	unsigned timestamp;
@@ -121,9 +123,11 @@ struct _List {
     const ContainerAllocator *Allocator;
     DestructorFunction DestructorFn;
 };
+#define LIST_MAGIC_NUMBER	86644334455544331LL
 
 struct ListIterator {
     Iterator it;
+	long long Magic;
     List *L;
     size_t index;
     ListElement *Current;
@@ -131,75 +135,6 @@ struct ListIterator {
     unsigned  timestamp;
     char ElementBuffer[1];
 };
-
-#if 0
-/*----------------------------------------------------------------------------*/
-/* Definition of the stringlist and stringlist element type                   */
-/*----------------------------------------------------------------------------*/
-struct _StringListElement {
-    struct _StringListElement *Next;
-    char Data[MINIMUM_ARRAY_INDEX];
-};
-
-struct _StringList {
-    iStringListInterface *VTable;      /* Methods table */
-    size_t count;               /* in elements units */
-    unsigned Flags;
-    unsigned timestamp;         /* Changed at each modification */
-    size_t ElementSize;         /* Size (in bytes) of each element */
-    StringListElement *Last;         /* The last item */
-    StringListElement *First;        /* The contents of the list start here */
-    CompareFunction Compare;    /* Element comparison function */
-    ErrorFunction RaiseError;   /* Error function */
-    ContainerHeap *Heap;
-    const ContainerAllocator *Allocator;
-    DestructorFunction DestructorFn;
-};
-
-struct StringListIterator {
-    Iterator it;
-    StringList *L;
-    size_t index;
-    StringListElement *Current;
-    StringListElement *Previous;
-    unsigned timestamp;
-    char *ElementBuffer;
-};
-
-/*----------------------------------------------------------------------------*/
-/* Definition of the wstringlist and wstringlist element type                 */
-/*----------------------------------------------------------------------------*/
-struct _wStringListElement {
-    struct _wStringListElement *Next;
-    wchar_t Data[MINIMUM_ARRAY_INDEX];
-};
-
-struct _WStringList {
-    iWStringListInterface *VTable;      /* Methods table */
-    size_t count;               /* in elements units */
-    unsigned Flags;
-    unsigned timestamp;         /* Changed at each modification */
-    size_t ElementSize;         /* Size (in bytes) of each element */
-    wStringListElement *Last;         /* The last item */
-    wStringListElement *First;        /* The contents of the list start here */
-    CompareFunction Compare;    /* Element comparison function */
-    ErrorFunction RaiseError;   /* Error function */
-    ContainerHeap *Heap;
-    const ContainerAllocator *Allocator;
-    DestructorFunction DestructorFn;
-};
-
-struct WStringListIterator {
-    Iterator it;
-    WStringList *L;
-    size_t index;
-    wStringListElement *Current;
-    wStringListElement *Previous;
-    unsigned timestamp;
-    wchar_t *ElementBuffer;
-};
-#endif
-
 
 /*----------------------------------------------------------------------------*/
 /* dlist                                                                      */
@@ -210,6 +145,7 @@ struct _DlistElement {
     char Data[MINIMUM_ARRAY_INDEX];
 };
 
+#define DLIST_MAGIC_NUMBER	59987410094961187LL
 struct Dlist {
     DlistInterface *VTable;
     size_t count;                    /* in elements units */
@@ -228,6 +164,7 @@ struct Dlist {
 
 struct DListIterator {
     Iterator it;
+	long long Magic;
     Dlist *L;
     size_t index;
     DlistElement *Current;
@@ -254,8 +191,11 @@ struct _Dictionary {
 		void *Value;
 	} **buckets;
 };
+
+#define DICTIONARY_MAGIC_NUMBER	89098765432123456LL
 struct DictionaryIterator {
 	Iterator it;
+	long long Magic;
 	Dictionary *Dict;
 	size_t index;
 	struct DataList *dl;
@@ -283,8 +223,11 @@ struct _WDictionary {
 		void *Value;
 	} **buckets;
 };
+
+#define WDICTIONARY_MAGIC_NUMBER	78909876543212345LL
 struct WDictionaryIterator {
 	Iterator it;
+	long long Magic;
 	WDictionary *Dict;
 	size_t index;
 	struct WDataList *dl;
@@ -337,8 +280,10 @@ struct _HashTable {
     DestructorFunction DestructorFn;
 };
 
+#define HASHTABLE_MAGIC_NUMBER	654321234567890LL
 struct HashTableIterator {
 	Iterator it;
+	long long Magic;
 	HashTable *ht;
 	HashIndex hi;
 	unsigned timestamp;
@@ -377,6 +322,7 @@ struct tagTreeMap {
 };
 
 #define BST_MAX_HEIGHT 40
+#define TREE_MAGIC_NUMBER	32123456789098765LL
 struct TreeMapIterator {
     Iterator it;
     TreeMap *bst_table;
@@ -422,4 +368,33 @@ struct WstrCollection {
 };
 #define CCL_PRIORITY_MIN	(INT_MIN+1)
 #define CCL_PRIORITY_MAX	(INT_MAX-1)
+
+/*----------------------------------------------------------------------------*/
+/* Heap object                                                                */
+/*----------------------------------------------------------------------------*/
+#define INVALID_POINTER_VALUE (void *)(~0)
+struct tagHeapObject {
+    HeapInterface *VTable;
+    unsigned BlockCount;
+    unsigned CurrentBlock;
+    unsigned BlockIndex;
+    char **Heap;
+    size_t ElementSize;
+    void *FreeList;
+    const ContainerAllocator *Allocator;
+    size_t MemoryUsed;
+    unsigned timestamp;
+};
+
+#define HEAP_MAGIC_NUMBER	6655443322112244LL
+struct HeapIterator {
+    Iterator it;
+	long long Magic;
+    ContainerHeap *Heap;
+    size_t BlockNumber;
+    size_t BlockPosition;
+    size_t timestamp;
+    unsigned long Flags;
+
+};
 #endif

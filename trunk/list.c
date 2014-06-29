@@ -1242,8 +1242,6 @@ static ContainerHeap *GetHeap(const List *l)
  *
  * ---------------------------------------------------------------------------
  */
-
-
 static void    * Seek(Iterator * it, size_t idx)
 {
     struct ListIterator *li = (struct ListIterator *) it;
@@ -1253,6 +1251,11 @@ static void    * Seek(Iterator * it, size_t idx)
         NullPtrError("Seek");
         return NULL;
     }
+
+	if (li->Magic != LIST_MAGIC_NUMBER) {
+		iError.RaiseError("List.Seek",CONTAINER_ERROR_WRONG_ITERATOR);
+		return NULL;
+	}
     if (li->L->count == 0)
         return NULL;
     rvp = li->L->First;
@@ -1293,6 +1296,10 @@ static void    *GetNext(Iterator * it)
         NullPtrError("GetNext");
         return NULL;
     }
+	if (li->Magic != LIST_MAGIC_NUMBER) {
+		iError.RaiseError("List.GetNext",CONTAINER_ERROR_WRONG_ITERATOR);
+		return NULL;
+	}
     L = li->L;
     if (li->L->count == 0)
         return NULL;
@@ -1317,6 +1324,10 @@ static void    *GetNext(Iterator * it)
 static size_t GetPosition(Iterator *it)
 {
     struct ListIterator *li = (struct ListIterator *) it;
+	if (li->Magic != LIST_MAGIC_NUMBER) {
+		iError.RaiseError("List.GetPosition",CONTAINER_ERROR_WRONG_ITERATOR);
+		return (size_t)-1;
+	}
     return li->index;
 }
 static void    *GetPrevious(Iterator * it)
@@ -1330,6 +1341,10 @@ static void    *GetPrevious(Iterator * it)
         NullPtrError("GetPrevious");
         return NULL;
     }
+	if (li->Magic != LIST_MAGIC_NUMBER) {
+		iError.RaiseError("List.GetPrevious",CONTAINER_ERROR_WRONG_ITERATOR);
+		return NULL;
+	}
     if (li->L->count == 0)
         return NULL;
     L = li->L;
@@ -1365,6 +1380,11 @@ static void    *GetCurrent(Iterator * it)
         NullPtrError("GetCurrent");
         return NULL;
     }
+
+	if (li->Magic != LIST_MAGIC_NUMBER) {
+		iError.RaiseError("List.GetCurrent",CONTAINER_ERROR_WRONG_ITERATOR);
+		return NULL;
+	}
     if (li->L->count == 0)
         return NULL;
     if (li->index == (size_t) - 1) {
@@ -1385,6 +1405,11 @@ static int ReplaceWithIterator(Iterator * it, void *data, int direction)
     if (it == NULL) {
         return NullPtrError("Replace");
     }
+
+	if (li->Magic != LIST_MAGIC_NUMBER) {
+		iError.RaiseError("List.ReplaceWith",CONTAINER_ERROR_WRONG_ITERATOR);
+		return CONTAINER_ERROR_WRONG_ITERATOR;
+	}
     if (li->L->count == 0)
         return 0;
     if (li->L->Flags & CONTAINER_READONLY) {
@@ -1421,6 +1446,11 @@ static void    *GetFirst(Iterator * it)
         NullPtrError("GetFirst");
         return NULL;
     }
+
+	if (li->Magic != LIST_MAGIC_NUMBER) {
+		iError.RaiseError("List.GetFirst",CONTAINER_ERROR_WRONG_ITERATOR);
+		return NULL;
+	}
     L = li->L;
     if (L->count == 0)
         return NULL;
@@ -1455,6 +1485,7 @@ static int InitIterator(List * L, void *r)
     result->timestamp = L->timestamp;
     result->index = (size_t) - 1;
     result->Current = NULL;
+	result->Magic = LIST_MAGIC_NUMBER;
     return 1;
 }
 
@@ -1935,7 +1966,7 @@ static ListElement *NextElement(ListElement *le)
     return le->Next;
 }
 
-static void *ElementData(ListElement *le)
+static void *GetElementData(ListElement *le)
 {
     if (le == NULL) return NULL;
     return le->Data;
@@ -2068,7 +2099,7 @@ ListInterface   iList = {
     FirstElement,
     LastElement,
     NextElement,
-    ElementData,
+    GetElementData,
     SetElementData,
     Advance,
     Skip,

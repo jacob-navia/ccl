@@ -55,6 +55,8 @@
 #define CONTAINER_ERROR_DIVISION_BY_ZERO -21
 #define CONTAINER_ERROR_WRONGELEMENT    -22
 #define CONTAINER_ERROR_BADMASK         -23
+#define CONTAINER_ERROR_WRONG_ITERATOR	-24
+#define CONTAINER_ERROR_LAST_CODE       -30
 
 typedef void *(*ErrorFunction)(const char *,int,...);
 typedef int (*DestructorFunction)(void *);
@@ -67,6 +69,7 @@ typedef struct tagError {
     char *(*StrError)(int errcode);
     ErrorFunction (*SetErrorFunction)(ErrorFunction);
     int (*NullPtrError)(const char *fname);
+    int (*AddError)(int code,char *message);
 } ErrorInterface;
 
 extern ErrorInterface iError;
@@ -549,7 +552,7 @@ typedef struct tagList {
     ListElement *(*FirstElement)(List *l);
     ListElement *(*LastElement)(List *l);
     ListElement *(*NextElement)(ListElement *le);
-    void *(*ElementData)(ListElement *le);
+    void *(*GetElementData)(ListElement *le);
     int (*SetElementData)(List *l, ListElement *le,void *data);
     void *(*Advance)(ListElement **pListElement);
     ListElement *(*Skip)(ListElement *l,size_t n);
@@ -714,7 +717,7 @@ typedef struct tagDlist {
     DlistElement *(*LastElement)(Dlist *l);
     DlistElement *(*NextElement)(DlistElement *le);
     DlistElement *(*PreviousElement)(DlistElement *le);
-    void *(*ElementData)(DlistElement *le);
+    void *(*GetElementData)(DlistElement *le);
     int (*SetElementData)(Dlist *l, DlistElement *le,void *data);
     void *(*Advance)(DlistElement **pDlistElement);
     DlistElement *(*Skip)(DlistElement *l,size_t n);
