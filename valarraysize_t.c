@@ -25,4 +25,5 @@ static const guid ValArrayGuidSize_t = {0x39058047, 0x42ec, 0x4c0e,
 #define ValArrayGuid ValArrayGuidSize_t
 #define __IS_UNSIGNED__
 #define __IS_INTEGER__
+#define VALARRAY_MAGIC_NUMBER 11223344556677884
 #include "valarraygen.c"

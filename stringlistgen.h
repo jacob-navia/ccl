@@ -56,8 +56,10 @@ typedef struct LIST_STRUCT_INTERNAL_NAME(DATA_TYPE) {
     DestructorFunction DestructorFn;
 } LIST_TYPE(DATA_TYPE);
 
+#define STRINGLIST_MAGIC_NUMBER 98765432123456789LL
 struct ITERATOR(DATA_TYPE) {
     Iterator it;
+	long long Magic;
     LIST_TYPE(DATA_TYPE) *L;
     size_t index;
     LIST_ELEMENT(DATA_TYPE) *Current;

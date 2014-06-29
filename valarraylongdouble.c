@@ -22,4 +22,5 @@ static const guid ValArrayGuidLongDouble = {0xd0c2db6e, 0x2120, 0x40e8,
 {0xa0,0x33,0x4a,0x1e,0xd7,0x12,0x32,0x80}
 };
 #define ValArrayGuid ValArrayGuidLongDouble
+#define VALARRAY_MAGIC_NUMBER 11223344556677886
 #include "valarraygen.c"

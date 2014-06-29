@@ -17,7 +17,7 @@ SRC=	vector.c bloom.c error.c dlist.c qsortex.c heap.c \
 	valarrayshort.c valarrayfloat.c valarrayuint.c valarraylonglong.c \
 	valarrayulonglong.c sequential.c iMask.c wstrcollection.c strcollectiongen.c \
 	stringlistgen.c stringlistgen.h stringlist.c stringlist.h wstringlist.h \
-    priorityqueue.c intlist.c listgen.c SuffixTree.c SuffixTree.h
+    priorityqueue.c intlist.c listgen.c SuffixTree.c 
 DOCS=
 MAKEFILES=Makefile Makefile.lcc Makefile.msvc
 

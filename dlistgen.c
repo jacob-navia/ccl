@@ -336,7 +336,7 @@ static LIST_TYPE *SetVTable(LIST_TYPE *result)
     intface->Splice = (LIST_TYPE *(*)(LIST_TYPE *list, void *ppos, LIST_TYPE *toInsert, int dir ))iDlist.Splice;
     intface->Back = (DATA_TYPE *(*)(const LIST_TYPE *))iDlist.Back;
     intface->Front = (DATA_TYPE *(*)(const LIST_TYPE *))iDlist.Front;
-    intface->ElementData = (DATA_TYPE *(*)(LIST_ELEMENT *))iDlist.ElementData;
+    intface->GetElementData = (DATA_TYPE *(*)(LIST_ELEMENT *))iDlist.GetElementData;
     intface->Advance = (DATA_TYPE *(*)(LIST_ELEMENT **))iDlist.Advance;
     return result;
 }

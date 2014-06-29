@@ -981,6 +981,7 @@ static int RotateRight(ValArray *AL, size_t n)
 
 struct ValArrayIterator {
 	Iterator it;
+	long long Magic;
 	ValArray *AL;
 	size_t index;
 	unsigned timestamp;
@@ -996,6 +997,11 @@ static void *GetNext(Iterator *it)
 	ElementType *p;
 	
 	AL = ali->AL;
+
+	if (ali->Magic != VALARRAY_MAGIC_NUMBER) {
+		iError.RaiseError("ValArray.GetNext",CONTAINER_ERROR_WRONG_ITERATOR);
+		return NULL;
+	}
 	if (ali->index >= AL->count)
 		return NULL;
 	if (ali->timestamp != AL->timestamp) {
@@ -1014,6 +1020,10 @@ static void *GetPrevious(Iterator *it)
 	ValArray *AL;
 	ElementType *p;
 	
+	if (ali->Magic != VALARRAY_MAGIC_NUMBER) {
+		iError.RaiseError("ValArray.GetPrevious",CONTAINER_ERROR_WRONG_ITERATOR);
+		return NULL;
+	}
 	AL = ali->AL;
 	if (ali->index >= AL->count || ali->index == 0)
 		return NULL;
@@ -1032,6 +1042,10 @@ static void *Seek(Iterator *it,size_t idx)
 	ValArray *AL;
 	ElementType *p;
 	
+	if (ali->Magic != VALARRAY_MAGIC_NUMBER) {
+		iError.RaiseError("ValArray.Seek",CONTAINER_ERROR_WRONG_ITERATOR);
+		return NULL;
+	}
 	AL = ali->AL;
 	if (idx >= AL->count)
 		return NULL;
@@ -1052,6 +1066,10 @@ static void *GetLast(Iterator *it)
 	ValArray *AL;
 	ElementType *p;
 	
+	if (ali->Magic != VALARRAY_MAGIC_NUMBER) {
+		iError.RaiseError("ValArray.GetLast",CONTAINER_ERROR_WRONG_ITERATOR);
+		return NULL;
+	}
 	AL = ali->AL;
 	if (AL->count == 0)
 		return NULL;
@@ -1068,6 +1086,10 @@ static void *GetLast(Iterator *it)
 static void *GetCurrent(Iterator *it)
 {
 	struct ValArrayIterator *ali = (struct ValArrayIterator *)it;
+	if (ali->Magic != VALARRAY_MAGIC_NUMBER) {
+		iError.RaiseError("ValArray.GetCurrent",CONTAINER_ERROR_WRONG_ITERATOR);
+		return NULL;
+	}
 	return ali->Current;
 }
 
@@ -1075,6 +1097,10 @@ static void *GetFirst(Iterator *it)
 {
 	struct ValArrayIterator *ali = (struct ValArrayIterator *)it;
 	
+	if (ali->Magic != VALARRAY_MAGIC_NUMBER) {
+		iError.RaiseError("ValArray.GetFirst",CONTAINER_ERROR_WRONG_ITERATOR);
+		return NULL;
+	}
 	if (ali->AL->count == 0) {
 		ali->Current = NULL;
 		return NULL;
@@ -1091,6 +1117,10 @@ static int ReplaceWithIterator(Iterator *it, void *pdata,int direction)
 	int result;
 	size_t pos;
 	
+	if (ali->Magic != VALARRAY_MAGIC_NUMBER) {
+		iError.RaiseError("ValArray.ReplaceWith",CONTAINER_ERROR_WRONG_ITERATOR);
+		return CONTAINER_ERROR_WRONG_ITERATOR;
+	}
 	if (ali->AL->count == 0)
 		return 0;
     if (ali->timestamp != ali->AL->timestamp) {
@@ -1134,6 +1164,7 @@ static Iterator *NewIterator(ValArray *AL)
 	result->it.GetLast = GetLast;
 	result->it.Replace = ReplaceWithIterator;
 	result->it.Seek = Seek;
+	result->Magic = VALARRAY_MAGIC_NUMBER;
 	result->AL = AL;
 	result->Current = NULL;
 	result->timestamp = AL->timestamp;
@@ -1143,20 +1174,21 @@ static Iterator *NewIterator(ValArray *AL)
 
 static int InitIterator(ValArray *AL,void *buf)
 {
-        struct ValArrayIterator *result = buf;
+	struct ValArrayIterator *result = buf;
 
-        result->it.GetNext = GetNext;
-        result->it.GetPrevious = GetPrevious;
-        result->it.GetFirst = GetFirst;
-        result->it.GetCurrent = GetCurrent;
-        result->it.GetLast = GetLast;
-        result->it.Replace = ReplaceWithIterator;
-        result->it.Seek = Seek;
-        result->AL = AL;
-        result->Current = NULL;
-        result->timestamp = AL->timestamp;
-        result->index = -1;
-        return 1;
+	result->it.GetNext = GetNext;
+	result->it.GetPrevious = GetPrevious;
+	result->it.GetFirst = GetFirst;
+	result->it.GetCurrent = GetCurrent;
+	result->it.GetLast = GetLast;
+	result->it.Replace = ReplaceWithIterator;
+	result->it.Seek = Seek;
+	result->AL = AL;
+	result->Current = NULL;
+	result->timestamp = AL->timestamp;
+	result->index = -1;
+	result->Magic = VALARRAY_MAGIC_NUMBER;
+	return 1;
 }
 
 

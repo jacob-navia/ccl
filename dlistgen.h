@@ -133,7 +133,7 @@ struct INTERFACE_STRUCT_INTERNAL_NAME(DATA_TYPE) {
     LIST_ELEMENT *(*LastElement)(LIST_TYPE *l);
     LIST_ELEMENT *(*NextElement)(LIST_ELEMENT *le);
     LIST_ELEMENT *(*PreviousElement)(LIST_ELEMENT *le);
-    DATA_TYPE *(*ElementData)(LIST_ELEMENT *le);
+    DATA_TYPE *(*GetElementData)(LIST_ELEMENT *le);
     int (*SetElementData)(LIST_TYPE *l, LIST_ELEMENT *le,DATA_TYPE data);
     DATA_TYPE *(*Advance)(LIST_ELEMENT **pLIST_ELEMENT);
     LIST_ELEMENT *(*Skip)(LIST_ELEMENT *l,size_t n);

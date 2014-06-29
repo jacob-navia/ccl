@@ -1,19 +1,5 @@
 #include "containers.h"
 #include "ccl_internal.h"
-
-#define INVALID_POINTER_VALUE (void *)(~0)
-struct tagHeapObject {
-    HeapInterface *VTable;
-    unsigned BlockCount;
-    unsigned CurrentBlock;
-    unsigned BlockIndex;
-    char **Heap;
-    size_t ElementSize;
-    void *FreeList;
-    const ContainerAllocator *Allocator;
-    size_t MemoryUsed;
-    unsigned timestamp;
-};
 #ifndef CHUNK_SIZE 
 #define CHUNK_SIZE 1000
 #endif
@@ -194,16 +180,6 @@ static  ContainerHeap *newHeap(size_t ElementSize,const ContainerAllocator *m)
     return InitHeap(result,ElementSize,m);
 }
 
-struct HeapIterator {
-    Iterator it;
-    ContainerHeap *Heap;
-    size_t BlockNumber;
-    size_t BlockPosition;
-    size_t timestamp;
-    unsigned long Flags;
-
-} ;
-
 static int SkipFreeForward(struct HeapIterator *it)
 {
     size_t idx = it->BlockNumber * CHUNK_SIZE + it->BlockPosition;
@@ -277,6 +253,10 @@ static void *GetFirst(Iterator *it)
     char *result;
     int r;
 
+	if (hi->Magic != HEAP_MAGIC_NUMBER) {
+		iError.RaiseError("Heap.GetFirst",CONTAINER_ERROR_WRONG_ITERATOR);
+		return NULL;
+	}
     hi->BlockNumber = hi->BlockPosition = 0;
     if (heap->BlockCount == 0)
         return NULL;
@@ -295,6 +275,10 @@ static void *GetNext(Iterator *it)
     ContainerHeap *heap = hi->Heap;
     char *result;
     
+	if (hi->Magic != HEAP_MAGIC_NUMBER) {
+		iError.RaiseError("Heap.GetNext",CONTAINER_ERROR_WRONG_ITERATOR);
+		return NULL;
+	}
     if (hi->BlockNumber == (heap->CurrentBlock)) {
         /* In the last block we should not got beyond the
            last used element, the block can be half full.
@@ -322,6 +306,11 @@ static void *GetNext(Iterator *it)
 static size_t GetPosition(Iterator *it)
 {
     struct HeapIterator *hi = (struct HeapIterator *)it;
+
+	if (hi->Magic != HEAP_MAGIC_NUMBER) {
+		iError.RaiseError("Heap.GetPosition",CONTAINER_ERROR_WRONG_ITERATOR);
+		return (size_t)-1;
+	}
     return hi->BlockNumber*CHUNK_SIZE + hi->BlockPosition;
 }
 
@@ -332,6 +321,10 @@ static void *GetPrevious(Iterator *it)
     char *result;
     int r;
 
+	if (hi->Magic != HEAP_MAGIC_NUMBER) {
+		iError.RaiseError("Heap.GetPrevious",CONTAINER_ERROR_WRONG_ITERATOR);
+		return NULL;
+	}
     if (hi->BlockPosition == 0) {
         /* Go to the last element of the previous block        */
         if (hi->BlockNumber == 0)
@@ -356,6 +349,10 @@ static void *GetLast(Iterator *it)
     struct HeapIterator *hi = (struct HeapIterator *)it;
     ContainerHeap *heap = hi->Heap;
     char *result;
+	if (hi->Magic != HEAP_MAGIC_NUMBER) {
+		iError.RaiseError("Heap.GetLast",CONTAINER_ERROR_WRONG_ITERATOR);
+		return NULL;
+	}
     if (heap->BlockCount == 0)
         return NULL;
     hi->BlockNumber = heap->CurrentBlock;
@@ -370,6 +367,10 @@ static void *GetCurrent(Iterator *it)
     struct HeapIterator *hi = (struct HeapIterator *)it;
     ContainerHeap *heap = hi->Heap;
     char *result;
+	if (hi->Magic != HEAP_MAGIC_NUMBER) {
+		iError.RaiseError("Heap.GetCurrent",CONTAINER_ERROR_WRONG_ITERATOR);
+		return NULL;
+	}
     if (heap->BlockCount == 0)
         return NULL;
     result = heap->Heap[hi->BlockNumber];
@@ -396,6 +397,7 @@ static Iterator *NewIterator(ContainerHeap *heap)
     result->it.GetCurrent = GetCurrent;
     result->it.GetLast = GetLast;
     result->it.GetPosition = GetPosition;
+	result->Magic = HEAP_MAGIC_NUMBER;
     return &result->it;
 }
 
