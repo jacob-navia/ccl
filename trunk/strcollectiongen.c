@@ -738,17 +738,17 @@ static size_t PopBack(ElementType *SC,CHAR_TYPE *buffer,size_t buflen)
     if (SC->count == 0)
         return 0;
     len = 1+strlen((char *)SC->contents[SC->count-1]);
-    if (buffer == NULL)
-        return len;
     SC->count--;
     result = SC->contents[SC->count];
     SC->contents[SC->count] = NULL;
     SC->timestamp++;
     tocopy = len;
-    if (buflen < tocopy)
-        tocopy = buflen-1;
-    memcpy(buffer,result,tocopy);
-    buffer[tocopy-1] = 0;
+	if (buffer) {
+    	if (buflen < tocopy)
+        	tocopy = buflen-1;
+    	memcpy(buffer,result,tocopy);
+    	buffer[tocopy-1] = 0;
+	}
     SC->Allocator->free(result);
     return len;
 }
@@ -771,11 +771,13 @@ static size_t PopFront(ElementType *SC,CHAR_TYPE *buffer,size_t buflen)
         memmove(SC->contents,SC->contents+1,SC->count*sizeof(void *));
     }
     SC->timestamp++;
-    tocopy = len;
-    if (buflen < tocopy)
-        tocopy = buflen-1;
-    memcpy(buffer,result,tocopy);
-    buffer[tocopy-1] = 0;
+	if (buffer) {
+    	tocopy = len;
+    	if (buflen < tocopy)
+        	tocopy = buflen-1;
+    	memcpy(buffer,result,tocopy);
+    	buffer[tocopy] = 0;
+	}
     SC->Allocator->free(result);
     return len;
 }
