@@ -381,6 +381,7 @@ static int Remove(HashTable *ht,const void *key,size_t klen)
 static int Clear(HashTable *ht)
 {
     HashIndex HashIdx,*hi;
+	HashIdx.ht = ht;
     for (hi = first(&HashIdx); hi; hi = next(hi))
         HashSet(ht, hi->This->key, hi->This->klen, NULL);
     return 1;
