@@ -1,0 +1,814 @@
+\begin{theindex}
+
+  \item Abs
+    \subitem \container, \href{#Abs+\container143}{14.3}
+  \item Accumulate
+    \subitem \container, \href{#Accumulate+\container143}{14.3}
+  \item Add
+    \subitem \container, \href{#Add+\container11}{1.1}, 
+		\href{#Add+\container32}{3.2}, 
+		\href{#Add+\container42}{4.2}, 
+		\href{#Add+\container62}{6.2}, 
+		\href{#Add+\container82}{8.2}, 
+		\href{#Add+\container113}{11.3}, 
+		\href{#Add+\container122}{12.2}, 
+		\href{#Add+\container143}{14.3}, 
+		\href{#Add+\container152}{15.2}
+    \subitem code for \container, 
+		\href{#Add+code for \container41}{4.1}, 
+		\href{#Add+code for \container43}{4.3}
+  \item AddError
+    \subitem \container, \href{#AddError+\container40}{4.0}
+  \item AddObject
+    \subitem code for \container, 
+		\href{#AddObject+code for \container46}{4.6}
+  \item AddRange
+    \subitem \container, \href{#AddRange+\container11}{1.1}, 
+		\href{#AddRange+\container32}{3.2}, 
+		\href{#AddRange+\container52}{5.2}, 
+		\href{#AddRange+\container143}{14.3}
+    \subitem code for \container, 
+		\href{#AddRange+code for \container41}{4.1}
+  \item Advance
+    \subitem \container, \href{#Advance+\container11}{1.1}
+  \item Alloc
+    \subitem \container, \href{#Alloc+\container30}{3.0}
+  \item Allocator, \href{#Allocator160}{16.0}
+  \item And
+    \subitem \container, \href{#And+\container12}{1.2}, 
+		\href{#And+\container42}{4.2}, 
+		\href{#And+\container143}{14.3}
+  \item AndAssign
+    \subitem \container, \href{#AndAssign+\container42}{4.2}
+  \item API Overview, \href{#API Overview00}{0.0}
+  \item Append
+    \subitem \container, \href{#Append+\container11}{1.1}, 
+		\href{#Append+\container32}{3.2}
+    \subitem code for \container, 
+		\href{#Append+code for \container41}{4.1}
+  \item Apply
+    \subitem \container, \href{#Apply+\container11}{1.1}, 
+		\href{#Apply+\container32}{3.2}, 
+		\href{#Apply+\container62}{6.2}, 
+		\href{#Apply+\container82}{8.2}, 
+		\href{#Apply+\container101}{10.1}, 
+		\href{#Apply+\container132}{13.2}, 
+		\href{#Apply+\container143}{14.3}
+    \subitem code for \container, 
+		\href{#Apply+code for \container41}{4.1}, 
+		\href{#Apply+code for \container43}{4.3}
+    \subitem general, \href{#Apply+general122}{12.2}
+
+  \indexspace
+
+  \item Back
+    \subitem \container, \href{#Back+\container11}{1.1}, 
+		\href{#Back+\container32}{3.2}, 
+		\href{#Back+\container92}{9.2}, 
+		\href{#Back+\container101}{10.1}
+    \subitem code for \container, 
+		\href{#Back+code for \container42}{4.2}
+  \item BitBlockCount
+    \subitem \container, \href{#BitBlockCount+\container42}{4.2}
+  \item BitLeftShift
+    \subitem \container, \href{#BitLeftShift+\container42}{4.2}, 
+		\href{#BitLeftShift+\container143}{14.3}
+  \item BitRightShift
+    \subitem \container, \href{#BitRightShift+\container143}{14.3}
+  \item BitString, \href{#BitString40}{4.0}
+    \subitem structure definition, 
+		\href{#BitString+structure definition39}{3.9}
+  \item Bloomfilter, \href{#Bloomfilter120}{12.0}
+  \item Buffers, \href{#Buffers150}{15.0}
+
+  \indexspace
+
+  \item CalculateSpace
+    \subitem \container, \href{#CalculateSpace+\container122}{12.2}
+  \item Calloc
+    \subitem \container, \href{#Calloc+\container30}{3.0}
+  \item CastToArray
+    \subitem \container, \href{#CastToArray+\container52}{5.2}, 
+		\href{#CastToArray+\container62}{6.2}
+  \item Change
+    \subitem \container, \href{#Change+\container21}{2.1}
+  \item Clear, \href{#Clear20}{2.0}
+    \subitem \container, \href{#Clear+\container11}{1.1}, 
+		\href{#Clear+\container12}{1.2}, 
+		\href{#Clear+\container22}{2.2}, 
+		\href{#Clear+\container30}{3.0}, 
+		\href{#Clear+\container32}{3.2}, 
+		\href{#Clear+\container62}{6.2}, 
+		\href{#Clear+\container82}{8.2}, 
+		\href{#Clear+\container101}{10.1}, 
+		\href{#Clear+\container113}{11.3}, 
+		\href{#Clear+\container122}{12.2}, 
+		\href{#Clear+\container132}{13.2}, 
+		\href{#Clear+\container143}{14.3}, 
+		\href{#Clear+\container151}{15.1}, 
+		\href{#Clear+\container152}{15.2}
+    \subitem code for \container, 
+		\href{#Clear+code for \container41}{4.1}
+  \item Compare
+    \subitem \container, \href{#Compare+\container143}{14.3}
+  \item COMPARE\_EXPRESSION, \href{#COMPARE\_EXPRESSION20}{2.0}
+  \item CompareEqual
+    \subitem \container, \href{#CompareEqual+\container32}{3.2}, 
+		\href{#CompareEqual+\container143}{14.3}
+  \item CompareEqualScalar
+    \subitem \container, \href{#CompareEqualScalar+\container32}{3.2}, 
+		\href{#CompareEqualScalar+\container143}{14.3}
+  \item CompareFunction, \href{#CompareFunction72}{7.2}
+  \item CompareScalar
+    \subitem \container, \href{#CompareScalar+\container143}{14.3}
+  \item Contains
+    \subitem \container, \href{#Contains+\container11}{1.1}, 
+		\href{#Contains+\container32}{3.2}, 
+		\href{#Contains+\container62}{6.2}, 
+		\href{#Contains+\container101}{10.1}, 
+		\href{#Contains+\container143}{14.3}
+    \subitem code for \container, 
+		\href{#Contains+code for \container41}{4.1}
+  \item Copy
+    \subitem \container, \href{#Copy+\container11}{1.1}, 
+		\href{#Copy+\container12}{1.2}, 
+		\href{#Copy+\container32}{3.2}, 
+		\href{#Copy+\container62}{6.2}, 
+		\href{#Copy+\container82}{8.2}, 
+		\href{#Copy+\container101}{10.1}, 
+		\href{#Copy+\container113}{11.3}, 
+		\href{#Copy+\container143}{14.3}
+    \subitem code for \container, 
+		\href{#Copy+code for \container41}{4.1}
+  \item CopyBits
+    \subitem \container, \href{#CopyBits+\container42}{4.2}
+  \item CopyElement
+    \subitem \container, \href{#CopyElement+\container11}{1.1}, 
+		\href{#CopyElement+\container32}{3.2}, 
+		\href{#CopyElement+\container62}{6.2}
+    \subitem code for \container, 
+		\href{#CopyElement+code for \container41}{4.1}
+  \item CopyTo
+    \subitem \container, \href{#CopyTo+\container32}{3.2}, 
+		\href{#CopyTo+\container143}{14.3}
+  \item Create, \href{#Create10}{1.0}
+    \subitem \container, \href{#Create+\container11}{1.1}, 
+		\href{#Create+\container12}{1.2}, 
+		\href{#Create+\container22}{2.2}, 
+		\href{#Create+\container30}{3.0}, 
+		\href{#Create+\container32}{3.2}, 
+		\href{#Create+\container62}{6.2}, 
+		\href{#Create+\container82}{8.2}, 
+		\href{#Create+\container101}{10.1}, 
+		\href{#Create+\container113}{11.3}, 
+		\href{#Create+\container122}{12.2}, 
+		\href{#Create+\container132}{13.2}, 
+		\href{#Create+\container143}{14.3}, 
+		\href{#Create+\container151}{15.1}, 
+		\href{#Create+\container152}{15.2}
+    \subitem code for \container, 
+		\href{#Create+code for \container41}{4.1}
+  \item CreateFromFile
+    \subitem \container, \href{#CreateFromFile+\container52}{5.2}, 
+		\href{#CreateFromFile+\container151}{15.1}
+  \item CreateFromMask
+    \subitem \container, \href{#CreateFromMask+\container12}{1.2}
+  \item CreateSequence
+    \subitem \container, \href{#CreateSequence+\container143}{14.3}
+  \item CreateWith Allocator
+    \subitem \container, 
+		\href{#CreateWith Allocator+\container132}{13.2}
+  \item CreateWithAllocator, \href{#CreateWithAllocator62}{6.2}
+    \subitem \container, \href{#CreateWithAllocator+\container11}{1.1}, 
+		\href{#CreateWithAllocator+\container32}{3.2}, 
+		\href{#CreateWithAllocator+\container151}{15.1}, 
+		\href{#CreateWithAllocator+\container152}{15.2}
+    \subitem code for \container, 
+		\href{#CreateWithAllocator+code for \container41}{4.1}, 
+		\href{#CreateWithAllocator+code for \container42}{4.2}
+
+  \indexspace
+
+  \item DefaultListCompareFunction
+    \subitem code for \container, 
+		\href{#DefaultListCompareFunction+code for \container41}{4.1}
+  \item DefaultListLoadFunction
+    \subitem code for \container, 
+		\href{#DefaultListLoadFunction+code for \container41}{4.1}
+  \item DefaultSaveFunction
+    \subitem code for \container, 
+		\href{#DefaultSaveFunction+code for \container41}{4.1}
+  \item DeleteIterator
+    \subitem \container, \href{#DeleteIterator+\container11}{1.1}, 
+		\href{#DeleteIterator+\container32}{3.2}, 
+		\href{#DeleteIterator+\container62}{6.2}, 
+		\href{#DeleteIterator+\container82}{8.2}
+    \subitem code for \container, 
+		\href{#DeleteIterator+code for \container41}{4.1}
+  \item Deque, \href{#Deque100}{10.0}
+  \item DestructorFunction, \href{#DestructorFunction76}{7.6}
+  \item Dictionary, \href{#Dictionary60}{6.0}
+    \subitem structure definition, 
+		\href{#Dictionary+structure definition36}{3.6}
+  \item DivideBy
+    \subitem \container, \href{#DivideBy+\container143}{14.3}
+  \item DivideByScalar
+    \subitem \container, \href{#DivideByScalar+\container143}{14.3}
+  \item DivideScalarBy
+    \subitem \container, \href{#DivideScalarBy+\container143}{14.3}
+  \item Dlist, \href{#Dlist20}{2.0}
+    \subitem structure definition, 
+		\href{#Dlist+structure definition34}{3.4}
+  \item Download
+    \subitem source, \href{#Download+source30}{3.0}
+
+  \indexspace
+
+  \item EmptyErrorFunction
+    \subitem \container, \href{#EmptyErrorFunction+\container40}{4.0}
+  \item Equal
+    \subitem \container, \href{#Equal+\container11}{1.1}, 
+		\href{#Equal+\container32}{3.2}, 
+		\href{#Equal+\container62}{6.2}, 
+		\href{#Equal+\container101}{10.1}, 
+		\href{#Equal+\container113}{11.3}, 
+		\href{#Equal+\container143}{14.3}
+    \subitem code for \container, 
+		\href{#Equal+code for \container41}{4.1}
+  \item Erase
+    \subitem \container, \href{#Erase+\container11}{1.1}, 
+		\href{#Erase+\container32}{3.2}, 
+		\href{#Erase+\container62}{6.2}, 
+		\href{#Erase+\container82}{8.2}, 
+		\href{#Erase+\container101}{10.1}, 
+		\href{#Erase+\container143}{14.3}
+    \subitem code for \container, 
+		\href{#Erase+code for \container41}{4.1}
+  \item EraseAll
+    \subitem \container, \href{#EraseAll+\container11}{1.1}, 
+		\href{#EraseAll+\container32}{3.2}, 
+		\href{#EraseAll+\container143}{14.3}
+  \item EraseAt
+    \subitem \container, \href{#EraseAt+\container11}{1.1}, 
+		\href{#EraseAt+\container32}{3.2}, 
+		\href{#EraseAt+\container143}{14.3}
+  \item EraseRange
+    \subitem \container, \href{#EraseRange+\container11}{1.1}
+    \subitem code for \container, 
+		\href{#EraseRange+code for \container41}{4.1}
+  \item error-codes, \href{#error-codes41}{4.1}
+  \item ErrorFunction, \href{#ErrorFunction75}{7.5}
+
+  \indexspace
+
+  \item FCompare
+    \subitem \container, \href{#FCompare+\container143}{14.3}
+  \item FillSequential
+    \subitem \container, \href{#FillSequential+\container143}{14.3}
+  \item Finalize, \href{#Finalize20}{2.0}
+    \subitem \container, \href{#Finalize+\container11}{1.1}, 
+		\href{#Finalize+\container12}{1.2}, 
+		\href{#Finalize+\container22}{2.2}, 
+		\href{#Finalize+\container30}{3.0}, 
+		\href{#Finalize+\container32}{3.2}, 
+		\href{#Finalize+\container62}{6.2}, 
+		\href{#Finalize+\container101}{10.1}, 
+		\href{#Finalize+\container113}{11.3}, 
+		\href{#Finalize+\container122}{12.2}, 
+		\href{#Finalize+\container132}{13.2}, 
+		\href{#Finalize+\container143}{14.3}, 
+		\href{#Finalize+\container151}{15.1}, 
+		\href{#Finalize+\container152}{15.2}
+    \subitem code for \container, 
+		\href{#Finalize+code for \container41}{4.1}, 
+		\href{#Finalize+code for \container42}{4.2}
+  \item Find
+    \subitem \container, \href{#Find+\container122}{12.2}
+  \item FindFirst
+    \subitem \container, \href{#FindFirst+\container52}{5.2}
+  \item FindNext
+    \subitem \container, \href{#FindNext+\container52}{5.2}
+  \item FindTextPositions
+    \subitem \container, \href{#FindTextPositions+\container52}{5.2}
+  \item FirstElement
+    \subitem \container, \href{#FirstElement+\container11}{1.1}
+  \item ForEach
+    \subitem \container, \href{#ForEach+\container143}{14.3}
+  \item Fprintf
+    \subitem \container, \href{#Fprintf+\container143}{14.3}
+  \item Free
+    \subitem code for \container, 
+		\href{#Free+code for \container45}{4.5}
+  \item FreeObject
+    \subitem \container, \href{#FreeObject+\container22}{2.2}
+  \item Front
+    \subitem \container, \href{#Front+\container11}{1.1}, 
+		\href{#Front+\container32}{3.2}, 
+		\href{#Front+\container52}{5.2}, 
+		\href{#Front+\container92}{9.2}, 
+		\href{#Front+\container101}{10.1}, 
+		\href{#Front+\container113}{11.3}
+    \subitem code for \container, 
+		\href{#Front+code for \container42}{4.2}
+
+  \indexspace
+
+  \item Generic Container
+    \subitem structure, \href{#Generic Container+structure31}{3.1}
+  \item GetAllocator
+    \subitem \container, \href{#GetAllocator+\container11}{1.1}, 
+		\href{#GetAllocator+\container62}{6.2}
+  \item GetCapacity
+    \subitem \container, \href{#GetCapacity+\container32}{3.2}, 
+		\href{#GetCapacity+\container143}{14.3}
+  \item GetCurrent
+    \subitem \container, \href{#GetCurrent+\container21}{2.1}, 
+		\href{#GetCurrent+\container52}{5.2}
+    \subitem code for \container, 
+		\href{#GetCurrent+code for \container41}{4.1}
+  \item GetData
+    \subitem \container, \href{#GetData+\container32}{3.2}, 
+		\href{#GetData+\container42}{4.2}, 
+		\href{#GetData+\container92}{9.2}, 
+		\href{#GetData+\container143}{14.3}, 
+		\href{#GetData+\container151}{15.1}
+  \item GetElement
+    \subitem \container, \href{#GetElement+\container11}{1.1}, 
+		\href{#GetElement+\container32}{3.2}, 
+		\href{#GetElement+\container62}{6.2}, 
+		\href{#GetElement+\container82}{8.2}, 
+		\href{#GetElement+\container143}{14.3}
+  \item GetElementData
+    \subitem \container, \href{#GetElementData+\container11}{1.1}
+  \item GetElementSize
+    \subitem \container, \href{#GetElementSize+\container11}{1.1}, 
+		\href{#GetElementSize+\container32}{3.2}, 
+		\href{#GetElementSize+\container62}{6.2}, 
+		\href{#GetElementSize+\container143}{14.3}
+  \item GetFirst
+    \subitem \container, \href{#GetFirst+\container52}{5.2}
+    \subitem code for \container, 
+		\href{#GetFirst+code for \container41}{4.1}
+  \item GetFlags
+    \subitem \container, \href{#GetFlags+\container62}{6.2}, 
+		\href{#GetFlags+\container82}{8.2}, 
+		\href{#GetFlags+\container101}{10.1}
+    \subitem code for \container, 
+		\href{#GetFlags+code for \container41}{4.1}
+  \item GetFlags / SetFlags
+    \subitem \container, \href{#GetFlags / SetFlags+\container11}{1.1}, 
+		\href{#GetFlags / SetFlags+\container32}{3.2}
+  \item GetLast
+    \subitem \container, \href{#GetLast+\container52}{5.2}
+  \item GetLoadFactor
+    \subitem \container, \href{#GetLoadFactor+\container62}{6.2}
+  \item GetNext
+    \subitem \container, \href{#GetNext+\container52}{5.2}
+    \subitem code for \container, 
+		\href{#GetNext+code for \container41}{4.1}
+  \item GetPosition
+    \subitem \container, \href{#GetPosition+\container151}{15.1}
+  \item GetPrevious
+    \subitem \container, \href{#GetPrevious+\container52}{5.2}
+    \subitem code for \container, 
+		\href{#GetPrevious+code for \container41}{4.1}
+  \item GetRange, \href{#GetRange50}{5.0}
+    \subitem \container, \href{#GetRange+\container11}{1.1}, 
+		\href{#GetRange+\container32}{3.2}, 
+		\href{#GetRange+\container42}{4.2}, 
+		\href{#GetRange+\container143}{14.3}
+    \subitem code for \container, 
+		\href{#GetRange+code for \container41}{4.1}
+  \item GetSlice
+    \subitem \container, \href{#GetSlice+\container143}{14.3}
+  \item guid, \href{#guid41}{4.1}
+
+  \indexspace
+
+  \item hash
+    \subitem code for \container, 
+		\href{#hash+code for \container43}{4.3}
+  \item HashTable, \href{#HashTable80}{8.0}
+
+  \indexspace
+
+  \item iAssociativeContainer, \href{#iAssociativeContainer163}{16.3}
+  \item iBitString, \href{#iBitString41}{4.1}
+  \item iDeque, \href{#iDeque101}{10.1}
+  \item iDictionary, \href{#iDictionary61}{6.1}
+  \item iDlist, \href{#iDlist20}{2.0}
+  \item iError, \href{#iError40}{4.0}
+  \item iGenericContainer, \href{#iGenericContainer161}{16.1}
+  \item iHashTable, \href{#iHashTable81}{8.1}
+  \item iHeap, \href{#iHeap22}{2.2}
+  \item iList, \href{#iList10}{1.0}
+  \item IndexIn
+    \subitem \container, \href{#IndexIn+\container32}{3.2}, 
+		\href{#IndexIn+\container143}{14.3}
+  \item IndexOf
+    \subitem \container, \href{#IndexOf+\container11}{1.1}, 
+		\href{#IndexOf+\container32}{3.2}, 
+		\href{#IndexOf+\container143}{14.3}
+    \subitem code for \container, 
+		\href{#IndexOf+code for \container41}{4.1}
+  \item Infinite arrays, \href{#Infinite arrays30}{3.0}
+  \item Init
+    \subitem \container, \href{#Init+\container11}{1.1}, 
+		\href{#Init+\container52}{5.2}, 
+		\href{#Init+\container62}{6.2}
+    \subitem code for \container, 
+		\href{#Init+code for \container41}{4.1}, 
+		\href{#Init+code for \container43}{4.3}
+  \item InitHeap
+    \subitem \container, \href{#InitHeap+\container22}{2.2}
+  \item InitializeWith
+    \subitem \container, \href{#InitializeWith+\container11}{1.1}, 
+		\href{#InitializeWith+\container42}{4.2}, 
+		\href{#InitializeWith+\container62}{6.2}, 
+		\href{#InitializeWith+\container143}{14.3}
+  \item InitObserver
+    \subitem code for \container, 
+		\href{#InitObserver+code for \container46}{4.6}
+  \item InitWithAllocator
+    \subitem \container, \href{#InitWithAllocator+\container11}{1.1}, 
+		\href{#InitWithAllocator+\container52}{5.2}, 
+		\href{#InitWithAllocator+\container62}{6.2}
+    \subitem code for \container, 
+		\href{#InitWithAllocator+code for \container41}{4.1}
+  \item Insert
+    \subitem \container, \href{#Insert+\container62}{6.2}
+  \item InsertAt
+    \subitem \container, \href{#InsertAt+\container11}{1.1}, 
+		\href{#InsertAt+\container32}{3.2}, 
+		\href{#InsertAt+\container143}{14.3}
+    \subitem code for \container, 
+		\href{#InsertAt+code for \container41}{4.1}
+  \item InsertIn
+    \subitem \container, \href{#InsertIn+\container11}{1.1}, 
+		\href{#InsertIn+\container32}{3.2}, 
+		\href{#InsertIn+\container52}{5.2}, 
+		\href{#InsertIn+\container62}{6.2}
+    \subitem code for \container, 
+		\href{#InsertIn+code for \container41}{4.1}
+  \item Inverse
+    \subitem \container, \href{#Inverse+\container143}{14.3}
+  \item iPool, \href{#iPool30}{3.0}
+  \item iSequentiaContainer, \href{#iSequentiaContainer162}{16.2}
+  \item istrCollection, \href{#istrCollection50}{5.0}
+  \item iSuffixTree, \href{#iSuffixTree130}{13.0}
+  \item Iterator
+    \subitem structure, \href{#Iterator+structure310}{3.10}
+  \item iterator
+    \subitem Dictionary, \href{#iterator+Dictionary43}{4.3}
+  \item Iterators
+    \subitem General, \href{#Iterators+General123}{12.3}
+  \item iTreeMap, \href{#iTreeMap70}{7.0}
+  \item iValArray, \href{#iValArray140}{14.0}
+  \item iVector, \href{#iVector30}{3.0}, \href{#iVector31}{3.1}
+  \item iWstrCollection, \href{#iWstrCollection50}{5.0}
+
+  \indexspace
+
+  \item LastElement
+    \subitem \container, \href{#LastElement+\container11}{1.1}
+  \item List, \href{#List06}{0.6}
+  \item ListIterator, \href{#ListIterator310}{3.10}
+  \item lists
+    \subitem code, \href{#lists+code41}{4.1}
+    \subitem double linked, \href{#lists+double linked20}{2.0}
+    \subitem single linked, \href{#lists+single linked10}{1.0}
+    \subitem structure, \href{#lists+structure33}{3.3}
+  \item Load
+    \subitem \container, \href{#Load+\container11}{1.1}, 
+		\href{#Load+\container32}{3.2}, 
+		\href{#Load+\container62}{6.2}, 
+		\href{#Load+\container82}{8.2}, 
+		\href{#Load+\container101}{10.1}
+    \subitem code for \container, 
+		\href{#Load+code for \container41}{4.1}
+
+  \indexspace
+
+  \item Malloc
+    \subitem code for \container, 
+		\href{#Malloc+code for \container45}{4.5}
+  \item mapcar, \href{#mapcar30}{3.0}
+  \item mapcon, \href{#mapcon30}{3.0}
+  \item Mask
+    \subitem structure definition, 
+		\href{#Mask+structure definition38}{3.8}
+  \item Max
+    \subitem \container, \href{#Max+\container143}{14.3}
+  \item Memset
+    \subitem \container, \href{#Memset+\container143}{14.3}
+  \item Merge
+    \subitem \container, \href{#Merge+\container82}{8.2}
+  \item Min
+    \subitem \container, \href{#Min+\container143}{14.3}
+  \item Mismatch
+    \subitem \container, \href{#Mismatch+\container32}{3.2}, 
+		\href{#Mismatch+\container52}{5.2}, 
+		\href{#Mismatch+\container143}{14.3}
+  \item MoveBack
+    \subitem \container, \href{#MoveBack+\container20}{2.0}
+  \item MultiplyWith
+    \subitem \container, \href{#MultiplyWith+\container143}{14.3}
+  \item MultiplyWithScalar
+    \subitem \container, \href{#MultiplyWithScalar+\container143}{14.3}
+
+  \indexspace
+
+  \item NewIterator
+    \subitem \container, \href{#NewIterator+\container11}{1.1}, 
+		\href{#NewIterator+\container32}{3.2}, 
+		\href{#NewIterator+\container62}{6.2}, 
+		\href{#NewIterator+\container82}{8.2}
+    \subitem code for \container, 
+		\href{#NewIterator+code for \container41}{4.1}
+  \item newObject
+    \subitem \container, \href{#newObject+\container22}{2.2}
+  \item NextElement
+    \subitem \container, \href{#NextElement+\container11}{1.1}
+  \item Not
+    \subitem \container, \href{#Not+\container12}{1.2}, 
+		\href{#Not+\container42}{4.2}, 
+		\href{#Not+\container143}{14.3}
+  \item NotAssign
+    \subitem \container, \href{#NotAssign+\container42}{4.2}
+  \item Notify
+    \subitem \container, \href{#Notify+\container62}{6.2}
+    \subitem code for \container, 
+		\href{#Notify+code for \container46}{4.6}
+  \item NullPtrError
+    \subitem \container, \href{#NullPtrError+\container40}{4.0}
+
+  \indexspace
+
+  \item observer, \href{#observer60}{6.0}
+  \item ObserverFunction
+    \subitem \container, \href{#ObserverFunction+\container62}{6.2}
+  \item Or
+    \subitem \container, \href{#Or+\container12}{1.2}, 
+		\href{#Or+\container42}{4.2}, 
+		\href{#Or+\container143}{14.3}
+  \item OrAssign
+    \subitem \container, \href{#OrAssign+\container42}{4.2}
+  \item OrScalar
+    \subitem \container, \href{#OrScalar+\container143}{14.3}
+  \item Overlay
+    \subitem \container, \href{#Overlay+\container82}{8.2}
+
+  \indexspace
+
+  \item PeekFront
+    \subitem \container, \href{#PeekFront+\container152}{15.2}
+  \item Pop
+    \subitem \container, \href{#Pop+\container113}{11.3}
+  \item PopBack
+    \subitem \container, \href{#PopBack+\container20}{2.0}, 
+		\href{#PopBack+\container32}{3.2}, 
+		\href{#PopBack+\container52}{5.2}, 
+		\href{#PopBack+\container101}{10.1}, 
+		\href{#PopBack+\container143}{14.3}
+  \item PopFront
+    \subitem \container, \href{#PopFront+\container11}{1.1}, 
+		\href{#PopFront+\container101}{10.1}, 
+		\href{#PopFront+\container152}{15.2}
+    \subitem code for \container, 
+		\href{#PopFront+code for \container41}{4.1}
+  \item PopulationCount
+    \subitem \container, \href{#PopulationCount+\container12}{1.2}, 
+		\href{#PopulationCount+\container42}{4.2}
+  \item PreviousElement
+    \subitem \container, \href{#PreviousElement+\container20}{2.0}
+  \item Print
+    \subitem \container, \href{#Print+\container42}{4.2}
+  \item Priority queues, \href{#Priority queues110}{11.0}
+  \item Product
+    \subitem \container, \href{#Product+\container143}{14.3}
+  \item Push
+    \subitem \container, \href{#Push+\container113}{11.3}
+  \item PushBack
+    \subitem \container, \href{#PushBack+\container20}{2.0}, 
+		\href{#PushBack+\container101}{10.1}
+  \item PushFront
+    \subitem \container, \href{#PushFront+\container11}{1.1}, 
+		\href{#PushFront+\container101}{10.1}
+    \subitem code for \container, 
+		\href{#PushFront+code for \container41}{4.1}
+
+  \indexspace
+
+  \item Queue, \href{#Queue90}{9.0}
+
+  \indexspace
+
+  \item RaiseError
+    \subitem \container, \href{#RaiseError+\container40}{4.0}
+  \item Read
+    \subitem \container, \href{#Read+\container151}{15.1}
+  \item ReadFromFile
+    \subitem \container, \href{#ReadFromFile+\container151}{15.1}
+  \item ReadFunction, \href{#ReadFunction74}{7.4}
+  \item RemoveAt
+    \subitem \container, \href{#RemoveAt+\container42}{4.2}
+    \subitem code for \container, 
+		\href{#RemoveAt+code for \container41}{4.1}
+  \item RemoveRange
+    \subitem \container, \href{#RemoveRange+\container11}{1.1}, 
+		\href{#RemoveRange+\container32}{3.2}, 
+		\href{#RemoveRange+\container52}{5.2}
+  \item Replace
+    \subitem \container, \href{#Replace+\container52}{5.2}, 
+		\href{#Replace+\container82}{8.2}
+  \item ReplaceAt
+    \subitem \container, \href{#ReplaceAt+\container11}{1.1}, 
+		\href{#ReplaceAt+\container32}{3.2}
+    \subitem code for \container, 
+		\href{#ReplaceAt+code for \container41}{4.1}
+  \item Reserve
+    \subitem \container, \href{#Reserve+\container32}{3.2}
+  \item ResetSlice
+    \subitem \container, \href{#ResetSlice+\container143}{14.3}
+  \item Resize
+    \subitem \container, \href{#Resize+\container32}{3.2}, 
+		\href{#Resize+\container82}{8.2}, 
+		\href{#Resize+\container151}{15.1}
+  \item Reverse
+    \subitem \container, \href{#Reverse+\container11}{1.1}, 
+		\href{#Reverse+\container32}{3.2}, 
+		\href{#Reverse+\container42}{4.2}, 
+		\href{#Reverse+\container143}{14.3}
+    \subitem code for \container, 
+		\href{#Reverse+code for \container41}{4.1}
+  \item RotateLeft
+    \subitem \container, \href{#RotateLeft+\container11}{1.1}, 
+		\href{#RotateLeft+\container32}{3.2}, 
+		\href{#RotateLeft+\container143}{14.3}
+    \subitem code for \container, 
+		\href{#RotateLeft+code for \container41}{4.1}
+  \item RotateRight
+    \subitem \container, \href{#RotateRight+\container11}{1.1}, 
+		\href{#RotateRight+\container32}{3.2}, 
+		\href{#RotateRight+\container143}{14.3}
+    \subitem code for \container, 
+		\href{#RotateRight+code for \container41}{4.1}
+
+  \indexspace
+
+  \item Save
+    \subitem \container, \href{#Save+\container11}{1.1}, 
+		\href{#Save+\container32}{3.2}, 
+		\href{#Save+\container62}{6.2}, 
+		\href{#Save+\container82}{8.2}, 
+		\href{#Save+\container101}{10.1}, 
+		\href{#Save+\container143}{14.3}
+    \subitem code for \container, 
+		\href{#Save+code for \container41}{4.1}
+  \item SaveFunction, \href{#SaveFunction73}{7.3}
+  \item SearchWithKey
+    \subitem \container, \href{#SearchWithKey+\container32}{3.2}
+  \item Seek
+    \subitem \container, \href{#Seek+\container52}{5.2}
+    \subitem code for \container, 
+		\href{#Seek+code for \container41}{4.1}
+  \item Select
+    \subitem \container, \href{#Select+\container11}{1.1}, 
+		\href{#Select+\container32}{3.2}, 
+		\href{#Select+\container143}{14.3}
+  \item SelectCopy
+    \subitem \container, \href{#SelectCopy+\container11}{1.1}, 
+		\href{#SelectCopy+\container32}{3.2}, 
+		\href{#SelectCopy+\container143}{14.3}
+  \item Set
+    \subitem \container, \href{#Set+\container12}{1.2}, 
+		\href{#Set+\container42}{4.2}
+  \item SetCapacity
+    \subitem \container, \href{#SetCapacity+\container32}{3.2}
+  \item SetCompareFunction
+    \subitem \container, \href{#SetCompareFunction+\container11}{1.1}, 
+		\href{#SetCompareFunction+\container32}{3.2}, 
+		\href{#SetCompareFunction+\container52}{5.2}, 
+		\href{#SetCompareFunction+\container143}{14.3}
+    \subitem code for \container, 
+		\href{#SetCompareFunction+code for \container41}{4.1}
+  \item SetDestructor
+    \subitem \container, \href{#SetDestructor+\container11}{1.1}, 
+		\href{#SetDestructor+\container32}{3.2}, 
+		\href{#SetDestructor+\container62}{6.2}
+  \item SetElementData
+    \subitem \container, \href{#SetElementData+\container11}{1.1}
+  \item SetErrorFunction
+    \subitem \container, \href{#SetErrorFunction+\container11}{1.1}, 
+		\href{#SetErrorFunction+\container32}{3.2}, 
+		\href{#SetErrorFunction+\container40}{4.0}, 
+		\href{#SetErrorFunction+\container62}{6.2}, 
+		\href{#SetErrorFunction+\container82}{8.2}
+  \item SetHashFunction
+    \subitem \container, \href{#SetHashFunction+\container62}{6.2}
+  \item SetPosition
+    \subitem \container, \href{#SetPosition+\container151}{15.1}
+  \item SetSlice
+    \subitem \container, \href{#SetSlice+\container143}{14.3}
+  \item Size, \href{#Size140}{14.0}
+    \subitem \container, \href{#Size+\container11}{1.1}, 
+		\href{#Size+\container12}{1.2}, 
+		\href{#Size+\container32}{3.2}, 
+		\href{#Size+\container62}{6.2}, 
+		\href{#Size+\container82}{8.2}, 
+		\href{#Size+\container113}{11.3}, 
+		\href{#Size+\container143}{14.3}, 
+		\href{#Size+\container151}{15.1}, 
+		\href{#Size+\container152}{15.2}
+  \item Sizeof
+    \subitem \container, \href{#Sizeof+\container11}{1.1}, 
+		\href{#Sizeof+\container12}{1.2}, 
+		\href{#Sizeof+\container22}{2.2}, 
+		\href{#Sizeof+\container32}{3.2}, 
+		\href{#Sizeof+\container62}{6.2}, 
+		\href{#Sizeof+\container82}{8.2}, 
+		\href{#Sizeof+\container113}{11.3}, 
+		\href{#Sizeof+\container143}{14.3}, 
+		\href{#Sizeof+\container152}{15.2}
+    \subitem code for \container, 
+		\href{#Sizeof+code for \container41}{4.1}, 
+		\href{#Sizeof+code for \container42}{4.2}
+  \item SizeofIterator, \href{#SizeofIterator152}{15.2}
+    \subitem \container, \href{#SizeofIterator+\container11}{1.1}
+  \item Sort
+    \subitem \container, \href{#Sort+\container11}{1.1}, 
+		\href{#Sort+\container32}{3.2}, 
+		\href{#Sort+\container143}{14.3}
+    \subitem code for \container, 
+		\href{#Sort+code for \container41}{4.1}
+  \item Splice
+    \subitem \container, \href{#Splice+\container20}{2.0}
+  \item SplitAfter
+    \subitem \container, \href{#SplitAfter+\container11}{1.1}
+    \subitem code for \container, 
+		\href{#SplitAfter+code for \container41}{4.1}
+  \item strCollection
+    \subitem structure, \href{#strCollection+structure37}{3.7}
+  \item StrError
+    \subitem \container, \href{#StrError+\container40}{4.0}
+  \item StringCompareFn, \href{#StringCompareFn52}{5.2}
+  \item StringToBitString
+    \subitem \container, \href{#StringToBitString+\container42}{4.2}
+  \item Subscribe
+    \subitem \container, \href{#Subscribe+\container62}{6.2}
+    \subitem code for \container, 
+		\href{#Subscribe+code for \container46}{4.6}
+  \item SubtractFrom
+    \subitem \container, \href{#SubtractFrom+\container143}{14.3}
+  \item SubtractFromScalar
+    \subitem \container, \href{#SubtractFromScalar+\container143}{14.3}
+  \item SubtractScalarFrom
+    \subitem \container, \href{#SubtractScalarFrom+\container143}{14.3}
+  \item SuffixTree, \href{#SuffixTree130}{13.0}
+  \item SumTo
+    \subitem \container, \href{#SumTo+\container143}{14.3}
+  \item SumToScalar
+    \subitem \container, \href{#SumToScalar+\container143}{14.3}
+
+  \indexspace
+
+  \item TreeMap, \href{#TreeMap70}{7.0}
+
+  \indexspace
+
+  \item Unsubscribe
+    \subitem \container, \href{#Unsubscribe+\container62}{6.2}
+    \subitem code for \container, 
+		\href{#Unsubscribe+code for \container46}{4.6}
+  \item UseHeap
+    \subitem \container, \href{#UseHeap+\container11}{1.1}
+    \subitem code for \container, 
+		\href{#UseHeap+code for \container41}{4.1}
+
+  \indexspace
+
+  \item ValArray, \href{#ValArray140}{14.0}
+  \item ValArrays,code, \href{#ValArrays,code47}{4.7}
+  \item Vector, \href{#Vector31}{3.1}
+    \subitem structure, \href{#Vector+structure35}{3.5}
+
+  \indexspace
+
+  \item Write
+    \subitem \container, \href{#Write+\container151}{15.1}
+  \item WriteToFile
+    \subitem \container, \href{#WriteToFile+\container52}{5.2}, 
+		\href{#WriteToFile+\container151}{15.1}
+  \item WstrCollection, \href{#WstrCollection50}{5.0}
+
+  \indexspace
+
+  \item Xor
+    \subitem \container, \href{#Xor+\container42}{4.2}, 
+		\href{#Xor+\container143}{14.3}
+  \item XorAssign
+    \subitem \container, \href{#XorAssign+\container42}{4.2}
+  \item XorScalar
+    \subitem \container, \href{#XorScalar+\container143}{14.3}
+
+\end{theindex}
