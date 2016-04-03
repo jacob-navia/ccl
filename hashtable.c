@@ -203,21 +203,21 @@ static unsigned int DefaultHashFunction(const char *char_key, size_t *klen)
 
 static HashEntry **find_entry(HashTable *ht,const void *key,size_t klen,const void *val)
 {
-    HashEntry **hep, *he;
+    HashEntry **hashTablePointer, *he;
     unsigned int hash;
 
     hash = ht->Hash(key, &klen);
 
     /* scan linked list */
-    for (hep = &ht->array[hash & ht->max], he = *hep;
-        he; hep = &he->next, he = *hep) {
+    for (hashTablePointer = &ht->array[hash & ht->max], he = *hashTablePointer;
+        he; hashTablePointer = &he->next, he = *hashTablePointer) {
         if (he->hash == hash
             && he->klen == klen
             && memcmp(he->key, key, klen) == 0)
             break;
     }
     if (he || !val)
-        return hep;
+        return hashTablePointer;
 
     /* add a new entry for non-NULL values */
     if ((he = ht->free) != NULL)
@@ -229,9 +229,9 @@ static HashEntry **find_entry(HashTable *ht,const void *key,size_t klen,const vo
     he->key  = key;
     he->klen = klen;
     memcpy(he->val,val,ht->ElementSize);
-    *hep = he;
+    *hashTablePointer = he;
     ht->count++;
-    return hep;
+    return hashTablePointer;
 }
 
 static int Replace(HashTable *ht,const void *key,size_t klen,const void *val)
