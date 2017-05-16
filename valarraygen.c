@@ -2,6 +2,7 @@
 #define DEFAULT_START_SIZE 20
 #endif
 #include <math.h>
+#include <tgmath.h>
 typedef struct tagSlice {
 	size_t start;
 	size_t length;
