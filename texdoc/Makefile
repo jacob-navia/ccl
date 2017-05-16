@@ -3,7 +3,7 @@ PNGS=AuxiliaryInterfaces.png DListVocabulary.png Pool.png  bitstrings.png Basic.
 all:	ccl.pdf ccl.html
 
 ccl.pdf:	ccl.tex table.tex $(PNGS) ../containers.h 
-	/usr/texbin/pdflatex ccl.tex
+	/Library/TeX/texbin/pdflatex ccl.tex
 
 table.tex:	dotable ../containers.h ../valarraygen.h 
 	./dotable

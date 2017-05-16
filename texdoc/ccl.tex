@@ -2694,6 +2694,19 @@ Reclaims the memory used by the given iterator object
 \apierrors
 \doerror{BADARG} The iterator pointer is \Null.
 \returns A positive value if successful or a negative error code.
+%--------------------------------------------------------------------------------------------------------------------------
+\api{GetElement}
+     void *(*GetElement)(const List *l, size_t index);
+\end{verbatim}
+\apidescription
+Returns a pointer to the data stored at position \verb,index, within the given list.
+\apierrors
+\doerror{BADARG} The list pointer is \Null.
+\doerror{INDEX} The \verb,index, argument contains an index that is not between zero and the size of the list.
+\doerror{READ\_ONLY} You can't use \verb,GetElement, in a read only list since it returns a raw pointer to the data. You should use \verb,CopyElement, instead.
+
+\returns
+A pointer to the data or \Null if an error occurs.
 
 %--------------------------------------------------------------------------------------------------------------------------
 \api{GetElementData}
@@ -2703,6 +2716,8 @@ Reclaims the memory used by the given iterator object
 Accesses and returns a pointer to the raw data field of a \verb,ListElement, skipping the container related fields.
 \apierrors
 \doerror{BADARG} The iterator pointer is \Null.
+\doerror{INDEX} The index is not within the bounds of the list.
+
 \returns A positive value if successful or a negative error code.
 %--------------------------------------------------------------------------------------------------------------------------
 \api{Equal}
@@ -12018,6 +12033,179 @@ The implementation file receives several other optional parameters.
 \end{verbatim}
 
 This expression is used to return -1 for $a < b$, zero for equality and 1 for $a > b$\footnote{The reason for using this expression instead of the simpler $a>b$ is that it is coherent with the other uses of the comparison function in other APIs}. 
+\section{The ccl and the stl}
+Here are some snippets I have developped when c++ programmers ask about the equivalences of some c++ conbstructs.
+\subsection{Filling an integer table}
+\begin{verbatim}
+> So, what would the following simple three-line function look
+> like written C + LCC?
+>
+> void f()
+> {
+>   std::vector<int> v_int(1000);
+>   for(auto& v: v_int) v = rand();
+>   std::sort(v_int.begin(),v_int.end());
+> }
+>
+\end{verbatim}
+The code would look like this:
+\begin{verbatim}
+  1 #include <stdlib.h>
+  2 #include <containers.h>
+  3
+  4 int main(void)
+  5 {
+  6     ValArrayInt * table = iValArrayInt.Create(10000);
+  7     size_t siz = iValArrayInt.GetCapacity(table);
+  8     for (int i=0; i<siz;i++) {
+  9         iValArrayInt.Add(table,rand());
+ 10     }
+ 11     iValArrayInt.Sort(table);
+ 12
+ 13 }
+\end{verbatim}
+You create a table (line 6), then you fill it (line 8 to 10) and then you sort it (line 18).
+
+A slightly more elaborate version prints the first 5 elements before and after sorting. I could have used iterators but for a small sample printing it is not really necessary. I could have reduced the line count by avoiding empty lines but who cares? The function is just as concise and small as the c++ one.
+\begin{verbatim}
+  1 #include <stdlib.h>
+  2 #include <containers.h>
+  3
+  4 int main(void)
+  5 {
+  6     int i;
+  7
+  8     ValArrayInt * table = iValArrayInt.Create(10000);
+  9     size_t siz = iValArrayInt.GetCapacity(table);
+ 10     for (i=0; i<siz;i++) {
+ 11         iValArrayInt.Add(table,rand());
+ 12     }
+ 13     printf("5 first elements before sorting\n");
+ 14     for (i=0; i<5; i++) {
+ 15         int data = iValArrayInt.GetElement(table,i);
+ 16         printf("Position [%d] is %d\n",i,data);
+ 17     }
+ 18     iValArrayInt.Sort(table);
+ 19
+ 20     printf("5 first elements after sorting\n");
+ 21     for (i=0; i<5; i++) {
+ 22         int data = iValArrayInt.GetElement(table,i);
+ 23         printf("Position [%d] is %d\n",i,data);
+ 24     }
+ 25 }
+\end{verbatim}
+This prints out:
+\begin{verbatim}
+/tmp/ccl/test $ ./a.out
+5 first elements before sorting
+Position [0] is 16807
+Position [1] is 282475249
+Position [2] is 1622650073
+Position [3] is 984943658
+Position [4] is 1144108930
+5 first elements after sorting
+Position [0] is 8383
+Position [1] is 13456
+Position [2] is 16807
+Position [3] is 84083
+Position [4] is 86383
+/tmp/ccl/test $
+\end{verbatim}
+\subsection{Filling an integer list}
+\begin{verbatim}
+// Standard Template Library example
+#include <iostream>
+#include <list>
+using namespace std;
+int main(void)
+{
+   list<int> L;
+   L.push_back(0);         // Insert a new element at the end
+   L.push_front(0);        // Insert a new element at the beginning
+   L.insert(++L.begin(),2);// Insert "2" before position of first argument
+                           // (Place before second argument)
+   L.push_back(5);
+   L.push_back(6);
+
+   list<int>::iterator i;
+
+   for(i=L.begin(); i != L.end(); ++i) cout << *i << " ";
+   cout << endl;
+   return 0;
+}
+
+/* OUTPUT: 0 2 0 5 6 */ 
+\end{verbatim}
+
+Now the same example using the CCL:
+\begin{verbatim}
+#include "containers.h"
+static int PrintInt(void *pdata,void *extraArgs)
+{
+    int i = *(int *)pdata;
+    fprintf(extraArgs,"%d ",i);
+}
+int main(void)
+{
+    List *L = iList.Create(sizeof(int));
+    int data = 0;
+
+    iList.Add(L,&data);
+    iList.PushFront(L,&data);
+    data = 2;
+    iList.InsertAt(L,1,&data);
+    data = 5;
+    iList.Add(L,&data);
+    data = 6;
+    iList.Add(L,&data);
+    iList.Apply(L,PrintInt,stdout);
+    iList.Finalize(L);
+} 
+\end{verbatim}
+\subsection{Sorting text files}
+The task
+--------
+You have a file with an unknown number of text lines of variable
+lengths. Read the lines and write them out sorted in another file.
+
+The C++ solution
+\begin{verbatim}
+#include <vector>
+#include <fstream>
+#include <algorithm>
+#include <iterator>
+#include <string>
+using namespace std;
+int main(int argc,char* argv[])
+{
+    char* file = argv[2];    // input file name
+    char* ofile = argv[3];   // output file name
+
+    vector<string> buf;
+
+    fstream fin(file, ios::in);
+    string d;
+    while(getline(fin, d)) buf.push_back(d);  //add line to buf
+    sort(buf.begin(), buf.end());
+    fstream fout(ofile, ios::out);
+    copy(buf.begin(), buf.end(), ostream_iterator<string>(fout,"\n"));
+
+}
+\end{verbatim}
+
+The C solution
+\begin{verbatim}
+#include <containers.h>
+
+int main(void)
+{
+    strCollection *myData =
+        istrCollection.CreateFromFile("mydata.txt");
+    istrCollection.Sort(myData);
+    istrCollection.WriteToFile(myData,"mySortedData.txt");
+    return 0;
+}
+\end{verbatim} 
 \clearpage
 \iftth 
 \begin{center}

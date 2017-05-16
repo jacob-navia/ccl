@@ -359,7 +359,7 @@ static int Finalize(List * l)
  Purpose:       Returns the data associated with a given position
  Input:         The list and the position
  Output:        A pointer to the data
- Errors:        NULL if error in the positgion index
+ Errors:        NULL if error in the position index
 ------------------------------------------------------------------------*/
 static void    *GetElement(const List * l, size_t position)
 {
