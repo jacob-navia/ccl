@@ -2714,11 +2714,8 @@ A pointer to the data or \Null if an error occurs.
 \end{verbatim}
 \apidescription
 Accesses and returns a pointer to the raw data field of a \verb,ListElement, skipping the container related fields.
-\apierrors
-\doerror{BADARG} The iterator pointer is \Null.
-\doerror{INDEX} The index is not within the bounds of the list.
 
-\returns A positive value if successful or a negative error code.
+\returns A pointer to the data. If the pointer to the list element is \Null, it returns \Null.
 %--------------------------------------------------------------------------------------------------------------------------
 \api{Equal}
     int (*Equal)(const List *list1,const List *list2);
