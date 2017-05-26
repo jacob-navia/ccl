@@ -1074,26 +1074,25 @@ static int Append(Vector *AL1, Vector *AL2)
         AL1->RaiseError("iArrayL.Append",CONTAINER_ERROR_BADARG);
         return CONTAINER_ERROR_BADARG;
     }
-    if ((AL1->Flags & CONTAINER_READONLY) || (AL2->Flags & CONTAINER_READONLY)) {
+    if (AL1->Flags & CONTAINER_READONLY) {
         return ErrorReadOnly(AL1,"Append");
     }
     if (AL2->ElementSize != AL1->ElementSize) {
         return ErrorIncompatible(AL1,"Append");
     }
     newCount = AL1->count + AL2->count;
-    if (newCount >= (AL1->capacity-1)) {
+    if (newCount >= AL1->capacity) {
         int r = ResizeTo(AL1,newCount);
         if (r <= 0)
             return r;
     }
+	AL1->count = newCount;
     p = (char *)AL1->contents;
     p += AL1->count*AL1->ElementSize;
     memcpy(p,AL2->contents,AL2->ElementSize*AL2->count);
     AL1->timestamp++;
-    AL1->count = newCount;
     if (AL1->Flags & CONTAINER_HAS_OBSERVER)
         iObserver.Notify(AL1,CCL_APPEND,AL2,NULL);
-    AL2->Allocator->free(AL2);
     return 1;
 }
 
