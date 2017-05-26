@@ -3154,7 +3154,7 @@ Reads a list previously saved with the Save function from the stream pointed to 
 \doerror{NOMEMORY} There is not enough memory to complete the operation.
 
 \returns
-A new list or \Null if the operation could not be completed. Note that the function pointers in the list are NOT saved, nor any special allocator that was in the original list. Those values will be the values by default. To rebuild the original state the user should replace the pointers again with the new list.
+A new list or \Null if the operation could not be completed. Note that the function pointers in the list are NOT saved, nor any special allocator that was in the original list. Those values will be the values by default. To rebuild the original state the user should replace the pointers again in the new list.
 %--------------------------------------------------------------------------------------------------------------------------
 \api{NewIterator}
     Iterator *(*NewIterator)(List *list);
