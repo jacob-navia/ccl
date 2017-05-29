@@ -31,6 +31,7 @@ OBJS=\
 	scapegoat.obj \
 	searchtree.obj \
 	strcollection.obj \
+	SuffixTree.obj \
 	valarraydouble.obj \
 	valarrayint.obj \
 	valarrayuint.obj \
@@ -143,6 +144,9 @@ searchtree.obj: $(HEADERS) $(SRCDIR)\searchtree.c $(HEADERS)
 strcollection.obj: $(HEADERS) $(SRCDIR)\strcollection.c strcollectiongen.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\strcollection.c
 
+SuffixTree.obj: $(HEADERS) $(SRCDIR)\SuffixTree.c 
+	$(CC) -c $(CFLAGS) $(SRCDIR)\SuffixTree.c
+	
 queue.obj:	$(SRCDIR)\containers.h queue.c $(HEADERS)
 	$(CC) $(CFLAGS) queue.c
 
