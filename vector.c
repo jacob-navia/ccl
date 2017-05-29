@@ -1879,6 +1879,7 @@ static Mask *CompareEqual(const Vector *left,const Vector *right,Mask *bytearray
     size_t right_len;
     size_t i;
     char *pleft,*pright;
+	CompareInfo info;
     
     if (left == NULL || right == NULL) {
         NullPtrError("CompareEqual");
@@ -1900,8 +1901,11 @@ static Mask *CompareEqual(const Vector *left,const Vector *right,Mask *bytearray
     else iMask.Clear(bytearray);
     pleft = left->contents;
     pright = right->contents;
+	info.ContainerLeft = left;
+	info.ContainerRight = right;
+	info.ExtraArgs = NULL;
     for (i=0; i<left_len;i++) {
-        bytearray->data[i] = !left->CompareFn(left,right,NULL);
+        bytearray->data[i] = !left->CompareFn(pleft,pright,&info);
         pleft += left->ElementSize;
         pright += right->ElementSize;
     }
