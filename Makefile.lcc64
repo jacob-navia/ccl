@@ -196,7 +196,7 @@ longlonglist.obj: longlonglist.c longlonglist.h ccl_internal.h containers.h $(LI
 	$(CC) $(CFLAGS) longlonglist.c
 
 
-vectorsize_t.obj:	vectorsize_t.c vectorgen.h vectorgen.c containers.h ccl_internals.h
+vectorsize_t.obj:	vectorsize_t.c vectorgen.h vectorgen.c containers.h ccl_internal.h
 	$(CC) $(CFLAGS) $(SRCDIR)\vectorsize_t.c
 
 test.obj: $(TEST_C) $(SRCDIR)\test.c $(HEADERS)
