@@ -105,7 +105,7 @@ typedef struct tagMaskInterface {
     Mask *(*Copy)(const Mask *src);
     size_t (*Size)(const Mask *);
     size_t (*Sizeof)(const Mask *);
-    int (*Set)(Mask *m,size_t idx,int val);
+    int (*SetElement)(Mask *m,size_t idx,int val);
     int (*Clear)(Mask *m);
     int (*Finalize)(Mask *m);
     size_t (*PopulationCount)(const Mask *m);
