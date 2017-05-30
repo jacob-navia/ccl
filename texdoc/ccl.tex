@@ -1280,7 +1280,7 @@ typedef struct tagMaskInterface {
     int (*Finalize)(Mask *m);
     int (*Or)(Mask *src1,Mask *src2);
     size_t (*PopulationCount)(const Mask *m);
-    int (*Set)(Mask *m,size_t idx,int val);
+    int (*SetElement)(Mask *m,size_t idx,int val);
     size_t (*Size)(Mask *);
     size_t (*Sizeof)(Mask *);
 } iMask;
@@ -1345,6 +1345,17 @@ The memory used by the mask is reclaimed.
 \doerror{BADARG} The mask pointer is \Null.
 \returns A positive number if the memory was reclaimed, or a negative error code.
 
+\api{GetElement}
+    void *(GetElement)(Mask *m, size_t idx);
+\end{verbatim}
+\apidescription
+Returns a pointer to an element of the given mask, or \Null if an error occurs. The specific type of pointer is implementation defined and depends on the underlying type of the mask elements. It could be a single bit, or a byte, or another unit of storage able to store 
+a boolean value.
+\apierrors
+\doerror{BADARG} The mask pointer is \Null.
+\doerror{INDEX} The index is beyond the end of the mask.
+\returns A pointer to the data or \Null.
+
 \api{Not}
     int (*Not)(Mask *src);
 \end{verbatim}
@@ -1378,8 +1389,8 @@ Counts the number of entries different from zero in the given mask, returning th
 A positive number or zero.
 
 
-\api{Set}
-    int (*Set)(Mask *m,size_t idx,int val);
+\api{SetElement}
+    int (*SetElement)(Mask *m,size_t idx,int val);
 \end{verbatim}
 \apidescription
 Sets the given position to the given value if the value fits in the internal representation of the mask. If not, an implementation defined
@@ -3361,7 +3372,7 @@ int main(void)
     printList(vInt);
 
     for (i=0;i<24;i++) {
-        iMask.Set(m,i,i&1);
+        iMask.SetElement(m,i,i&1);
         printf("%2d ",i&1);
     }
     printf("\nSelect of the list:\n");
@@ -3420,7 +3431,7 @@ int main(void)
         printList(vInt);
 
         for (i=0;i<24;i++) {
-                iMask.Set(m,i,!(i&1));
+                iMask.SetElement(m,i,!(i&1));
                 printf("%2d ",!(i&1));
         }
         printf("\nSelect of the list:\n");
@@ -3933,7 +3944,7 @@ The result is greater than zero if successful, or an error code if an error occu
 \end{verbatim}
 %-----------------------------------------------------------------------------------------------------
 \api{CompareEqual}
-Mask *(*CompareEqual)(ValArray *left,ValArray *right,
+Mask *(*CompareEqual)(const Vector *left,const Vector *right,
                        Mask bitarray);
 \end{verbatim}
 \apidescription
@@ -3946,8 +3957,7 @@ If it is not \Null it should contain at least enough positions to hold the data.
 allocated with the necessary length.
 \apierrors
 \doerror{NOMEMORY}. The given byte array argument was \Null but there is no memory to allocate the result.
-\doerror{BADARG} The given mask hasn't enough positions available.
-\doerror{INCOMPATIBLE} The arrays are of different length.
+\doerror{INCOMPATIBLE} The arrays are of different length or contain elements of different size.
 \returns A pointer to the bitarray passed or allocated, or \Null if an error occurs.
 %-----------------------------------------------------------------------------------------------------
 \api{CompareEqualScalar}
@@ -7890,7 +7900,7 @@ int main(void)
     size_t i;
 
     for (i=0; i<18; i++) {
-        iMask.Set(m,i,(i&1) ? 0 : 1);
+        iMask.SetElement(m,i,(i&1) ? 0 : 1);
     }
     iValArrayInt.Fprintf(va,stdout,"%3d ");
     iValArrayInt.Select(va,m);
