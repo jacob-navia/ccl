@@ -31,7 +31,7 @@ static Mask *Create(size_t n)
     return CreateFromMask(n,NULL);
 }
 
-static int Set(Mask *m,size_t idx,int val)
+static int SetElement(Mask *m,size_t idx,int val)
 {
     if (idx >= m->length) {
         iError.RaiseError("iMask.Set",CONTAINER_ERROR_INDEX,m,idx);
@@ -134,7 +134,7 @@ MaskInterface iMask = {
     Copy,
     Size,
     Sizeof,
-    Set,
+    SetElement,
     Clear,
     Finalize,
     PopulationCount,
