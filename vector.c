@@ -203,7 +203,7 @@ static int Add(Vector *AL,const void *newval)
 /*------------------------------------------------------------------------
  Procedure:     AddRange ID:1
  Purpose:       Adds a range of data at the end of an existing
-        arrraylist. 
+        arrraylist.
  Input:         The Vector and the data to be added
  Output:        One (OK) or negative error code
  Errors:        Vector must be writable and data must be
@@ -253,7 +253,7 @@ static Vector *GetRange(const Vector *AL, size_t start,size_t end)
     Vector *result=NULL;
     char *p;
     size_t top;
-    
+
     if (AL == NULL) {
         iError.RaiseError("iVector.GetRange",CONTAINER_ERROR_BADARG);
         return result;
@@ -343,6 +343,7 @@ static int Equal(const Vector *AL1,const Vector *AL2)
 {
     size_t i;
     unsigned char *left,*right;
+	CompareInfo cInfo;
     if (AL1 == AL2)
         return 1;
     if (AL1 == NULL || AL2 == NULL)
@@ -363,8 +364,11 @@ static int Equal(const Vector *AL1,const Vector *AL2)
     }
     left =  (unsigned char *)AL1->contents;
     right = (unsigned char *)AL2->contents;
+	cInfo.ContainerLeft = left;
+	cInfo.ContainerRight = right;
+	cInfo.ExtraArgs = AL1;
     for (i=0; i<AL1->count;i++) {
-        if (AL1->CompareFn(left,right,NULL) != 0)
+        if (AL1->CompareFn(left,right,&cInfo) != 0)
             return 0;
         left += AL1->ElementSize;
         right += AL2->ElementSize;
@@ -376,7 +380,7 @@ static Vector *Copy(const Vector *AL)
 {
     Vector *result;
     size_t startsize,es;
-    
+
     if (AL == NULL) {
         NullPtrError("Copy");
         return NULL;
@@ -450,7 +454,7 @@ static void **CopyTo(const Vector *AL)
     void **result;
     size_t i;
     char *p;
-        
+
     if (AL == NULL) {
         NullPtrError("CopyTo");
         return NULL;
@@ -542,7 +546,7 @@ static void *GetElement(const Vector *AL,size_t idx)
 static int InsertAt(Vector *AL,size_t idx,void *newval)
 {
     char *p;
-    
+
     if (AL == NULL) {
         return NullPtrError("InsertAt");
     }
@@ -1036,7 +1040,7 @@ static size_t Sizeof(const Vector *AL)
 static CompareFunction SetCompareFunction(Vector *l,CompareFunction fn)
 {
     CompareFunction oldfn;
-    
+
     if (l == NULL) {
         NullPtrError("SetCompareFunction");
         return NULL;
@@ -1060,7 +1064,7 @@ static int Sort(Vector *AL)
     return 1;
 }
 
-/* Proposed by PWO 
+/* Proposed by PWO
 */
 static int Append(Vector *AL1, Vector *AL2)
 {
@@ -1096,7 +1100,7 @@ static int Append(Vector *AL1, Vector *AL2)
     return 1;
 }
 
-/* Proposed by PWO 
+/* Proposed by PWO
 */
 static int Reverse(Vector *AL)
 {
@@ -1289,12 +1293,12 @@ static void *GetCurrent(Iterator *it)
     return ali->Current;
 }
 
-static int ReplaceWithIterator(Iterator *it, void *data,int direction) 
+static int ReplaceWithIterator(Iterator *it, void *data,int direction)
 {
     struct VectorIterator *ali = (struct VectorIterator *)it;
     int result;
     size_t pos;
-    
+
     if (it == NULL) {
         return NullPtrError("Replace");
     }
@@ -1310,7 +1314,7 @@ static int ReplaceWithIterator(Iterator *it, void *data,int direction)
     if (ali->AL->Flags & CONTAINER_READONLY) {
         ali->AL->RaiseError("Replace",CONTAINER_ERROR_READONLY);
         return CONTAINER_ERROR_READONLY;
-    }    
+    }
     pos = ali->index;
     if (direction)
         GetNext(it);
@@ -1467,7 +1471,7 @@ static int SaveToBuffer(Vector *AL,char *stream, size_t *bufferlen,SaveFunction 
 {
     size_t i,len;
     int elemLen;
-    
+
     if (AL == NULL) {
         return NullPtrError("iVector.SaveToBuffer");
     }
@@ -1501,7 +1505,7 @@ static int SaveToBuffer(Vector *AL,char *stream, size_t *bufferlen,SaveFunction 
     }
     for (i=0; i< AL->count; i++) {
         char *p = AL->contents;
-        
+
         p += i*AL->ElementSize;
         elemLen = saveFn(p,arg,stream,len);
         if (elemLen<= 0)
@@ -1566,7 +1570,7 @@ static Vector *CreateWithAllocator(size_t elementsize,size_t startsize,const Con
 {
     Vector *result;
     size_t es;
-    
+
     /* Allocate space for the array list header structure */
     result = allocator->malloc(sizeof(*result));
     if (result == NULL) {
@@ -1640,7 +1644,7 @@ static int SearchWithKey(Vector *vec,size_t startByte,size_t sizeKey,size_t star
 static Vector *Init(Vector *result,size_t elementsize,size_t startsize)
 {
     size_t es;
-    
+
     memset(result,0,sizeof(*result));
     if (startsize == 0)
         startsize = DEFAULT_START_SIZE;
@@ -1874,13 +1878,13 @@ static int RotateRight(Vector *AL, size_t n)
 
 static Mask *CompareEqual(const Vector *left,const Vector *right,Mask *bytearray)
 {
-    
+
     size_t left_len;
     size_t right_len;
     size_t i;
     char *pleft,*pright;
 	CompareInfo info;
-    
+
     if (left == NULL || right == NULL) {
         NullPtrError("CompareEqual");
         return NULL;
@@ -1917,7 +1921,7 @@ static Mask *CompareEqualScalar(const Vector *left,const void *right,Mask *bytea
     size_t left_len;
     size_t i;
     char *pleft;
-    
+
     if (left == NULL || right == NULL) {
         NullPtrError("CompareEqual");
         return NULL;
@@ -1980,11 +1984,11 @@ static int Select(Vector *src,const Mask *m)
 
 VectorInterface iVector = {
     Size,
-    GetFlags, 
-    SetFlags, 
+    GetFlags,
+    SetFlags,
     Clear,
     Contains,
-    Erase, 
+    Erase,
     EraseAll,
     Finalize,
     Apply,
@@ -2000,29 +2004,29 @@ VectorInterface iVector = {
     Load,
     GetElementSize,
 /* Sequential container fields */
-    Add, 
+    Add,
     GetElement,
     PushBack,
     PopBack,
     InsertAt,
-    EraseAt, 
+    EraseAt,
     ReplaceAt,
-    IndexOf, 
+    IndexOf,
 /* Vector specific fields */
     Insert,
     InsertIn,
     IndexIn,
-    GetCapacity, 
+    GetCapacity,
     SetCapacity,
     SetCompareFunction,
     Sort,
     Create,
     CreateWithAllocator,
     Init,
-    AddRange, 
+    AddRange,
     GetRange,
     CopyElement,
-    CopyTo, 
+    CopyTo,
     Reverse,
     Append,
     Mismatch,
