@@ -366,7 +366,7 @@ static int Equal(const Vector *AL1,const Vector *AL2)
     right = (unsigned char *)AL2->contents;
 	cInfo.ContainerLeft = left;
 	cInfo.ContainerRight = right;
-	cInfo.ExtraArgs = AL1;
+	cInfo.ExtraArgs = (void *)AL1;
     for (i=0; i<AL1->count;i++) {
         if (AL1->CompareFn(left,right,&cInfo) != 0)
             return 0;

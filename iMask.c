@@ -1,6 +1,7 @@
 #include "containers.h"
 #include "ccl_internal.h"
 
+
 static Mask *CreateFromMask(size_t n,const char *data)
 {
     Mask *result = CurrentAllocator->malloc(n+sizeof(Mask));
@@ -40,7 +41,17 @@ static int SetElement(Mask *m,size_t idx,int val)
     m->data[idx]=(char)val;
     return 1;
 }
-
+int GetElement(const Mask *m,size_t position)
+{
+	if (m == NULL) {
+		iError.RaiseError("iMask.GetElement",CONTAINER_ERROR_BADARG);
+		return 0;
+	}
+	if (position >= m->length) {
+		iError.RaiseError("iMask.GetElement",CONTAINER_ERROR_INDEX);
+	}
+    return m->data[position] ;
+}
 static int Clear(Mask *m)
 {
     memset(m->data,0,m->length);
@@ -135,6 +146,7 @@ MaskInterface iMask = {
     Size,
     Sizeof,
     SetElement,
+    GetElement,
     Clear,
     Finalize,
     PopulationCount,
