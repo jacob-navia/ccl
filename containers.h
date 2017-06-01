@@ -1098,6 +1098,8 @@ typedef struct tagBitString {
     int        (*OrAssign)(BitString *bsl,BitString *bsr);
     BitString *(*And)(BitString *bsl,BitString *bsr);
     int        (*AndAssign)(BitString *bsl,BitString *bsr);
+    BitString *(*Nand)(BitString *bsl,BitString *bsr);
+    int        (*NandAssign)(BitString *bsl,BitString *bsr);
     BitString *(*Xor)(BitString *bsl,BitString *bsr);
     int        (*XorAssign)(BitString *bsl,BitString *bsr);
     BitString *(*Not)(BitString *bsl);

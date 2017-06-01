@@ -84,3 +84,4 @@ intdlist.o:      intdlist.h intdlist.c ccl_internal.h containers.h $(LIST_GENERI
 doubledlist.o:   doubledlist.h doubledlist.c ccl_internal.h containers.h $(DLIST_GENERIC)
 longlongdlist.o: longlongdlist.h longlongdlist.c ccl_internal.h containers.h $(DLIST_GENERIC)
 SuffixTree.o:	SuffixTree.c containers.h
+bitstring.o:	bitstring.c containers.h

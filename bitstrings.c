@@ -438,6 +438,56 @@ static int AndAssign(BitString *bsl,BitString *bsr)
 	}
 	return 1;
 }
+static BitString * NotAnd(BitString *bsl,BitString *bsr)
+{
+	size_t len,bytelen,i,resultlen;
+	BitString *result;
+
+	if (bsl == NULL || bsr == NULL) {
+		NullPtrError("NotAnd");
+		return NULL;
+	}
+	len = (bsl->count < bsr->count) ? bsl->count : bsr->count;
+	resultlen = (bsl->count < bsr->count) ? bsr->count : bsl->count;
+	result = Create(resultlen);
+    if (result == NULL) {
+        iError.RaiseError("iBitString.NotAnd",CONTAINER_ERROR_NOMEMORY);
+        return NULL;
+    }
+	bytelen = BYTES_FROM_BITS(len);
+	for (i=0; i<bytelen;i++) {
+		result->contents[i] = ~(bsl->contents[i] & bsr->contents[i]);
+	}
+	if (len&(CHAR_BIT-1)) {
+		unsigned int tmp = bsl->contents[i] & bsr->contents[i];
+		result->contents[i] = tmp & maskI[len&(CHAR_BIT-1)];
+	}
+	result->count = resultlen;
+	return result;
+}
+static int NotAndAssign(BitString *bsl,BitString *bsr)
+{
+	size_t len,i;
+
+	if (bsl == NULL || bsr == NULL) {
+		return NullPtrError("NotAndAssign");
+	}
+	len = (bsl->count < bsr->count) ? bsl->count : bsr->count;
+	len = BYTES_FROM_BITS(len);
+	for (i=0; i<len;i++) {
+		bsl->contents[i] &= bsr->contents[i];
+	}
+	if (len&!(CHAR_BIT-1)) {
+		unsigned int tmp = bsl->contents[i] &! bsr->contents[i];
+		bsl->contents[i] = tmp &! maskI[len&!(CHAR_BIT-1)];
+		i++;
+	}
+	while (i < 1+BYTES_FROM_BITS(bsl->count)) {
+		bsl->contents[i] = 0;
+		i++;
+	}
+	return 1;
+}
 
 static BitString * Xor(BitString *bsl,BitString *bsr)
 {
@@ -1422,6 +1472,8 @@ BitStringInterface iBitString = {
 	OrAssign,
 	And,
 	AndAssign,
+	NotAnd,
+	NotAndAssign,
 	Xor,
 	XorAssign,
 	Not,
