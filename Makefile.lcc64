@@ -33,6 +33,7 @@ OBJS=\
 	scapegoat.obj \
 	searchtree.obj \
 	strcollection.obj \
+	SuffixTree.obj \
 	valarraydouble.obj \
 	valarrayint.obj \
 	valarrayuint.obj \
@@ -56,7 +57,7 @@ LIBS=ccl64.lib
 $(EXE):	$(OBJS) Makefile test.obj ccl64.lib
 	$(LINKER) -subsystem console -o $(EXE) test.obj $(LIBS)
 
-ccl64.lib: $(OBJS) 
+ccl64.lib: $(OBJS)
 	lcclib /out:ccl64.lib $(OBJS)
 
 # Build arraylist.c
@@ -125,7 +126,7 @@ qsortex.obj:  $(SRCDIR)\qsortex.c $(HEADERS)
 
 # Build redblacktree.c
 
-redblacktree.obj:  $(SRCDIR)\redblacktree.c $(HEADERS) 
+redblacktree.obj:  $(SRCDIR)\redblacktree.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(SRCDIR)\redblacktree.c
 
 # Build scapegoat.c
@@ -195,6 +196,8 @@ doublelist.obj: doublelist.c doublelist.h ccl_internal.h containers.h $(LIST_GEN
 longlonglist.obj: longlonglist.c longlonglist.h ccl_internal.h containers.h $(LIST_GENERIC)
 	$(CC) $(CFLAGS) longlonglist.c
 
+SuffixTree.obj: SuffixTree.c containers.h
+	$(CC) $(CFLAGS) SuffixTree.c
 
 vectorsize_t.obj:	vectorsize_t.c vectorgen.h vectorgen.c containers.h ccl_internal.h
 	$(CC) $(CFLAGS) $(SRCDIR)\vectorsize_t.c
