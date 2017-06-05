@@ -361,11 +361,12 @@ static int Equal(const Vector *AL1,const Vector *AL2)
     if (AL1->CompareFn == DefaultVectorCompareFunction) {
         if (memcmp(AL1->contents,AL2->contents,AL1->ElementSize*AL1->count) != 0)
         return 0;
+		else return 1;
     }
     left =  (unsigned char *)AL1->contents;
     right = (unsigned char *)AL2->contents;
-	cInfo.ContainerLeft = left;
-	cInfo.ContainerRight = right;
+	cInfo.ContainerLeft = AL1;
+	cInfo.ContainerRight = AL2;
 	cInfo.ExtraArgs = (void *)AL1;
     for (i=0; i<AL1->count;i++) {
         if (AL1->CompareFn(left,right,&cInfo) != 0)

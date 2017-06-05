@@ -182,6 +182,36 @@ char *Table[] = {
 	"Position 2",
 	"pushed",
 };
+static int test_ivector()
+{
+    int valeur = 10 ;
+    int i , y , n , g;
+    int k = 2 ; 
+    int h = 3 ; 
+    Vector *mon_vecteur = iVector.Create(sizeof(int),12) ;
+    Vector *new_vecteur = iVector.Create(sizeof(int),12) ;
+    Vector *vecteur3 = iVector.Create(sizeof(int),15) ; 
+
+    for(i=0;i<12;i++){
+        iVector.Add(mon_vecteur,&i) ;
+        iVector.Add(new_vecteur,&i) ; 
+    }   
+
+    for(n=0;n<15;n++){
+        iVector.Add(vecteur3,&k) ;
+    }   
+
+    int test = iVector.Equal(mon_vecteur,new_vecteur) ; 
+    int test2 = iVector.Equal(mon_vecteur,vecteur3) ;
+
+	if (test != 1)
+    printf("le resultat de Equal entre mon_vecteur et new_vecteur : %d \n ",test);
+	if (test2 != 0)
+    printf(" le resultat de Equal pour 2 vecteur different : %d \n",test2) ;
+
+
+}
+
 static int testVector(void)
 {
 	int errors=0;
@@ -209,6 +239,7 @@ static int testVector(void)
 	printf("Item position 1:%s\n",*p);
 	PrintVector(AL);
 	iVector.Finalize(AL);
+	test_ivector();
 	return errors;
 }
 
