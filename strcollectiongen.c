@@ -1295,7 +1295,7 @@ static ElementType *CreateFromFile(const char *fileName)
     while (r >= 0) {
         if (iElementType.Add(result,line) <= 0) {
             Finalize(result);
-            free(line); /* was missing! */
+            mm->free(line); /* was missing! */
             fclose(f);
             return NULL;
         }
@@ -1303,11 +1303,11 @@ static ElementType *CreateFromFile(const char *fileName)
     }
     if (r != EOF) {
         Finalize(result);
-        free(line);
+        mm->free(line);
         fclose(f);
         return NULL;
     }
-    free(line);
+    mm->free(line);
     fclose(f);
     return result;
 }
