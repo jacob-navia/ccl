@@ -5312,8 +5312,31 @@ Searches all occurrences of the given text in the given string collection.
 \doerror{NOMEMORY} Not enough storage for holding the resulting array.
 \Const Neither the input collection, nor the given text are modified.
 \returns
-An array list containing a pair of integers for each occurrence containing the zero based position of the line where the text was found and a second number indicating the character index within the line where the searched text occurs.
+A vector containing a pair of integers for each occurrence. The two integers are:
+\begin{enumerate}
+\item the zero based position of the line where the text was found 
+\item A number indicating the character index within the line where the searched text occurs.
+\end{enumerate}
 The result is \Null if there wasn't any occurrences of the searched text in the string collection or an error was detected.
+\example
+  1 static void findTxt()
+  2 {
+  3     strCollection *source = istrCollection.CreateFromFile("test.txt") ;;
+  4     Vector *Vec = istrCollection.FindTextPositions(source,"pizzas") ;
+  5     size_t siz = Vec ? iVector.Size(Vec) : 0 ;   
+  6     for (int i=0 ; i<siz ; i+=2) {
+  7         int *line ;
+  8         int *col;
+  9         line = iVector.GetElement(Vec,i) ;
+ 10         col =  iVector.GetElement(Vec,i+1) ;
+ 11         printf("line = %d\n col = %d\n",line[0],col[0]) ;            
+ 12     }
+ 13     iStrCollection.Finalize(source);
+ 14     if (Vec) iStrCollection.Finalize(Vec);
+ 15 }
+\end{verbatim}
+The \verb,Vec, variable contains the result vector, that could be \Null.
+The loop variable at line 6 is increased by 2 to account for the result pair. 
 %--------------------------------------------------------------------------------------------------------------------------
 \api{Front}
 const CHARTYPE *(*Front)(const strCollection *l);
