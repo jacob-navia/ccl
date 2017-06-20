@@ -511,9 +511,9 @@ For calling the \verb,Add, API of the \verb,List, container you would write: \pa
 \verb,iList.Add,. This uses the generic implementation with \verb,void *,.
 
 For calling the \verb,Add, API of the \verb,Vector, container built from \verb,double, objects you would write:
-\par \verb,idoubleVector.Add,. This uses the template implementation with a specific type, in this case the \verb,double, type.
+\par \verb,iValArrayDouble.Add,. This uses the template implementation with a specific type, in this case the \verb,double, type.
 
-The interface object \verb,idoubleVector, has one field for each API it supports. The same for the interface object \verb,iVector, that is
+The interface object \verb,iValArrayDouble, has one field for each API it supports. The same for the interface object \verb,iVector, that is
 a generic interface (uses and returns \verb,void *, instead of specific types). 
 
 Other containers like the list container would have the equivalent API named as: 
@@ -3804,7 +3804,7 @@ where the return value of the error function is used are:
 %-----------------------------------------------------------------------------------------------------
 \api{Add}
     int (*Add)(Vector *AL,void *data);
-    int (*Add)(TYPEVector, TYPE data);
+    int (*Add)(ValArrayXXXX, XXXX data);
 \end{verbatim} 
 \apidescription
 Adds the given element to the end of the container. It is the same operations as the PushBack operation. It is assumed that "data" points to a contiguous memory area of at least ElementSize bytes. Returns a value greater than zero if the addition completed successfully, a negative error code otherwise. 
@@ -3821,15 +3821,14 @@ A positive number if the operation completed, negative error code otherwise.
     if (result < 0) { /* Error handling */ }
 
     // Template version
-    #include "doubleVector.h"
-    doubleVector *AL = idoubleVector.Create();
-    int result = idoubleVector.Add(AL,4.5);
+    ValArrayDouble *AL = iValArrayDouble.Create(5);
+    int result = iValArrayDouble.Add(AL,4.5);
     if (result < 0) { /* Error handling */ }
 \end{verbatim}
 %-----------------------------------------------------------------------------------------------------
 \api{AddRange}
     int (*Add)(Vector *AL,size_t n, void *data);
-    int (*Add)(TYPEVector *AL,size_t n, TYPE *data);
+    int (*Add)(ValArrayXXXX *AL,size_t n, XXXX *data);
 \end{verbatim} 
 \apidescription
 Adds the n given elements to the end of the container. It is the same operations as the PushBack operation. It is assumed that "data" points to a contiguous memory area of at least n*ElementSize bytes. Returns a value greater than zero if the addition completed successfully, a negative error code otherwise. If n is zero no error is issued even if the array pointer or the data pointer are \Null.
@@ -3846,10 +3845,9 @@ A positive number if the operation completed, negative error code otherwise.
     int result = iVector.Add(AL,3, data);
     if (result < 0) { /* Error handling */ }
     // Template version
-    #include "doubleVector.h"
-    doubleVector *AL = idoubleVector.Create(5);
+    ValArrayDouble *AL = iValArrayDouble.Create(5);
     double data[] = {4.5, 4.6, 4.7 };
-    int result = idoubleVector.Add(AL,3, data);
+    int result = iValArrayDouble.Add(AL,3, data);
     if (result < 0) { /* Error handling */ }
 \end{verbatim}
 %-----------------------------------------------------------------------------------------------------
@@ -3867,7 +3865,7 @@ A positive number if the operation completed, negative error code otherwise.
 %-----------------------------------------------------------------------------------------------------
 \api{Apply}
     int (*Apply)(Vector l,int (Applyfn)(void *,void *),void *arg);
-    int (*Apply)(TYPEVector l,int (Applyfn)(TYPE,void *),void *arg);
+    int (*Apply)(ValArrayXXXX l,int (Applyfn)(XXXX,void *),void *arg);
 \end{verbatim} 
 \apidescription
 Will call the given function for each element of the array. The first argument of the callback function receives an element of the array. The second argument of the callback is the arg argument that the Apply function receives and passes to  the callback. This way some context can be passed to the callback, and from one element to the next.
@@ -3906,9 +3904,9 @@ A positive value if no errors or a negative error code.
     }
     double AddVector(Vector *l) {
         double sum = 0;
-        doubleVector *alist = idoubleVector.Create(2);
-        idoubleVector.Add(alist,2);
-        idoubleVector.Add(alist,3);
+        ValArrayDouble *alist = iValArrayDouble.Create(2);
+        iValArrayDouble.Add(alist,2);
+        iValArrayDouble.Add(alist,3);
         idoubleList.Apply(alist,Callback,&sum);
         // Here sum should be 5.
         return sum;
@@ -3918,7 +3916,7 @@ A positive value if no errors or a negative error code.
 %-----------------------------------------------------------------------------------------------------
 \api{Back}
 void *(*Back)(const Vector *v);
-TYPE  (*Back)(const TYPEVector *v);
+TYPE  (*Back)(const ValArrayXXXX *v);
 \end{verbatim}
 \apidescription
 Returns the last element of the given vector or \Null if the vector is empty.
@@ -3977,7 +3975,7 @@ If the bitarray argument is \Null it will be allocated and returned. The allocat
 %-----------------------------------------------------------------------------------------------------
 \api{Contains}
     int (*Contains)(Vector *a,void *data);
-    int (*Contains)(TYPEVector *a,TYPE data);
+    int (*Contains)(ValArrayXXXX *a,XXXX data);
 \end{verbatim} 
 \apidescription
 Searches the given data in the array. The "data" argument is supposed to point to an element at least ElementSize bytes. The array's comparison function is used for determining if two elements are equal. This comparison function defaults to memcmp.
@@ -3990,7 +3988,7 @@ One if the given data is stored in the array, zero otherwise. If either the data
     double data = 78.67;
     int r = iVector.Contains(a,&data);
     // ---------------------------Template version
-    doubleVector *a = iVector.Create(2);
+    ValArrayDouble *a = iVector.Create(2);
     int r = iVector.Contains(a,78.67);
 \end{verbatim}
 %-----------------------------------------------------------------------------------------------------
@@ -4047,7 +4045,7 @@ Integer smaller than zero with error code or a positive number when the operatio
 %-----------------------------------------------------------------------------------------------------
 \api{Create}
     Vector *(*Create)(size_t element_size,size_t startsize);
-    TYPEVector *(*Create)(size_t startsize);
+    ValArrayXXXX *(*Create)(size_t startsize);
 \end{verbatim} 
 \apidescription
 The creation function returns an empty array, initialized with all the default values.
@@ -4086,7 +4084,7 @@ The result is one if the vectors are equal, zero otherwise.
 %-----------------------------------------------------------------------------------------------------
 \api{Erase}
     int (*Erase)(Vector *AL,void *data);
-    int (*Erase)(TYPEVector *AL,TYPE data);
+    int (*Erase)(ValArrayXXXX *AL, XXXX data);
 \end{verbatim}
 \apidescription
 Removes from the vector the element that matches the given data, that is assumed to be a pointer to an element.
@@ -4110,7 +4108,7 @@ If the element is not in the vector the result value is \notfound.
 %-----------------------------------------------------------------------------------------------------
 \api{EraseAll}
     int (*EraseAll)(Vector *v,const void *data);
-    int (*EraseAll)(TYPEVector *v,const TYPE data);    
+    int (*EraseAll)(ValArrayXXXX *v,const XXXX data);    
 \end{verbatim}
 \apidescription
 Removes from the list all elements that match the given data, that is assumed to be a pointer to an element.
@@ -4159,7 +4157,7 @@ A positive value means the operation completed. A negative error code indicates 
 %-----------------------------------------------------------------------------------------------------
 \api{Front}
 void *(*Front)(const Vector *v);
-TYPE  (*Front)(const TYPEVector *v);
+TYPE  (*Front)(const ValArrayXXXX *v);
 \end{verbatim}
 \apidescription
 Returns the first element of the given vector or \Null if the vector is empty.
@@ -4208,7 +4206,7 @@ Returns a pointer to the data area of the container, or \Null if an error occurs
 %-----------------------------------------------------------------------------------------------------
 \api{GetElement}
     void *(*GetElement)(Vector *AL,size_t idx);
-    TYPE *(*GetElement)(TYPEVector *AL,size_t idx);
+    TYPE *(*GetElement)(ValArrayXXXX *AL,size_t idx);
 \end{verbatim}
 \apidescription
 Returns a read only pointer to the element at the given index, or \Null if the operation failed.  This function will return \Null if the vector is read only. If the index is greater than the number of elements, the error function will be called. If the error function returns a valid pointer
@@ -4269,7 +4267,7 @@ A new array or \Null if an error occurs. No partial results are returned. If any
 
 \api{IndexOf}
 int (*IndexOf)(Vector *l,void *data,void *ExtraArgs,size_t *result);
-int (*IndexOf)(TYPEVector *l,TYPE data,void *ExtraArgs,size_t *result);
+int (*IndexOf)(ValArrayXXXX *l,XXXX data,void *ExtraArgs,size_t *result);
 \end{verbatim}
 \apidescription
 Searches for an element in the array. If found its zero based index is returned in the pointer "result". Otherwise the result of the search is \notfound. The "extraArgs" argument will be passed to the comparison function, that is used to compare elements.
@@ -4288,7 +4286,7 @@ A positive number if the element is found, or a negative number containing an er
 
 \api{InsertAt}
     int (*InsertAt)(Vector *AL,size_t idx,void *newData);
-    int (*InsertAt)(TYPEVector *AL,size_t idx,TYPE newData);
+    int (*InsertAt)(ValArrayXXXX *AL,size_t idx,XXXX newData);
 \end{verbatim}
 \apidescription
 Inserts the new element. The new element will have the given index, that can go from zero to the vector count inclusive, i.e. one more than the number of elements in the vector. If the index is out of bounds, the vector error function is called. If the function returns a valid pointer (a pointer
@@ -4312,8 +4310,8 @@ A positive value if the operation succeeded, or a negative error code if the ope
     if (r < 0) { /* Error handling */ }
     else { /* Normal processing */  }
     // --------------------------Template version
-    doubleVector *AL = idoubleVector.Create(3);
-    int r = idoubleVector.InsertAt(AL,2,2.7);
+    ValArrayDouble *AL = iValArrayDouble.Create(3);
+    int r = iValArrayDouble.InsertAt(AL,2,2.7);
     if (r < 0) { /* Error handling */ }
     else { /* Normal processing */  }
 
@@ -4370,14 +4368,13 @@ Count 20, Capacity 20
 0 1 2 3 4 100 101 102 103 104 105 106 107 108 109 5 6 7 8 9
 ---------------------------------------------Template version
 #include <containers.h>
-#include "doublevector.h"
-static void PrintVector(doubleVector *AL)
+static void PrintVector(ValArrayDouble *AL)
 {
     size_t i;
-    printf("Count %ld, Capacity %ld\n",(long)iVector.Size(AL),
-                                  (long)iVector.GetCapacity(AL));
+    printf("Count %ld, Capacity %ld\n",(long)iValArrayDouble.Size(AL),
+                                  (long)iValArrayDouble.GetCapacity(AL));
     for (i=0; i<iVector.Size(AL);i++) {
-        printf("%g ",idoubleVector.GetElement(AL,i));
+        printf("%g ",iValArrayDouble.GetElement(AL,i));
     }
     printf("\n");
 }
@@ -4387,17 +4384,17 @@ static void FillVector(Vector * AL,int start)
     size_t i;
 
     for (i=0; i<10;i++) {
-        idoubleVector.Add(AL,i+start);
+        iValArrayDouble.Add(AL,i+start);
     }
 }
 
 int main(void)
 {
-    Vector *AL = idoubleVector.Create(10);
-    Vector *AL1 =idoubleVector.Create(10);
+    Vector *AL = iValArrayDouble.Create(10);
+    Vector *AL1 =iValArrayDouble.Create(10);
     FillVector(AL,0);
     FillVector(AL1,100);
-    iVector.InsertIn(AL,5,AL1);
+    iValArrayDouble.InsertIn(AL,5,AL1);
     PrintVector(AL);
     return 0;
 }
@@ -4459,7 +4456,7 @@ If an error occurs, a negative error code is returned. The \textsl{mismatch} arg
 %--------------------------------------------------------------------------------------------------------------------------
 \api{PopBack}
     int (*PopBack)(Vector *AL,void *result);
-    int (*PopBack)(TYPEVector *AL,TYPE *result);
+    int (*PopBack)(ValArrayXXXX *AL,XXXX *result);
 \end{verbatim}
 \apidescription
 Copies the last element into the given result buffer and deletes the element from the container. If the result buffer is \Null, no copy is performed.
@@ -4484,7 +4481,7 @@ Zero if the vector is empty. Otherwise returns a positive number for success, a 
 %--------------------------------------------------------------------------------------------------------------------------
 \api{ReplaceAt}
     int (*ReplaceAt)(Vector *AL,size_t idx,void *newData);
-    int (*ReplaceAt)(TYPEVector *AL,size_t idx,TYPE newData);
+    int (*ReplaceAt)(ValArrayXXXX *AL,size_t idx,XXXX newData);
 \end{verbatim}
 \apidescription
 Replaces the array element at position idx with the new data starting at the position pointed to by "newData" and extending ElementSize bytes.
@@ -4500,8 +4497,8 @@ A negative error code if an error occurs, or a positive value if the operation s
     int r = iVector.ReplaceAt(AL,2,&d);
     if (r < 0) { /* Error handling */ }
     // --------------------------------Template version
-    doubleVector *AL = idoubleVector.Create(2);
-    int r = idoubleVector.ReplaceAt(AL,2,6.7);
+    ValArrayDouble *AL = iValARrayDouble.Create(2);
+    int r = iValArrayDouble.ReplaceAt(AL,2,6.7);
     if (r < 0) { /* Error handling */ }
 \end{verbatim}
 %--------------------------------------------------------------------------------------------------------------------------
@@ -9351,7 +9348,7 @@ typedef struct _dlist_element {
 } dlist_element;
 \end{verbatim}
 
-(1): In the \textsl{templated} versions of the container this field is defined as: \verb,TYPE Data;, where \verb,TYPE, is a type 
+(1): In the \textsl{templated} versions of the container this field is defined as: \verb,ValArrayXXXX Data;, where \verb,XXXX, is a type 
 definition passed to the file as a parameter.
 
 We have now two pointers followed by the stored data. All other fields are exactly identical to the ones in the single linked list. The single 
