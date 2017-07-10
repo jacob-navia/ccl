@@ -672,7 +672,7 @@ This container stores data associated with an integer "priority". The meaning of
 The \verb,Pop, operation retrieves the data associated with the \textsl{lowest} priority. 
 \subsection{At a glance}
 {
-\rowcolors{1}{white}{green!8}
+%\rowcolors{1}{white}{green!8}
 \begin{center}
 \noindent
 \begin{longtable}{||p{3cm}|p{3cm}|p{7.0cm}||}
@@ -3808,6 +3808,8 @@ where the return value of the error function is used are:
 \end{verbatim} 
 \apidescription
 Adds the given element to the end of the container. It is the same operations as the PushBack operation. It is assumed that "data" points to a contiguous memory area of at least ElementSize bytes. Returns a value greater than zero if the addition completed successfully, a negative error code otherwise. 
+
+For \verb,ValArrays, the data should be of the same type that the ValArray.
 \apierrors
 \doerror{BADARG} The vector or the data pointers are \Null.
 \doerror{READONLY} The vector is read-only. No modifications allowed.
@@ -3832,6 +3834,8 @@ A positive number if the operation completed, negative error code otherwise.
 \end{verbatim} 
 \apidescription
 Adds the n given elements to the end of the container. It is the same operations as the PushBack operation. It is assumed that "data" points to a contiguous memory area of at least n*ElementSize bytes. Returns a value greater than zero if the addition completed successfully, a negative error code otherwise. If n is zero no error is issued even if the array pointer or the data pointer are \Null.
+
+For \verb,ValArrays, the data should be of the same type that the ValArray, i.e. a sequence of \verb,n, elements of the type of the ValArray.
 \apierrors
 \doerror{BADARG} The vector or the data pointers are \Null, and n is not zero.
 \doerror{READONLY} The vector is read-only. No modifications allowed.
@@ -3916,7 +3920,7 @@ A positive value if no errors or a negative error code.
 %-----------------------------------------------------------------------------------------------------
 \api{Back}
 void *(*Back)(const Vector *v);
-TYPE  (*Back)(const ValArrayXXXX *v);
+XXXX  (*Back)(const ValArrayXXXX *v);
 \end{verbatim}
 \apidescription
 Returns the last element of the given vector or \Null if the vector is empty.
@@ -4157,7 +4161,7 @@ A positive value means the operation completed. A negative error code indicates 
 %-----------------------------------------------------------------------------------------------------
 \api{Front}
 void *(*Front)(const Vector *v);
-TYPE  (*Front)(const ValArrayXXXX *v);
+XXXX  (*Front)(const ValArrayXXXX *v);
 \end{verbatim}
 \apidescription
 Returns the first element of the given vector or \Null if the vector is empty.
@@ -5800,9 +5804,6 @@ void *(*GetElement)(Dictionary *Dict,const char *key);
 \end{verbatim}
 \apidescription
 Returns a pointer to the element at the given index, or \Null if the operation failed.  This function will return \Null if the dictionary is read only.
- 
-Use the CopyElement function to get a read/write copy of an element of the dictionary.
-
 \apierrors
 \doerror{BADARG}    The given dictionary pointer or the key are \Null.
 \doerror{READONLY}    The array is read only.
@@ -5811,6 +5812,24 @@ Use the CopyElement function to get a read/write copy of an element of the dicti
     double *d = iDictionary.GetElement(Dict,"Index");
     if (d == NULL) { /* Error handling */ }
 \end{verbatim}
+\textbf{Note:} If you store a pointer, you have to:
+\begin{enumerate}
+\item Store the \textbf{address} of the pointer when adding it to the container.
+
+\verb?iDictionary.Add(dict,key,&pointer);?
+
+\item You retrieve the address of the pointer with the \verb,GetElement,. To retrieve the pointer value you should copy it into the destination.
+\begin{verbatim}
+myType **pptr;
+myType *ptr;
+pptr = (myType **)iDictionary.GetElement(dict,key);
+ptr = *pptr;
+\end{verbatim}
+\item To avoid all this problems, use the \verb,CopyElement, API: 
+
+\verb?iDictionary.CopyElement(dict,key,&pointer)?.
+\end{enumerate}
+
 %--------------------------------------------------------------------------------------------------------------------------
 \api{GetFlags}
 unsigned (*GetFlags)(Dictionary *dict);
@@ -7643,7 +7662,7 @@ A new array or \Null if an error occurs. No partial results are returned. If any
 int (*IndexOf)(const ValArray *l,ElementType data,size_t *result);
 \end{verbatim}
 \apidescription
-Searches for an element in the array. If found its zero based index is returned in the pointer "result". Otherwise the result of the search is \notfound. The "extraArgs" argument will be passed to the comparison function, that is used to compare elements.
+Searches for an element in the array. If found its zero based index is returned in the pointer "result". Otherwise the result of the search is \notfound. 
 \apierrors
 \doerror{BADARG} The given array pointer or the element given are \Null.
 \returns
@@ -9128,18 +9147,19 @@ buffer.c&Growable buffers and circular buffers\\\hline
 ccl\_internal.h&Definitions of all the types defined internally by the library.\\\hline
 containers.h&Main header file of the library. It defines all the user visible interfaces.\\\hline
 deque.c&The deque container\\\hline
-dlistgen.h&Generic definition of the double linked list data-type specific containers.\\\hline
 dictionary.c&Hash tables using ASCII text as key. This is just a small file that sets the parameters for the \verb,dictionarygen.c, file\\\hline
 dictionarygen.c&Common code for the dictionary container using either ASCII or wide characters keys\\\hline
+dlistgen.h&Generic definition of the double linked list data-type specific containers.\\\hline
 dlist.c&Double linked list container using void pointers to store the data.\\\hline
-dlistgen.c&Double linked list container using a specific data type. Needs a parameter file\\\hline
 dlistgen.h&Double linked list container data definitions and interface definitions using a specific data type. Needs a parameter file\\\hline
+dlistgen.c&Double linked list container using a specific data type. Needs a parameter file\\\hline
 doubledlist.c&Double linked list for double data. This is a parameter file for dlistgen.c\\\hline
 doubledlist.h&Single linked list header file for double data. This is a parameter file for dlistgen.h\\\hline
 doublelist.c& Parameter file for listgen.c producing the doubleList container\\\hline
 doublelist.h&Parameter file for listgen.h for doubleList container\\\hline
 error.c&The error interface\\\hline
-fgetline.c&Reads a line of text from a file. Used in the string container\\\hline
+fgetline.c&Reads a line of text from a file. Used in the string container. This code is based on the public 
+domain program \verb,ggets,, written by Chuck B. Falconer.\\\hline
 generic.c&The generic container interface\\\hline
 hashtable.c&Hash table featuring binary keys\\\hline
 heap.c&Small object allocator\\\hline
@@ -12190,12 +12210,11 @@ int main(void)
 } 
 \end{verbatim}
 \subsection{Sorting text files}
-The task
---------
+\subsubsection{The task}
 You have a file with an unknown number of text lines of variable
 lengths. Read the lines and write them out sorted in another file.
 
-The C++ solution
+\subsubsection{The C++ solution}
 \begin{verbatim}
 #include <vector>
 #include <fstream>
@@ -12220,7 +12239,7 @@ int main(int argc,char* argv[])
 }
 \end{verbatim}
 
-The C solution
+\subsubsection{The C solution}
 \begin{verbatim}
 #include <containers.h>
 
@@ -12233,6 +12252,89 @@ int main(void)
     return 0;
 }
 \end{verbatim} 
+\subsection{Storing a container in another container}
+\subsubsection{The task}
+You want to print the line numbers where each word appears in a text.
+The algorithm is simple:
+For each word that is recognized as such, store its position until the end of the text. Then, print each word and its associated positions where it appears.
+
+\subsubsection{The C solution}
+\function{Nested containers}
+#include <ctype.h>
+#include "containers.h"
+static char *GetWord(char *line)
+{
+    if (line == NULL || *line == 0) return NULL;
+    if (!(isalpha(*line) || isdigit(*line))) return line+1;
+    while (isalpha(*line) || isdigit(*line))
+        line++;
+    return line;
+}
+
+int main(int argc,char *argv[])
+{
+    Dictionary *dict =
+        iDictionary.Create(sizeof(ValArrayInt *),1000);
+    char *start,*end,*word,*line;
+    strCollection *text = istrCollection.CreateFromFile(argv[1]);
+    ValArrayInt *positions;
+    size_t top,pos;
+    int c,i,j;
+
+    top = istrCollection.Size(text);
+    for (i=0; i<top;i++) {
+        line = istrCollection.GetElement(text,i);
+        start = line;
+        while (isspace(*start)) start++;
+        end = GetWord(start);
+        while (end) {
+            c = *end;
+            *end = 0;
+            if (! iDictionary.Contains(dict,start)) {
+                positions = iValArrayInt.Create(10);
+                iDictionary.Add(dict,start,&positions);
+            }
+            else iDictionary.CopyElement(dict,start,&positions);
+            iValArrayInt.Add(positions,i);
+            *end = c;
+            start = end;
+            while (isspace(*start)) start++;
+            end = GetWord(start);
+        }
+    }
+    strCollection *Words = iDictionary.GetKeys(dict);
+    top = istrCollection.Size(Words);
+    for (i=0; i<top;i++)  {
+        word = istrCollection.GetElement(Words,i);
+        printf("'%s':  ",word);
+        iDictionary.CopyElement(dict,word,&positions);
+        pos = iValArrayInt.Size(positions);
+        for (j=0; j<pos;j++) {
+            printf("%d ",1+iValArrayInt.GetElement(positions,j));
+        }
+        printf("\n");
+        iValArrayInt.Finalize(positions);
+    }
+    istrCollection.Finalize(text);
+    istrCollection.Finalize(Words);
+    iDictionary.Finalize(dict);
+}
+\end{Verbatim}
+\begin{enumerate}
+\item Lines 4 to 11 are concerned with the function to extract a word from the text. If the first character is not a letter or a digit a single "word" of length one is returned. Otherwise we scan characters until we find something that is not a letter or a digit.
+
+\item Line 15 we create a dictionary that will hold as key a word, and as the data associated with it a ValArray of integers holding the line numbers where that word appears (nested containers)
+
+\item Line 17 creates a string collection with the text of the file.
+
+\item Lines 23 to 42 go through each line. If the word is absent in the dictionary we create a ValArray and store it in the dictionary associated with this particular word (lines 31 to 34). Otherwise we retrieve the array associated with the word. Then, on line 36 we add the line number to the array.
+
+\item After this first pass we have a dictionary holding for each line an array with the zero based line numbers. We retrieve all the keys in a string collection container (line 43)
+
+\item Lines 45 to 55 go through the string collection, retrieving from each key the associated array, that we print in lines 50 to 52. We release the memory associated with the array after printing it in line 54.
+
+\item Lines 57 to 59 release the ressources associated with the text and the string collection of words.
+\end{enumerate}
 \clearpage
 \iftth 
 \begin{center}
