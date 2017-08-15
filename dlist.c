@@ -270,32 +270,32 @@ static int Add(Dlist *l,const void *elem)
 
 static int AddRange(Dlist * AL,size_t n, const void *data)
 {
-        const unsigned char *p;
+    const unsigned char *p;
 
-        if (AL == NULL) {
-                return iError.NullPtrError("iList.AddRange");
+    if (AL == NULL) {
+        return iError.NullPtrError("iList.AddRange");
+    }
+    if (AL->Flags & CONTAINER_READONLY) {
+        AL->RaiseError("iList.AddRange",CONTAINER_ERROR_READONLY,AL);
+        return CONTAINER_ERROR_READONLY;
+    }
+    if (data == NULL) {
+        AL->RaiseError("iList.AddRange",CONTAINER_ERROR_BADARG);
+        return CONTAINER_ERROR_BADARG;
+    }
+    p = data;
+    while (n > 0) {
+        int r = Add_nd(AL,p);
+        if (r < 0) {
+            return r;
         }
-        if (AL->Flags & CONTAINER_READONLY) {
-                AL->RaiseError("iList.AddRange",CONTAINER_ERROR_READONLY,AL);
-                return CONTAINER_ERROR_READONLY;
-        }
-        if (data == NULL) {
-                AL->RaiseError("iList.AddRange",CONTAINER_ERROR_BADARG);
-                return CONTAINER_ERROR_BADARG;
-        }
-    	p = data;
-        while (n > 0) {
-                int r = Add_nd(AL,p);
-                if (r < 0) {
-                        return r;
-                }
-                p += AL->ElementSize;
-        }
-        AL->timestamp++;
+        p += AL->ElementSize;
+    }
+    AL->timestamp++;
     if (AL->Flags & CONTAINER_HAS_OBSERVER)
         iObserver.Notify(AL,CCL_ADDRANGE,data,(void *)n);
 
-        return 1;
+    return 1;
 }
 
 /*------------------------------------------------------------------------
